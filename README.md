@@ -1,33 +1,6 @@
 <p align="center">
 
-<font color="red"><strong>⚠️ PERINGATAN ⚠️</strong></font>
-
-<br>
-
-<font color="yellow"><strong>Kode ini telah dimodifikasi oleh Mas-IP.</strong></font>
-
-<br><br>
-
-<font color="white">
-Repository ini berisi berbagai modifikasi, perbaikan, penyesuaian, serta penambahan fitur yang dilakukan oleh Mas-IP
- berdasarkan source code asli.
-</font>
-
-<br><br>
-
-<font color="white">
-Source dan credit dipertahankan di bawah ini.
-</font>
-
-</p>
-
----
-
-<p align="center">
-
-# ⚠️ PERINGATAN ⚠️
-
-<font color="red"><strong>⚠️ PERINGATAN</strong></font>
+# ⚠️ WARNING ⚠️
 
 <font color="yellow"><strong>Kode ini telah dimodifikasi oleh Mas-IP.</strong></font>
 
