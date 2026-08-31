@@ -23,6 +23,30 @@ Source dan credit dipertahankan di bawah ini.
 
 ---
 
+<p align="center">
+
+# ⚠️ PERINGATAN ⚠️
+
+<font color="red"><strong>⚠️ PERINGATAN</strong></font>
+
+<font color="yellow"><strong>Kode ini telah dimodifikasi oleh Mas-IP.</strong></font>
+
+<font color="white">
+Repository ini berisi berbagai modifikasi, perbaikan, penyesuaian, serta
+penambahan fitur yang dilakukan oleh Mas-IP berdasarkan source code asli.
+</font>
+
+<font color="white">
+Source dan credit dipertahankan di bawah ini.
+</font>
+
+</p>
+
+---
+
+
+
+
 
 <h1 align="center">RTXZY-MD</h1>
 
