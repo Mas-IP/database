@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dino Runner - Leaderboard Edition</title>
+    <title>Dino Runner - Simple</title>
     <style>
         :root {
             --bg: #1a1a2e;
             --panel: #16213e;
-            --card: #0f3460;
             --accent: #e94560;
-            --accent2: #ff6b6b;
             --text: #eee;
             --text2: #aaa;
             --green: #2ecc71;
             --red: #e74c3c;
-            --gold: #f39c12;
-            --silver: #bdc3c7;
-            --bronze: #cd7f32;
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             --radius: 16px;
             --btn-radius: 10px;
@@ -46,16 +41,12 @@
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-        }
-
-        body {
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 12px;
         }
 
-        /* ===== MAIN CONTAINER ===== */
         #app {
             width: min(880px, 100%);
             max-height: 100vh;
@@ -65,11 +56,11 @@
             gap: 10px;
         }
 
-        /* ===== HEADER ===== */
+        /* Header */
         #header {
             width: 100%;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             background: var(--panel);
             border-radius: var(--radius);
@@ -79,7 +70,7 @@
             flex-shrink: 0;
         }
         #header .logo {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
             letter-spacing: 1px;
             color: #fff;
@@ -87,44 +78,8 @@
         #header .logo span {
             color: var(--accent);
         }
-        #header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-        }
-        #header .user-info .badge {
-            background: var(--card);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            color: var(--accent2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        #header .user-info .badge:hover {
-            background: var(--accent);
-            color: #fff;
-            border-color: var(--accent);
-        }
-        #header .user-info .logout-btn {
-            background: transparent;
-            border: 1px solid var(--red);
-            color: var(--red);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        #header .user-info .logout-btn:hover {
-            background: var(--red);
-            color: #fff;
-        }
 
-        /* ===== SCREENS ===== */
+        /* Screens */
         .screen {
             width: 100%;
             display: none;
@@ -137,8 +92,8 @@
             display: flex;
         }
 
-        /* ===== AUTH SCREEN ===== */
-        #authScreen .auth-card {
+        /* Start screen */
+        #startScreen .start-card {
             background: var(--panel);
             border-radius: var(--radius);
             padding: 30px 28px;
@@ -148,46 +103,28 @@
             border: 1px solid rgba(255, 255, 255, 0.06);
             text-align: center;
         }
-        #authScreen .auth-card h2 {
-            font-size: 26px;
-            margin-bottom: 4px;
+        #startScreen .start-card h2 {
+            font-size: 30px;
+            margin-bottom: 6px;
             color: #fff;
         }
-        #authScreen .auth-card .sub {
+        #startScreen .start-card .sub {
             color: var(--text2);
-            font-size: 13px;
+            font-size: 14px;
             margin-bottom: 22px;
         }
-        #authScreen .auth-card input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: var(--btn-radius);
-            border: 2px solid #2a3a5a;
-            background: #1a1a35;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-            transition: var(--transition);
-            margin-bottom: 12px;
-        }
-        #authScreen .auth-card input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
-        }
-        #authScreen .auth-card input::placeholder {
-            color: #667;
-        }
         .btn {
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: var(--btn-radius);
             border: none;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
             letter-spacing: 0.5px;
             width: 100%;
             text-align: center;
+            margin-bottom: 8px;
         }
         .btn:active {
             transform: scale(0.97);
@@ -199,122 +136,17 @@
         }
         .btn-primary:hover {
             background: #d63851;
-            box-shadow: 0 6px 22px rgba(233, 69, 96, 0.5);
         }
         .btn-secondary {
-            background: var(--card);
+            background: var(--panel);
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .btn-secondary:hover {
-            background: #1a4a7a;
-        }
-        .btn-admin {
-            background: transparent;
-            color: var(--text2);
-            border: 1px dashed #445;
-            font-size: 12px;
-            padding: 8px;
-            margin-top: 6px;
-        }
-        .btn-admin:hover {
-            color: var(--gold);
-            border-color: var(--gold);
-        }
-        .auth-toggle {
-            font-size: 13px;
-            color: var(--text2);
-            margin-top: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .auth-toggle:hover {
-            color: var(--accent2);
+            background: #1a2a4a;
         }
 
-        /* ===== MENU SCREEN ===== */
-        #menuScreen .menu-card {
-            background: var(--panel);
-            border-radius: var(--radius);
-            padding: 22px 24px;
-            width: 100%;
-            max-width: 700px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            max-height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-        #menuScreen .menu-card h3 {
-            font-size: 18px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #menuScreen .menu-card .btn-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        #menuScreen .menu-card .btn-row .btn {
-            flex: 1;
-            min-width: 120px;
-            width: auto;
-        }
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-        .leaderboard-table th {
-            text-align: left;
-            padding: 8px 10px;
-            background: #0a0a1a;
-            color: var(--text2);
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-        }
-        .leaderboard-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: #ccc;
-        }
-        .leaderboard-table tr:hover td {
-            background: rgba(255, 255, 255, 0.03);
-        }
-        .rank-1 {
-            color: var(--gold) !important;
-            font-weight: 700;
-        }
-        .rank-2 {
-            color: var(--silver) !important;
-            font-weight: 700;
-        }
-        .rank-3 {
-            color: var(--bronze) !important;
-            font-weight: 700;
-        }
-        .rank-me {
-            background: rgba(233, 69, 96, 0.15) !important;
-            font-weight: 700;
-            color: var(--accent2) !important;
-        }
-        .empty-msg {
-            text-align: center;
-            color: #556;
-            padding: 20px;
-            font-size: 13px;
-        }
-
-        /* ===== GAME SCREEN ===== */
+        /* Game screen */
         #gameScreen {
             gap: 8px;
         }
@@ -379,135 +211,15 @@
         }
         #gameOverlay .highscore-msg {
             font-size: 14px;
-            color: var(--green);
+            color: var(--text2);
             font-weight: 600;
             margin-bottom: 14px;
         }
         #gameOverlay .btn {
             max-width: 220px;
-            margin-bottom: 6px;
-        }
-        .btn-green {
-            background: var(--green);
-            color: #fff;
-            box-shadow: 0 4px 16px rgba(46, 204, 113, 0.35);
-        }
-        .btn-green:hover {
-            background: #27ae60;
         }
 
-        /* ===== ADMIN SCREEN ===== */
-        #adminScreen .admin-card {
-            background: var(--panel);
-            border-radius: var(--radius);
-            padding: 24px 22px;
-            width: 100%;
-            max-width: 750px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            max-height: calc(100vh - 100px);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        #adminScreen .admin-card h3 {
-            font-size: 18px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #adminScreen .admin-card .input-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        #adminScreen .admin-card input,
-        #adminScreen .admin-card select {
-            padding: 10px 14px;
-            border-radius: var(--btn-radius);
-            border: 2px solid #2a3a5a;
-            background: #1a1a35;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-            transition: var(--transition);
-            flex: 1;
-            min-width: 100px;
-        }
-        #adminScreen .admin-card input:focus,
-        #adminScreen .admin-card select:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
-        }
-        #adminScreen .admin-card label {
-            font-size: 12px;
-            color: var(--text2);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .admin-user-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        .admin-user-table th {
-            text-align: left;
-            padding: 7px 8px;
-            background: #0a0a1a;
-            color: var(--text2);
-            font-weight: 600;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-        }
-        .admin-user-table td {
-            padding: 7px 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: #ccc;
-            font-size: 12px;
-            word-break: break-all;
-        }
-        .admin-user-table .action-btn {
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid #445;
-            background: transparent;
-            color: var(--text2);
-            font-size: 11px;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-right: 4px;
-        }
-        .admin-user-table .action-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent2);
-        }
-        .admin-user-table .action-btn.danger:hover {
-            border-color: var(--red);
-            color: var(--red);
-        }
-        .back-btn {
-            background: transparent;
-            border: 1px solid #445;
-            color: var(--text2);
-            padding: 8px 16px;
-            border-radius: var(--btn-radius);
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-            align-self: flex-start;
-        }
-        .back-btn:hover {
-            border-color: #888;
-            color: #fff;
-        }
-
-        /* ===== TOAST ===== */
+        /* Toast */
         #toast {
             position: fixed;
             bottom: 24px;
@@ -531,19 +243,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 10px;
-        }
-
-        /* ===== RESPONSIVE ===== */
+        /* Responsive */
         @media (max-width: 600px) {
             body {
                 padding: 6px;
@@ -553,14 +253,9 @@
             }
             #header {
                 padding: 8px 12px;
-                font-size: 11px;
             }
             #header .logo {
                 font-size: 16px;
-            }
-            #header .user-info .badge {
-                font-size: 11px;
-                padding: 4px 10px;
             }
             #gameWrapper {
                 border-radius: 10px;
@@ -584,42 +279,13 @@
                 padding: 10px 16px;
                 font-size: 13px;
             }
-            #authScreen .auth-card {
+            #startScreen .start-card {
                 padding: 20px 16px;
-            }
-            #menuScreen .menu-card {
-                padding: 16px 14px;
-                gap: 10px;
-            }
-            #adminScreen .admin-card {
-                padding: 16px 14px;
-                gap: 10px;
-            }
-            .leaderboard-table td,
-            .leaderboard-table th {
-                padding: 5px 6px;
-                font-size: 11px;
-            }
-            .admin-user-table td,
-            .admin-user-table th {
-                padding: 5px 6px;
-                font-size: 10px;
             }
         }
         @media (max-width: 400px) {
             #gameWrapper {
                 height: min(38vh, 220px);
-            }
-            #header .user-info {
-                gap: 6px;
-            }
-            #header .user-info .badge {
-                font-size: 10px;
-                padding: 3px 8px;
-            }
-            #header .user-info .logout-btn {
-                padding: 4px 10px;
-                font-size: 10px;
             }
         }
     </style>
@@ -630,33 +296,16 @@
         <!-- HEADER -->
         <div id="header">
             <div class="logo">🦖 DINO<span>RUNNER</span></div>
-            <div class="user-info" id="headerUserInfo" style="display:none;">
-                <span class="badge" id="headerUsername">👤 </span>
-                <button class="logout-btn" id="logoutBtn">Logout</button>
-            </div>
         </div>
 
-        <!-- AUTH SCREEN -->
-        <div class="screen active" id="authScreen">
-            <div class="auth-card">
-                <h2 id="authTitle">🔐 Login</h2>
-                <div class="sub" id="authSub">Masuk untuk bermain dan simpan skor</div>
-                <input type="text" id="authUsername" placeholder="Nama pengguna" maxlength="20" autocomplete="off">
-                <input type="password" id="authPassword" placeholder="Kata sandi" maxlength="30" autocomplete="off">
-                <button class="btn btn-primary" id="authSubmitBtn">Login</button>
-                <div class="auth-toggle" id="authToggle">Belum punya akun? <strong>Daftar</strong></div>
-                <button class="btn btn-admin" id="adminAccessBtn">🔑 Akses Admin</button>
-            </div>
-        </div>
-
-        <!-- MENU SCREEN -->
-        <div class="screen" id="menuScreen">
-            <div class="menu-card">
-                <h3>🏆 Leaderboard</h3>
-                <div id="leaderboardContainer"></div>
-                <div class="btn-row">
-                    <button class="btn btn-primary" id="playBtn">🎮 MAIN</button>
-                    <button class="btn btn-secondary" id="menuAdminBtn">🔑 Admin Panel</button>
+        <!-- START SCREEN -->
+        <div class="screen active" id="startScreen">
+            <div class="start-card">
+                <h2>🦖 Dino Runner</h2>
+                <div class="sub">Lompat dan hindari rintangan!<br>Awan muncul setelah skor 200.</div>
+                <button class="btn btn-primary" id="startBtn">🎮 MAIN</button>
+                <div class="sub" style="font-size:12px;color:#888;margin-top:10px;">
+                    Tap layar atau tekan SPACE untuk lompat
                 </div>
             </div>
         </div>
@@ -676,13 +325,6 @@
                     <button class="btn btn-primary" id="retryBtn">🔄 MAIN LAGI</button>
                     <button class="btn btn-secondary" id="menuBtn">🏠 MENU</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- ADMIN SCREEN -->
-        <div class="screen" id="adminScreen">
-            <div class="admin-card" id="adminCard">
-                <!-- Filled dynamically -->
             </div>
         </div>
     </div>
@@ -754,119 +396,6 @@
             playTone(500, 0.04, 'sine', 0.05, 700);
         }
 
-        function playLoginSound() {
-            playTone(300, 0.1, 'sine', 0.08, 600);
-            setTimeout(() => playTone(500, 0.12, 'sine', 0.08, 800), 100);
-        }
-
-        function playErrorSound() {
-            playTone(200, 0.2, 'square', 0.1, 100);
-            playTone(150, 0.25, 'square', 0.08, 80);
-        }
-
-        /* =====================================================
-           DATA STORAGE
-        ===================================================== */
-        const USERS_KEY = 'dino_users';
-        const ADMIN_PASS_KEY = 'dino_admin_pass';
-        const CURRENT_USER_KEY = 'dino_current_user';
-        const DEFAULT_ADMIN_PASS = 'admin@ipan21';
-
-        function getUsers() {
-            try {
-                return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-            } catch { return []; }
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem(USERS_KEY, JSON.stringify(users));
-        }
-
-        function getAdminPassword() {
-            return localStorage.getItem(ADMIN_PASS_KEY) || DEFAULT_ADMIN_PASS;
-        }
-
-        function setAdminPassword(newPass) {
-            localStorage.setItem(ADMIN_PASS_KEY, newPass);
-        }
-
-        function getCurrentUser() {
-            return localStorage.getItem(CURRENT_USER_KEY);
-        }
-
-        function setCurrentUser(username) {
-            if (username) {
-                localStorage.setItem(CURRENT_USER_KEY, username);
-            } else {
-                localStorage.removeItem(CURRENT_USER_KEY);
-            }
-        }
-
-        function findUser(username) {
-            const users = getUsers();
-            return users.find(u => u.username.toLowerCase() === username.toLowerCase());
-        }
-
-        function addUser(username, password) {
-            const users = getUsers();
-            if (findUser(username)) return false;
-            users.push({ username: username.trim(), password: password, highScore: 0, lastScore: 0 });
-            saveUsers(users);
-            return true;
-        }
-
-        function updateUserHighScore(username, newScore) {
-            const users = getUsers();
-            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-            if (idx === -1) return;
-            users[idx].lastScore = newScore;
-            if (newScore > users[idx].highScore) {
-                users[idx].highScore = newScore;
-            }
-            saveUsers(users);
-        }
-
-        function updateUserPassword(username, newPassword) {
-            const users = getUsers();
-            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-            if (idx === -1) return false;
-            users[idx].password = newPassword;
-            saveUsers(users);
-            return true;
-        }
-
-        function updateUserScoreByAdmin(username, newScore) {
-            const users = getUsers();
-            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-            if (idx === -1) return false;
-            users[idx].highScore = parseInt(newScore) || 0;
-            saveUsers(users);
-            return true;
-        }
-
-        function deleteUser(username) {
-            let users = getUsers();
-            users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-            saveUsers(users);
-            if (getCurrentUser() && getCurrentUser().toLowerCase() === username.toLowerCase()) {
-                setCurrentUser(null);
-            }
-        }
-
-        function getLeaderboard() {
-            const users = getUsers();
-            return users
-                .filter(u => u.highScore > 0)
-                .sort((a, b) => b.highScore - a.highScore)
-                .slice(0, 15);
-        }
-
-        function getUserRank(username) {
-            const users = getUsers().filter(u => u.highScore > 0).sort((a, b) => b.highScore - a.highScore);
-            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-            return idx === -1 ? null : idx + 1;
-        }
-
         /* =====================================================
            TOAST
         ===================================================== */
@@ -883,377 +412,15 @@
         }
 
         /* =====================================================
-           UI HELPERS
+           SCREENS
         ===================================================== */
-        const screens = {
-            auth: document.getElementById('authScreen'),
-            menu: document.getElementById('menuScreen'),
-            game: document.getElementById('gameScreen'),
-            admin: document.getElementById('adminScreen'),
-        };
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
 
         function showScreen(name) {
-            Object.keys(screens).forEach(key => {
-                screens[key].classList.toggle('active', key === name);
-            });
-            if (name === 'menu') {
-                renderLeaderboard();
-            }
-            if (name === 'admin') {
-                renderAdminPanel();
-            }
-            if (name === 'game') {
-                // Game screen shown when starting
-            }
+            startScreen.classList.toggle('active', name === 'start');
+            gameScreen.classList.toggle('active', name === 'game');
         }
-
-        function updateHeader() {
-            const user = getCurrentUser();
-            const headerInfo = document.getElementById('headerUserInfo');
-            const headerUsername = document.getElementById('headerUsername');
-            if (user) {
-                headerInfo.style.display = 'flex';
-                const fullUser = findUser(user);
-                headerUsername.textContent = '👤 ' + user + (fullUser ? ' (🏆 ' + fullUser.highScore + ')' : '');
-            } else {
-                headerInfo.style.display = 'none';
-            }
-        }
-
-        /* =====================================================
-           AUTH LOGIC
-        ===================================================== */
-        let authMode = 'login'; // 'login' | 'register'
-        const authTitle = document.getElementById('authTitle');
-        const authSub = document.getElementById('authSub');
-        const authUsername = document.getElementById('authUsername');
-        const authPassword = document.getElementById('authPassword');
-        const authSubmitBtn = document.getElementById('authSubmitBtn');
-        const authToggle = document.getElementById('authToggle');
-        const authToggleStrong = authToggle.querySelector('strong');
-
-        function setAuthMode(mode) {
-            authMode = mode;
-            if (mode === 'login') {
-                authTitle.textContent = '🔐 Login';
-                authSub.textContent = 'Masuk untuk bermain dan simpan skor';
-                authSubmitBtn.textContent = 'Login';
-                authToggle.innerHTML = 'Belum punya akun? <strong>Daftar</strong>';
-            } else {
-                authTitle.textContent = '📝 Daftar';
-                authSub.textContent = 'Buat akun baru untuk mulai bermain';
-                authSubmitBtn.textContent = 'Daftar';
-                authToggle.innerHTML = 'Sudah punya akun? <strong>Login</strong>';
-            }
-        }
-
-        authToggle.addEventListener('click', () => {
-            playClickSound();
-            setAuthMode(authMode === 'login' ? 'register' : 'login');
-        });
-
-        authSubmitBtn.addEventListener('click', () => {
-            playClickSound();
-            const username = authUsername.value.trim();
-            const password = authPassword.value;
-            if (!username || !password) {
-                playErrorSound();
-                showToast('⚠️ Nama dan sandi wajib diisi!');
-                return;
-            }
-            if (username.length < 2) {
-                playErrorSound();
-                showToast('⚠️ Nama minimal 2 karakter!');
-                return;
-            }
-            if (password.length < 3) {
-                playErrorSound();
-                showToast('⚠️ Sandi minimal 3 karakter!');
-                return;
-            }
-
-            if (authMode === 'register') {
-                if (findUser(username)) {
-                    playErrorSound();
-                    showToast('❌ Nama sudah digunakan!');
-                    return;
-                }
-                addUser(username, password);
-                setCurrentUser(username);
-                playLoginSound();
-                showToast('✅ Akun berhasil dibuat! Selamat datang, ' + username + '!');
-                updateHeader();
-                authUsername.value = '';
-                authPassword.value = '';
-                showScreen('menu');
-            } else {
-                const user = findUser(username);
-                if (!user || user.password !== password) {
-                    playErrorSound();
-                    showToast('❌ Nama atau sandi salah!');
-                    return;
-                }
-                setCurrentUser(username);
-                playLoginSound();
-                showToast('👋 Selamat datang, ' + username + '!');
-                updateHeader();
-                authUsername.value = '';
-                authPassword.value = '';
-                showScreen('menu');
-            }
-        });
-
-        authPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                authSubmitBtn.click();
-            }
-        });
-        authUsername.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                authPassword.focus();
-            }
-        });
-
-        /* =====================================================
-           LOGOUT
-        ===================================================== */
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            playClickSound();
-            setCurrentUser(null);
-            updateHeader();
-            showScreen('auth');
-            showToast('👋 Berhasil logout!');
-        });
-
-        /* =====================================================
-           ADMIN ACCESS FROM AUTH
-        ===================================================== */
-        document.getElementById('adminAccessBtn').addEventListener('click', () => {
-            playClickSound();
-            const pass = prompt('🔑 Masukkan sandi admin:');
-            if (pass === null) return;
-            if (pass === getAdminPassword()) {
-                showScreen('admin');
-                showToast('🔓 Masuk sebagai Admin');
-            } else {
-                playErrorSound();
-                showToast('❌ Sandi admin salah!');
-            }
-        });
-
-        /* =====================================================
-           MENU
-        ===================================================== */
-        document.getElementById('playBtn').addEventListener('click', () => {
-            playClickSound();
-            if (!getCurrentUser()) {
-                showToast('⚠️ Login dulu!');
-                showScreen('auth');
-                return;
-            }
-            startGame();
-        });
-
-        document.getElementById('menuAdminBtn').addEventListener('click', () => {
-            playClickSound();
-            const pass = prompt('🔑 Masukkan sandi admin:');
-            if (pass === null) return;
-            if (pass === getAdminPassword()) {
-                showScreen('admin');
-                showToast('🔓 Masuk sebagai Admin');
-            } else {
-                playErrorSound();
-                showToast('❌ Sandi admin salah!');
-            }
-        });
-
-        /* =====================================================
-           LEADERBOARD RENDER
-        ===================================================== */
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboardContainer');
-            const board = getLeaderboard();
-            const currentUser = getCurrentUser();
-
-            if (board.length === 0) {
-                container.innerHTML = '<div class="empty-msg">Belum ada skor. Main dulu yuk! 🎮</div>';
-                return;
-            }
-
-            let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>Nama</th><th>Skor</th></tr></thead><tbody>';
-            board.forEach((u, i) => {
-                const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
-                const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
-                const extraClass = isMe ? 'rank-me' : '';
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
-                html += `<tr class="${extraClass}">
-                    <td class="${rankClass}">${medal}</td>
-                    <td>${escapeHtml(u.username)}${isMe ? ' (kamu)' : ''}</td>
-                    <td class="${rankClass}">${u.highScore}</td>
-                </tr>`;
-            });
-            html += '</tbody></table>';
-
-            const userRank = currentUser ? getUserRank(currentUser) : null;
-            if (userRank && userRank > 15) {
-                const me = findUser(currentUser);
-                if (me && me.highScore > 0) {
-                    html += `<div style="text-align:center;padding:8px;font-size:12px;color:#aaa;border-top:1px solid #333;margin-top:4px;">
-                        Posisi kamu: #${userRank} (${me.highScore} poin)
-                    </div>`;
-                }
-            } else if (userRank && userRank <= 15) {
-                const me = findUser(currentUser);
-                if (me && me.highScore > 0) {
-                    html += `<div style="text-align:center;padding:8px;font-size:12px;color:#aaa;border-top:1px solid #333;margin-top:4px;">
-                        Posisi kamu: #${userRank} (${me.highScore} poin)
-                    </div>`;
-                }
-            }
-            container.innerHTML = html;
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        /* =====================================================
-           ADMIN PANEL
-        ===================================================== */
-        function renderAdminPanel() {
-            const card = document.getElementById('adminCard');
-            const users = getUsers();
-            const adminPass = getAdminPassword();
-
-            let html = `
-                <button class="back-btn" id="adminBackBtn">← Kembali</button>
-                <h3>🔑 Panel Admin</h3>
-                <p style="font-size:12px;color:#aaa;margin-top:-6px;">
-                    Sandi admin saat ini: <code style="background:#222;padding:2px 8px;border-radius:4px;color:#f39c12;">${escapeHtml(adminPass)}</code>
-                </p>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary" id="adminChangePassBtn" style="flex:1;min-width:150px;width:auto;padding:10px;">🔒 Ganti Sandi Admin</button>
-                    <button class="btn btn-secondary" id="adminLogoutBtn" style="flex:1;min-width:150px;width:auto;padding:10px;background:var(--red);border-color:var(--red);">🚪 Keluar Admin</button>
-                </div>
-                <div style="border-top:1px solid #333;margin-top:6px;padding-top:12px;">
-                    <h4 style="font-size:14px;color:#fff;margin-bottom:8px;">👥 Daftar User (${users.length})</h4>
-            `;
-
-            if (users.length === 0) {
-                html += '<div class="empty-msg">Belum ada user terdaftar.</div>';
-            } else {
-                html += `<div style="overflow-x:auto;"><table class="admin-user-table">
-                    <thead><tr><th>Username</th><th>Sandi</th><th>HighScore</th><th>LastScore</th><th>Aksi</th></tr></thead><tbody>`;
-                users.forEach(u => {
-                    html += `<tr>
-                        <td>${escapeHtml(u.username)}</td>
-                        <td><code style="background:#222;padding:2px 6px;border-radius:3px;color:#f39c12;">${escapeHtml(u.password)}</code></td>
-                        <td><strong>${u.highScore || 0}</strong></td>
-                        <td>${u.lastScore || 0}</td>
-                        <td>
-                            <button class="action-btn" onclick="adminEditScore('${escapeHtml(u.username)}')">✏️ Skor</button>
-                            <button class="action-btn" onclick="adminEditPass('${escapeHtml(u.username)}')">🔑 Sandi</button>
-                            <button class="action-btn danger" onclick="adminDeleteUser('${escapeHtml(u.username)}')">🗑️</button>
-                        </td>
-                    </tr>`;
-                });
-                html += '</tbody></table></div>';
-            }
-
-            html += '</div>';
-            card.innerHTML = html;
-
-            document.getElementById('adminBackBtn').addEventListener('click', () => {
-                playClickSound();
-                if (getCurrentUser()) {
-                    showScreen('menu');
-                } else {
-                    showScreen('auth');
-                }
-            });
-
-            document.getElementById('adminChangePassBtn').addEventListener('click', () => {
-                playClickSound();
-                const oldPass = prompt('🔑 Masukkan sandi admin lama:');
-                if (oldPass === null) return;
-                if (oldPass !== getAdminPassword()) {
-                    playErrorSound();
-                    showToast('❌ Sandi lama salah!');
-                    return;
-                }
-                const newPass = prompt('🔑 Masukkan sandi admin baru:');
-                if (newPass === null) return;
-                if (newPass.length < 3) {
-                    playErrorSound();
-                    showToast('⚠️ Sandi minimal 3 karakter!');
-                    return;
-                }
-                setAdminPassword(newPass);
-                playLoginSound();
-                showToast('✅ Sandi admin berhasil diganti!');
-                renderAdminPanel();
-            });
-
-            document.getElementById('adminLogoutBtn').addEventListener('click', () => {
-                playClickSound();
-                if (getCurrentUser()) {
-                    showScreen('menu');
-                } else {
-                    showScreen('auth');
-                }
-                showToast('👋 Keluar dari panel admin');
-            });
-        }
-
-        // Global functions for admin table buttons
-        window.adminEditScore = function(username) {
-            playClickSound();
-            const users = getUsers();
-            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-            if (!user) return;
-            const newScore = prompt(`✏️ Masukkan skor baru untuk "${username}" (skor saat ini: ${user.highScore}):`, user.highScore);
-            if (newScore === null) return;
-            const parsed = parseInt(newScore);
-            if (isNaN(parsed) || parsed < 0) {
-                playErrorSound();
-                showToast('⚠️ Skor harus angka positif!');
-                return;
-            }
-            updateUserScoreByAdmin(username, parsed);
-            playLoginSound();
-            showToast(`✅ Skor "${username}" diubah menjadi ${parsed}`);
-            renderAdminPanel();
-            renderLeaderboard();
-        };
-
-        window.adminEditPass = function(username) {
-            playClickSound();
-            const newPass = prompt(`🔑 Masukkan sandi baru untuk "${username}":`);
-            if (newPass === null) return;
-            if (newPass.length < 3) {
-                playErrorSound();
-                showToast('⚠️ Sandi minimal 3 karakter!');
-                return;
-            }
-            updateUserPassword(username, newPass);
-            playLoginSound();
-            showToast(`✅ Sandi "${username}" berhasil diganti!`);
-            renderAdminPanel();
-        };
-
-        window.adminDeleteUser = function(username) {
-            playClickSound();
-            if (!confirm(`⚠️ Yakin ingin menghapus user "${username}"? Ini tidak bisa dibatalkan!`)) return;
-            deleteUser(username);
-            playCollisionSound();
-            showToast(`🗑️ User "${username}" dihapus`);
-            renderAdminPanel();
-            updateHeader();
-        };
 
         /* =====================================================
            GAME ENGINE
@@ -1278,7 +445,13 @@
         let obstacles = [];
         let clouds = [];
         let lastScoreMilestone = 0;
+        let highScore = 0;
         const groundHeight = 60;
+
+        // Load high score from localStorage
+        try {
+            highScore = parseInt(localStorage.getItem('dino_simple_highscore') || '0');
+        } catch (e) { highScore = 0; }
 
         const dino = {
             x: 70,
@@ -1317,15 +490,33 @@
         }
 
         function createObstacle() {
-            const small = Math.random() < 0.75;
-            const obstacle = {
-                x: width + 30,
-                width: small ? 24 : 40,
-                height: small ? 38 : 55,
-                speedMultiplier: 1
-            };
-            obstacle.y = getGroundY() - obstacle.height;
-            obstacles.push(obstacle);
+            // Decide obstacle type: cactus always, cloud only if score > 200
+            const canHaveCloud = score > 200;
+            const cloudChance = canHaveCloud ? 0.3 : 0; // 30% chance for cloud after 200
+            const isCloud = canHaveCloud && Math.random() < cloudChance;
+
+            if (isCloud) {
+                const obstacle = {
+                    type: 'cloud',
+                    x: width + 30,
+                    width: 45 + Math.random() * 15, // 45-60
+                    height: 30 + Math.random() * 10, // 30-40
+                    speedMultiplier: 1 + Math.random() * 0.2,
+                };
+                obstacle.y = getGroundY() - obstacle.height - 15; // floating above ground
+                obstacles.push(obstacle);
+            } else {
+                const small = Math.random() < 0.75;
+                const obstacle = {
+                    type: 'cactus',
+                    x: width + 30,
+                    width: small ? 24 : 40,
+                    height: small ? 38 : 55,
+                    speedMultiplier: 1
+                };
+                obstacle.y = getGroundY() - obstacle.height;
+                obstacles.push(obstacle);
+            }
         }
 
         function createClouds() {
@@ -1333,7 +524,7 @@
             for (let i = 0; i < 5; i++) {
                 clouds.push({
                     x: Math.random() * width,
-                    y: 30 + Math.random() * 80,
+                    y: 25 + Math.random() * 80,
                     width: 50 + Math.random() * 50,
                     speed: 0.3 + Math.random() * 0.4
                 });
@@ -1370,31 +561,21 @@
             const finalScore = Math.floor(score);
             finalScoreElement.textContent = finalScore;
 
-            // Save score
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-                const prevHigh = findUser(currentUser)?.highScore || 0;
-                updateUserHighScore(currentUser, finalScore);
-                if (finalScore > prevHigh) {
-                    highscoreMsg.textContent = '🎉 NEW HIGH SCORE! 🎉';
-                    highscoreMsg.style.color = '#2ecc71';
-                } else if (finalScore === prevHigh && finalScore > 0) {
-                    highscoreMsg.textContent = '👍 Menyamai high score kamu!';
-                    highscoreMsg.style.color = '#f39c12';
-                } else {
-                    highscoreMsg.textContent = `High score kamu: ${prevHigh}`;
-                    highscoreMsg.style.color = '#888';
-                }
-                updateHeader();
+            if (finalScore > highScore) {
+                highScore = finalScore;
+                try {
+                    localStorage.setItem('dino_simple_highscore', String(highScore));
+                } catch (e) {}
+                highscoreMsg.textContent = '🎉 NEW HIGH SCORE! 🎉';
+                highscoreMsg.style.color = '#2ecc71';
             } else {
-                highscoreMsg.textContent = 'Login untuk menyimpan skor!';
+                highscoreMsg.textContent = `High score: ${highScore}`;
                 highscoreMsg.style.color = '#888';
             }
 
             playCollisionSound();
             playGameOverSound();
             gameOverlay.classList.add('active');
-            renderLeaderboard();
         }
 
         function jump() {
@@ -1451,12 +632,23 @@
                 height: dino.height - padY * 2
             };
             for (const ob of obstacles) {
-                const obBox = {
-                    x: ob.x + 4,
-                    y: ob.y + 3,
-                    width: ob.width - 8,
-                    height: ob.height - 3
-                };
+                let obBox;
+                if (ob.type === 'cloud') {
+                    // Cloud floats, so its collision box is smaller and centered
+                    obBox = {
+                        x: ob.x + 8,
+                        y: ob.y + 8,
+                        width: ob.width - 16,
+                        height: ob.height - 12
+                    };
+                } else {
+                    obBox = {
+                        x: ob.x + 4,
+                        y: ob.y + 3,
+                        width: ob.width - 8,
+                        height: ob.height - 3
+                    };
+                }
                 if (
                     dinoBox.x < obBox.x + obBox.width &&
                     dinoBox.x + dinoBox.width > obBox.x &&
@@ -1537,7 +729,7 @@
             ctx.fillRect(x + 38, y + 6, 4, 4);
         }
 
-        function drawObstacle(ob) {
+        function drawCactusObstacle(ob) {
             const x = ob.x;
             const y = ob.y;
             ctx.fillStyle = '#287a35';
@@ -1547,6 +739,36 @@
                 ctx.fillRect(x, y + 15, 16, 8);
                 ctx.fillRect(x + ob.width - 10, y + 25, 10, 20);
                 ctx.fillRect(x + ob.width - 16, y + 25, 16, 8);
+            }
+        }
+
+        function drawCloudObstacle(ob) {
+            const x = ob.x;
+            const y = ob.y;
+            // Darker cloud with some gray
+            ctx.fillStyle = '#a0a0b0';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 15, 12, 0, Math.PI * 2);
+            ctx.arc(x + 30, y + 10, 18, 0, Math.PI * 2);
+            ctx.arc(x + 45, y + 15, 12, 0, Math.PI * 2);
+            ctx.fill();
+            // Add darker outline or second layer
+            ctx.fillStyle = '#8888a0';
+            ctx.beginPath();
+            ctx.arc(x + 20, y + 20, 10, 0, Math.PI * 2);
+            ctx.arc(x + 35, y + 18, 12, 0, Math.PI * 2);
+            ctx.fill();
+            // Face?
+            ctx.fillStyle = '#555';
+            ctx.fillRect(x + 20, y + 15, 4, 4);
+            ctx.fillRect(x + 38, y + 15, 4, 4);
+        }
+
+        function drawObstacle(ob) {
+            if (ob.type === 'cloud') {
+                drawCloudObstacle(ob);
+            } else {
+                drawCactusObstacle(ob);
             }
         }
 
@@ -1577,11 +799,54 @@
             }
         }
 
-        // Game input
+        /* =====================================================
+           INPUT & BUTTONS
+        ===================================================== */
+        document.getElementById('startBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            playClickSound();
+            startGame();
+        });
+
+        document.getElementById('retryBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            playClickSound();
+            startGame();
+        });
+
+        document.getElementById('menuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            playClickSound();
+            running = false;
+            gameOver = true;
+            gameOverlay.classList.remove('active');
+            showScreen('start');
+        });
+
+        // GLOBAL POINTER DOWN (berlaku di seluruh halaman)
+        function handleGlobalPointerDown(e) {
+            // Jika target adalah tombol di overlay, biarkan tombol yang menangani (sudah stopPropagation)
+            if (e.target.closest('button')) {
+                return;
+            }
+            if (gameScreen.classList.contains('active')) {
+                if (!running || gameOver) {
+                    if (gameOver) {
+                        playClickSound();
+                        startGame();
+                    }
+                } else {
+                    jump();
+                }
+            }
+        }
+
+        document.addEventListener('pointerdown', handleGlobalPointerDown);
+
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.code === 'ArrowUp') {
                 e.preventDefault();
-                if (screens.game.classList.contains('active')) {
+                if (gameScreen.classList.contains('active')) {
                     if (!running || gameOver) {
                         if (gameOver) {
                             playClickSound();
@@ -1594,61 +859,20 @@
             }
         });
 
-        canvas.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            if (screens.game.classList.contains('active')) {
-                if (!running || gameOver) {
-                    if (gameOver) {
-                        playClickSound();
-                        startGame();
-                    }
-                } else {
-                    jump();
-                }
-            }
-        });
-
-        // Game overlay buttons
-        document.getElementById('retryBtn').addEventListener('click', () => {
-            playClickSound();
-            startGame();
-        });
-
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            playClickSound();
-            running = false;
-            gameOver = true;
-            gameOverlay.classList.remove('active');
-            showScreen('menu');
-        });
-
         /* =====================================================
-           WINDOW EVENTS
+           WINDOW EVENTS & INIT
         ===================================================== */
         window.addEventListener('resize', () => {
-            if (screens.game.classList.contains('active')) {
+            if (gameScreen.classList.contains('active')) {
                 resizeCanvas();
             }
         });
 
-        /* =====================================================
-           INIT
-        ===================================================== */
         function init() {
-            const currentUser = getCurrentUser();
-            if (currentUser && findUser(currentUser)) {
-                updateHeader();
-                showScreen('menu');
-                renderLeaderboard();
-            } else {
-                if (currentUser) setCurrentUser(null);
-                updateHeader();
-                showScreen('auth');
-            }
+            showScreen('start');
             resizeCanvas();
         }
 
-        // Handle visibility change to prevent huge delta
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && running) {
                 lastTime = performance.now();
@@ -1657,26 +881,9 @@
 
         init();
 
-        // Expose for debugging
-        window.__dinoApp = {
-            getUsers,
-            saveUsers,
-            getAdminPassword,
-            setAdminPassword,
-            findUser,
-            addUser,
-            updateUserHighScore,
-            updateUserPassword,
-            updateUserScoreByAdmin,
-            deleteUser,
-            getLeaderboard,
-            getUserRank,
-            showToast,
-        };
-
-        console.log('🦖 Dino Runner - Leaderboard Edition loaded!');
-        console.log('🔑 Default admin password:', DEFAULT_ADMIN_PASS);
-        console.log('💡 Ganti sandi admin di panel admin setelah login.');
+        console.log('🦖 Dino Runner - Simple Edition loaded!');
+        console.log('☁️ Awan muncul setelah skor > 200');
+        console.log('🖱️ Klik di mana saja (termasuk di luar kotak) untuk lompat / mulai ulang');
     </script>
 </body>
 </html>
