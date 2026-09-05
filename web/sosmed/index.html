@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAS-IP</title>
+
+    <!--
+    ============================================================
+    MAS-IP ORIGINAL OWNERSHIP NOTICE
+    ============================================================
+    Original creator : MAS-IP
+    Copyright        : © 2026 MAS-IP
+    License          : Proprietary / Attribution Required
+    ============================================================
+    -->
+
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0b0d12;
+    --card: #141820;
+    --card-hover: #1a1f29;
+    --border: #252b36;
+    --text: #ffffff;
+    --muted: #9ca3af;
+    --primary: #4f7cff;
+    --primary-hover: #3d69e8;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* NAVBAR */
+
+.navbar {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 7%;
+    border-bottom: 1px solid var(--border);
+    background: rgba(11, 13, 18, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #1b2230;
+    color: white;
+}
+
+.menu-button {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* HERO */
+
+.hero {
+    text-align: center;
+    padding: 100px 20px 80px;
+    max-width: 900px;
+    margin: auto;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 18px;
+}
+
+.hero h1 span {
+    color: var(--primary);
+}
+
+.hero p {
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.button {
+    display: inline-block;
+    padding: 13px 22px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.button-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.button-primary:hover {
+    background: var(--primary-hover);
+}
+
+.button-secondary {
+    border: 1px solid var(--border);
+    color: white;
+    background: var(--card);
+}
+
+.button-secondary:hover {
+    background: var(--card-hover);
+}
+
+/* SECTION */
+
+.section {
+    width: 86%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 0 80px;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.section-title h1 {
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+.section-title p {
+    color: var(--muted);
+}
+
+/* MENU HOME */
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.menu-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    transition: 0.25s;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    background: var(--card-hover);
+    border-color: #384150;
+}
+
+.menu-icon {
+    font-size: 42px;
+    margin-bottom: 18px;
+}
+
+.menu-card h3 {
+    margin-bottom: 10px;
+}
+
+.menu-card p {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+/* PAGE HEADER */
+
+.page-header {
+    text-align: center;
+    padding: 70px 20px 45px;
+}
+
+.page-header h1 {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.page-header p {
+    color: var(--muted);
+}
+
+/* SEARCH */
+
+.search-box {
+    max-width: 650px;
+    margin: 0 auto 35px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 15px 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: white;
+    outline: none;
+    font-size: 15px;
+}
+
+.search-box input:focus {
+    border-color: var(--primary);
+}
+
+/* CARDS */
+
+.card-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    transition: 0.2s;
+}
+
+.card:hover {
+    background: var(--card-hover);
+}
+
+.card-icon {
+    width: 55px;
+    height: 55px;
+    min-width: 55px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #202632;
+    font-size: 27px;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h3 {
+    margin-bottom: 6px;
+}
+
+.card-content p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 5px;
+}
+
+.card-content strong {
+    color: var(--primary);
+    font-size: 14px;
+}
+
+.info {
+    color: #7f8999;
+    font-size: 13px;
+}
+
+.card-button {
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.card-button:hover {
+    background: var(--primary-hover);
+}
+
+/* ABOUT */
+
+.about-box {
+    max-width: 800px;
+    margin: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 30px;
+    line-height: 1.8;
+    color: var(--muted);
+}
+
+/* FOOTER */
+
+.footer {
+    border-top: 1px solid var(--border);
+    padding: 30px;
+    text-align: center;
+    color: var(--muted);
+    margin-top: 30px;
+}
+
+/* ============================================================
+   MAS-IP WATERMARK
+   ============================================================ */
+
+.masip-watermark {
+    position: fixed;
+    right: 12px;
+    bottom: 10px;
+    z-index: 999999;
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 7px;
+    background: rgba(11,13,18,0.82);
+    color: rgba(255,255,255,0.38);
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.65;
+}
+
+/* MOBILE */
+
+@media (max-width: 750px) {
+
+    .navbar {
+        padding: 0 20px;
+    }
+
+    .menu-button {
+        display: block;
+    }
+
+    .nav {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: #11141b;
+        border-bottom: 1px solid var(--border);
+        display: none;
+        flex-direction: column;
+        padding: 12px;
+    }
+
+    .nav.show {
+        display: flex;
+    }
+
+    .nav a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero {
+        padding: 70px 20px;
+    }
+
+    .hero h1 {
+        font-size: 35px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-list {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .card-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .section {
+        width: 90%;
+    }
+
+    .masip-watermark {
+        right: 8px;
+        bottom: 7px;
+        font-size: 9px;
+    }
+}
+
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a href="#home" class="logo" data-route="home">
+        <span data-site-name>MAS-IP</span>
+    </a>
+
+    <button class="menu-button" id="menu-button">☰</button>
+
+    <nav class="nav" id="nav">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#grup" data-route="grup">Grup</a>
+        <a href="#saluran" data-route="saluran">Saluran</a>
+        <a href="#sosmed" data-route="sosmed">Sosmed</a>
+        <a href="#about" data-route="about">About</a>
+    </nav>
+
+</header>
+
+<main>
+
+    <!-- HOME -->
+    <section class="page" id="page-home">
+
+        <section class="hero">
+
+            <h1>
+                Selamat Datang di<br>
+                <span>MAS-IP</span>
+            </h1>
+
+            <p>
+                Tempat berkumpul, berbagi informasi,
+                menemukan komunitas, saluran, dan sosial media.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#grup" class="button button-primary">Gabung Grup</a>
+                <a href="#saluran" class="button button-secondary">Lihat Saluran</a>
+            </div>
+
+        </section>
+
+        <section class="section">
+
+            <div class="section-title">
+                <h1>MENU</h1>
+                <p>Pilih kategori yang ingin kamu kunjungi</p>
+            </div>
+
+            <div class="menu-grid">
+
+                <a href="#grup" class="menu-card">
+                    <div class="menu-icon">👥</div>
+                    <h3>GRUP</h3>
+                    <p>
+                        Temukan dan bergabung
+                        dengan berbagai grup komunitas.
+                    </p>
+                </a>
+
+                <a href="#saluran" class="menu-card">
+                    <div class="menu-icon">📢</div>
+                    <h3>SALURAN</h3>
+                    <p>
+                        Ikuti berbagai saluran
+                        untuk mendapatkan informasi terbaru.
+                    </p>
+                </a>
+
+                <a href="#sosmed" class="menu-card">
+                    <div class="menu-icon">🌐</div>
+                    <h3>SOSMED</h3>
+                    <p>
+                        Temukan seluruh sosial media
+                        yang terhubung dengan MAS-IP.
+                    </p>
+                </a>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- GRUP -->
+    <section class="page" id="page-grup" hidden>
+
+        <section class="page-header">
+            <h1>👥 Grup</h1>
+            <p>Temukan komunitas yang ingin kamu ikuti.</p>
+        </section>
+
+        <section class="section">
+
+            <div class="search-box">
+                <input type="text" id="group-search" placeholder="🔍 Cari grup...">
+            </div>
+
+            <div class="card-list" id="group-list"></div>
+
+        </section>
+
+    </section>
+
+
+    <!-- SALURAN -->
+    <section class="page" id="page-saluran" hidden>
+
+        <section class="page-header">
+            <h1>📢 Saluran</h1>
+            <p>Ikuti saluran favorit dan dapatkan informasi terbaru.</p>
+        </section>
+
+        <section class="section">
+
+            <div class="search-box">
+                <input type="text" id="channel-search" placeholder="🔍 Cari saluran...">
+            </div>
+
+            <div class="card-list" id="channel-list"></div>
+
+        </section>
+
+    </section>
+
+
+    <!-- SOSMED -->
+    <section class="page" id="page-sosmed" hidden>
+
+        <section class="page-header">
+            <h1>🌐 Sosial Media</h1>
+            <p>Temukan seluruh sosial media MAS-IP.</p>
+        </section>
+
+        <section class="section">
+            <div class="card-list" id="social-list"></div>
+        </section>
+
+    </section>
+
+
+    <!-- ABOUT -->
+    <section class="page" id="page-about" hidden>
+
+        <section class="page-header">
+            <h1>ℹ️ About MAS-IP</h1>
+            <p>Tentang website MAS-IP.</p>
+        </section>
+
+        <section class="section">
+
+            <div class="about-box">
+
+                <p>
+                    MAS-IP adalah tempat untuk menemukan
+                    berbagai grup, saluran, dan sosial media
+                    dalam satu tempat.
+                </p>
+
+                <br>
+
+                <p>
+                    Website ini dibuat agar pengguna dapat
+                    dengan mudah menemukan komunitas dan
+                    sosial media yang mereka cari.
+                </p>
+
+            </div>
+
+        </section>
+
+    </section>
+
+</main>
+
+<footer class="footer">
+    © 2026 MAS-IP.
+    All rights reserved.
+</footer>
+
+<!--
+============================================================
+HIDDEN OWNERSHIP MARKER
+Jangan dihapus jika menggunakan source asli MAS-IP.
+============================================================
+-->
+<div
+    id="masip-ownership"
+    data-owner="MAS-IP"
+    data-original="true"
+    data-copyright="2026"
+    data-license="MAS-IP-ORIGINAL"
+    hidden>
+</div>
+
+<!-- VISIBLE WATERMARK -->
+<div class="masip-watermark" aria-hidden="true">
+    MAS-IP • ORIGINAL
+</div>
+
+<script>
+/* ============================================================
+   MAS-IP ORIGINAL CONFIG
+   ============================================================ */
+
+const SITE_CONFIG = {
+    name: "MAS-IP",
+    description: "Tempat berkumpul dan Sharing.",
+
+    groups: [
+        {
+            name: "Komunitas MAS-IP",
+            description: "Tempat ngobrol bersama dan Have Fun.",
+            members: "70 Members",
+            icon: "👥",
+            link: "https://chat.whatsapp.com/JS6l9Ru0Lls2rSmSGxBQ4E?s=cl&p=a&ilr=4"
+        },
+        {
+            name: "MAS-IP Programming",
+            description: "Belajar programming.",
+            members: "0  Members",
+            icon: "💻",
+            link: "https://chat.whatsapp.com/KpoMVhBGGsA2nRd8d1od4n"
+        }
+    ],
+
+    channels: [
+        {
+            name: "MAS-IP Official",
+            description: "Informasi resmi MAS-IP.",
+            followers: "0 Followers",
+            icon: "📢",
+            link: "https://whatsapp.com/channel/0029VbCH7xYAu3aFuRqPiI1O"
+        }
+    ],
+
+    social: [
+        {
+            name: "Instagram",
+            username: "nurahman_021",
+            description: "Follow Instagram MAS-IP.",
+            icon: "📸",
+            link: "https://www.instagram.com/nurhmn_021?igsh=MXVub3FqM2V5OGczdQ=="
+        },
+        {
+            name: "Facebook",
+            username: "@IpanII",
+            description: "Ikuti Facebook MAS-IP.",
+            icon: "👤",
+            link: "https://www.facebook.com/ipan.nur.395"
+        },
+        {
+            name: "TikTok",
+            username: "@ipan02163",
+            description: "Ikuti TikTok MAS-IP.",
+            icon: "🎵",
+            link: "https://www.tiktok.com/@ipan02163?_r=1&_t=ZS-98ij6uoXkHd"
+        },
+        {
+            name: "YouTube",
+            username: "Belom buat",
+            description: "Subscribe YouTube MAS-IP.",
+            icon: "▶️",
+            link: "https://youtube.com/"
+        },
+        {
+            name: "Telegram",
+            username: "Belom buat",
+            description: "Gabung Telegram MAS-IP.",
+            icon: "✈️",
+            link: "https://telegram.org/"
+        }
+    ]
+};
+
+
+/* ============================================================
+   MAS-IP PROTECTION LAYER
+   ============================================================
+
+   Catatan:
+   Protection ini bekerja di sisi client.
+   Tidak ada mekanisme JavaScript yang dapat membuat source
+   HTML benar-benar immutable setelah dikirim ke browser.
+
+   Fungsi layer:
+   - ownership marker
+   - hidden attribution
+   - watermark recovery
+   - basic tamper detection
+   - console attribution
+   - hostname awareness
+   ============================================================ */
+
+(function MASIP_PROTECTION() {
+
+    "use strict";
+
+    const OWNER = "MAS-IP";
+    const YEAR = "2026";
+    const SIGNATURE = "MAS-IP-ORIGINAL-2026";
+
+    /*
+     * Simpan signature pada object global dengan nama yang
+     * tidak mengganggu kode website utama.
+     */
+    Object.defineProperty(window, "__MASIP_OWNER__", {
+        value: SIGNATURE,
+        writable: false,
+        configurable: false,
+        enumerable: false
+    });
+
+    /*
+     * Console ownership notice.
+     */
+    try {
+        console.log(
+            "%c MAS-IP ",
+            "background:#4f7cff;color:white;font-weight:bold;padding:4px 8px;border-radius:4px;",
+            "Original Website © " + YEAR
+        );
+
+        console.log(
+            "%c Original ownership: " + OWNER,
+            "color:#4f7cff;font-weight:bold;"
+        );
+    } catch (e) {}
+
+    /*
+     * Pastikan hidden ownership marker tetap tersedia.
+     */
+    function verifyOwnershipMarker() {
+
+        const marker = document.getElementById("masip-ownership");
+
+        if (!marker) {
+            createOwnershipMarker();
+            return false;
+        }
+
+        if (
+            marker.dataset.owner !== OWNER ||
+            marker.dataset.original !== "true" ||
+            marker.dataset.copyright !== YEAR
+        ) {
+            restoreOwnershipMarker();
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+     * Membuat ulang marker apabila dihapus.
+     */
+    function createOwnershipMarker() {
+
+        const marker = document.createElement("div");
+
+        marker.id = "masip-ownership";
+
+        marker.dataset.owner = OWNER;
+        marker.dataset.original = "true";
+        marker.dataset.copyright = YEAR;
+        marker.dataset.license = SIGNATURE;
+
+        marker.hidden = true;
+
+        document.body.appendChild(marker);
+    }
+
+    function restoreOwnershipMarker() {
+
+        const oldMarker = document.getElementById("masip-ownership");
+
+        if (oldMarker) {
+            oldMarker.remove();
+        }
+
+        createOwnershipMarker();
+    }
+
+    /*
+     * Watermark recovery.
+     */
+    function verifyWatermark() {
+
+        let watermark =
+            document.querySelector(".masip-watermark");
+
+        if (!watermark) {
+
+            watermark = document.createElement("div");
+
+            watermark.className = "masip-watermark";
+            watermark.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            watermark.textContent =
+                OWNER + " • ORIGINAL";
+
+            Object.assign(watermark.style, {
+                position: "fixed",
+                right: "12px",
+                bottom: "10px",
+                zIndex: "999999",
+                padding: "6px 10px",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "7px",
+                background: "rgba(11,13,18,0.82)",
+                color: "rgba(255,255,255,0.38)",
+                fontSize: "10px",
+                letterSpacing: "0.8px",
+                pointerEvents: "none",
+                userSelect: "none",
+                opacity: "0.65"
+            });
+
+            document.body.appendChild(watermark);
+        }
+
+        return true;
+    }
+
+    /*
+     * Basic hostname awareness.
+     *
+     * Tidak memblokir website pada domain lain karena hal tersebut
+     * akan membuat source sulit dipakai bahkan untuk deployment
+     * yang sah.
+     */
+    function hostnameCheck() {
+
+        const hostname =
+            String(location.hostname || "").toLowerCase();
+
+        /*
+         * Marker internal untuk deployment.
+         */
+        document.documentElement.setAttribute(
+            "data-masip-owner",
+            OWNER
+        );
+
+        document.documentElement.setAttribute(
+            "data-masip-original",
+            SIGNATURE
+        );
+
+        /*
+         * Simpan hostname yang sedang menjalankan website.
+         * Ini berguna untuk audit sederhana.
+         */
+        try {
+            Object.defineProperty(window, "__MASIP_HOST__", {
+                value: hostname,
+                writable: false,
+                configurable: false,
+                enumerable: false
+            });
+        } catch (e) {}
+    }
+
+    /*
+     * Observer mendeteksi penghapusan elemen attribution.
+     */
+    function startProtectionObserver() {
+
+        if (!window.MutationObserver) {
+            return;
+        }
+
+        const observer = new MutationObserver(function () {
+
+            verifyOwnershipMarker();
+            verifyWatermark();
+
+        });
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: [
+                "id",
+                "class",
+                "hidden",
+                "data-owner",
+                "data-original",
+                "data-copyright"
+            ]
+        });
+    }
+
+    /*
+     * Freeze metadata protection.
+     */
+    function lockMetadata() {
+
+        try {
+
+            const meta = {
+                owner: OWNER,
+                year: YEAR,
+                signature: SIGNATURE
+            };
+
+            Object.freeze(meta);
+
+            Object.defineProperty(window, "__MASIP_META__", {
+                value: meta,
+                writable: false,
+                configurable: false,
+                enumerable: false
+            });
+
+        } catch (e) {}
+    }
+
+    /*
+     * Basic tamper marker.
+     */
+    function tamperHeartbeat() {
+
+        const root = document.documentElement;
+
+        if (
+            root.getAttribute("data-masip-owner") !== OWNER ||
+            root.getAttribute("data-masip-original") !== SIGNATURE
+        ) {
+
+            root.setAttribute(
+                "data-masip-owner",
+                OWNER
+            );
+
+            root.setAttribute(
+                "data-masip-original",
+                SIGNATURE
+            );
+
+            console.warn(
+                "MAS-IP protection: ownership marker was modified."
+            );
+        }
+    }
+
+    /*
+     * Jalankan protection.
+     */
+    function initProtection() {
+
+        hostnameCheck();
+        lockMetadata();
+        verifyOwnershipMarker();
+        verifyWatermark();
+        startProtectionObserver();
+
+        setInterval(
+            tamperHeartbeat,
+            3000
+        );
+    }
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initProtection,
+            { once: true }
+        );
+
+    } else {
+
+        initProtection();
+
+    }
+
+})();
+
+
+/* ============================================================
+   MAS-IP WEBSITE SCRIPT
+   Versi single-file untuk GitHub Pages
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Set nama website
+    document.querySelectorAll("[data-site-name]").forEach(function (element) {
+        element.textContent = SITE_CONFIG.name;
+    });
+
+    // Render groups
+    const groupContainer = document.getElementById("group-list");
+
+    SITE_CONFIG.groups.forEach(function (group) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.dataset.search = (
+            group.name + " " +
+            group.description + " " +
+            group.members
+        ).toLowerCase();
+
+        card.innerHTML = `
+            <div class="card-icon">${group.icon}</div>
+            <div class="card-content">
+                <h3>${group.name}</h3>
+                <p>${group.description}</p>
+                <span class="info">${group.members}</span>
+            </div>
+            <a href="${group.link}" target="_blank" rel="noopener noreferrer" class="card-button">
+                Gabung
+            </a>
+        `;
+
+        groupContainer.appendChild(card);
+    });
+
+    // Render channels
+    const channelContainer = document.getElementById("channel-list");
+
+    SITE_CONFIG.channels.forEach(function (channel) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.dataset.search = (
+            channel.name + " " +
+            channel.description + " " +
+            channel.followers
+        ).toLowerCase();
+
+        card.innerHTML = `
+            <div class="card-icon">${channel.icon}</div>
+            <div class="card-content">
+                <h3>${channel.name}</h3>
+                <p>${channel.description}</p>
+                <span class="info">${channel.followers}</span>
+            </div>
+            <a href="${channel.link}" target="_blank" rel="noopener noreferrer" class="card-button">
+                Ikuti
+            </a>
+        `;
+
+        channelContainer.appendChild(card);
+    });
+
+    // Render social media
+    const socialContainer = document.getElementById("social-list");
+
+    SITE_CONFIG.social.forEach(function (social) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <div class="card-icon">${social.icon}</div>
+            <div class="card-content">
+                <h3>${social.name}</h3>
+                <strong>${social.username}</strong>
+                <p>${social.description}</p>
+            </div>
+            <a href="${social.link}" target="_blank" rel="noopener noreferrer" class="card-button">
+                Buka
+            </a>
+        `;
+
+        socialContainer.appendChild(card);
+    });
+
+    // Search
+    function setupSearch(inputId, containerId) {
+
+        const input =
+            document.getElementById(inputId);
+
+        const container =
+            document.getElementById(containerId);
+
+        if (!input || !container) return;
+
+        input.addEventListener(
+            "input",
+            function () {
+
+                const keyword =
+                    input.value
+                        .toLowerCase()
+                        .trim();
+
+                container
+                    .querySelectorAll(".card")
+                    .forEach(function (card) {
+
+                        card.style.display =
+                            !keyword ||
+                            card.dataset.search.includes(keyword)
+                                ? ""
+                                : "none";
+
+                    });
+            }
+        );
+    }
+
+    setupSearch(
+        "group-search",
+        "group-list"
+    );
+
+    setupSearch(
+        "channel-search",
+        "channel-list"
+    );
+
+    // Mobile menu
+    const menuButton =
+        document.getElementById("menu-button");
+
+    const nav =
+        document.getElementById("nav");
+
+    if (menuButton && nav) {
+
+        menuButton.addEventListener(
+            "click",
+            function () {
+
+                nav.classList.toggle("show");
+
+            }
+        );
+
+        nav.querySelectorAll("a").forEach(
+            function (link) {
+
+                link.addEventListener(
+                    "click",
+                    function () {
+
+                        nav.classList.remove("show");
+
+                    }
+                );
+
+            }
+        );
+    }
+
+    // Single-page routing
+    function showPage() {
+
+        let route =
+            location.hash.replace("#", "") ||
+            "home";
+
+        if (
+            ![
+                "home",
+                "grup",
+                "saluran",
+                "sosmed",
+                "about"
+            ].includes(route)
+        ) {
+
+            route = "home";
+
+        }
+
+        document
+            .querySelectorAll(".page")
+            .forEach(function (page) {
+
+                page.hidden =
+                    page.id !== "page-" + route;
+
+            });
+
+        document
+            .querySelectorAll("[data-route]")
+            .forEach(function (link) {
+
+                link.classList.toggle(
+                    "active",
+                    link.dataset.route === route
+                );
+
+            });
+
+        window.scrollTo(0, 0);
+    }
+
+    window.addEventListener(
+        "hashchange",
+        showPage
+    );
+
+    showPage();
+
+});
+</script>
+
+</body>
+</html>
