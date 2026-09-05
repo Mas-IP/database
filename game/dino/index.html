@@ -3,934 +3,1680 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dino Runner</title>
-
+    <title>Dino Runner - Leaderboard Edition</title>
     <style>
+        :root {
+            --bg: #1a1a2e;
+            --panel: #16213e;
+            --card: #0f3460;
+            --accent: #e94560;
+            --accent2: #ff6b6b;
+            --text: #eee;
+            --text2: #aaa;
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --gold: #f39c12;
+            --silver: #bdc3c7;
+            --bronze: #cd7f32;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --radius: 16px;
+            --btn-radius: 10px;
+            --transition: 0.25s ease;
+        }
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
         }
 
-        html, body {
-            margin: 0;
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: #f7f7f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 20% 50%, #1a1a3e 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, #1e2a4a 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, #0d1b2a 0%, transparent 60%);
+            color: var(--text);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            touch-action: manipulation;
+            padding: 12px;
         }
 
-        #game {
+        /* ===== MAIN CONTAINER ===== */
+        #app {
+            width: min(880px, 100%);
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== HEADER ===== */
+        #header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel);
+            border-radius: var(--radius);
+            padding: 10px 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+        #header .logo {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        #header .logo span {
+            color: var(--accent);
+        }
+        #header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        #header .user-info .badge {
+            background: var(--card);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: var(--accent2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        #header .user-info .badge:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        #header .user-info .logout-btn {
+            background: transparent;
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        #header .user-info .logout-btn:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* ===== SCREENS ===== */
+        .screen {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== AUTH SCREEN ===== */
+        #authScreen .auth-card {
+            background: var(--panel);
+            border-radius: var(--radius);
+            padding: 30px 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: center;
+        }
+        #authScreen .auth-card h2 {
+            font-size: 26px;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+        #authScreen .auth-card .sub {
+            color: var(--text2);
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+        #authScreen .auth-card input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--btn-radius);
+            border: 2px solid #2a3a5a;
+            background: #1a1a35;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition);
+            margin-bottom: 12px;
+        }
+        #authScreen .auth-card input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+        }
+        #authScreen .auth-card input::placeholder {
+            color: #667;
+        }
+        .btn {
+            padding: 12px 20px;
+            border-radius: var(--btn-radius);
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+            width: 100%;
+            text-align: center;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(233, 69, 96, 0.35);
+        }
+        .btn-primary:hover {
+            background: #d63851;
+            box-shadow: 0 6px 22px rgba(233, 69, 96, 0.5);
+        }
+        .btn-secondary {
+            background: var(--card);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .btn-secondary:hover {
+            background: #1a4a7a;
+        }
+        .btn-admin {
+            background: transparent;
+            color: var(--text2);
+            border: 1px dashed #445;
+            font-size: 12px;
+            padding: 8px;
+            margin-top: 6px;
+        }
+        .btn-admin:hover {
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+        .auth-toggle {
+            font-size: 13px;
+            color: var(--text2);
+            margin-top: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .auth-toggle:hover {
+            color: var(--accent2);
+        }
+
+        /* ===== MENU SCREEN ===== */
+        #menuScreen .menu-card {
+            background: var(--panel);
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        #menuScreen .menu-card h3 {
+            font-size: 18px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #menuScreen .menu-card .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #menuScreen .menu-card .btn-row .btn {
+            flex: 1;
+            min-width: 120px;
+            width: auto;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .leaderboard-table th {
+            text-align: left;
+            padding: 8px 10px;
+            background: #0a0a1a;
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        .leaderboard-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #ccc;
+        }
+        .leaderboard-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .rank-1 {
+            color: var(--gold) !important;
+            font-weight: 700;
+        }
+        .rank-2 {
+            color: var(--silver) !important;
+            font-weight: 700;
+        }
+        .rank-3 {
+            color: var(--bronze) !important;
+            font-weight: 700;
+        }
+        .rank-me {
+            background: rgba(233, 69, 96, 0.15) !important;
+            font-weight: 700;
+            color: var(--accent2) !important;
+        }
+        .empty-msg {
+            text-align: center;
+            color: #556;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        /* ===== GAME SCREEN ===== */
+        #gameScreen {
+            gap: 8px;
+        }
+        #gameWrapper {
             position: relative;
-            width: min(100vw, 900px);
-            height: min(100vh, 500px);
-            overflow: hidden;
+            width: 100%;
+            max-width: 820px;
             background: #f7f7f7;
-            border: 2px solid #222;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 3px solid #222;
+            aspect-ratio: 820 / 400;
+            flex-shrink: 0;
         }
-
-        canvas {
+        #gameWrapper canvas {
             display: block;
             width: 100%;
             height: 100%;
         }
-
-        #ui {
+        #gameHUD {
             position: absolute;
-            top: 15px;
-            left: 20px;
-            right: 20px;
+            top: 12px;
+            left: 16px;
+            right: 16px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
-            font-weight: bold;
-            font-size: 18px;
+            font-weight: 700;
+            font-size: 15px;
             color: #222;
+            z-index: 5;
         }
-
-        #startScreen,
-        #gameOverScreen {
+        #gameOverlay {
             position: absolute;
             inset: 0;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(247, 247, 247, 0.88);
+            background: rgba(247, 247, 247, 0.92);
             text-align: center;
+            z-index: 10;
+            padding: 16px;
         }
-
-        #gameOverScreen {
-            display: none;
+        #gameOverlay.active {
+            display: flex;
         }
-
-        h1 {
-            margin: 0 0 10px;
-            font-size: 42px;
+        #gameOverlay h2 {
+            font-size: 32px;
+            color: #222;
+            margin-bottom: 6px;
         }
-
-        p {
-            margin: 6px 0 20px;
-            font-size: 17px;
+        #gameOverlay .final-score {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 4px;
         }
-
-        button {
-            border: 2px solid #222;
-            background: #222;
-            color: white;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
+        #gameOverlay .final-score strong {
+            color: var(--accent);
+            font-size: 28px;
         }
-
-        button:active {
-            transform: scale(0.96);
-        }
-
-        .hint {
-            margin-top: 15px;
+        #gameOverlay .highscore-msg {
             font-size: 14px;
-            opacity: 0.7;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+        #gameOverlay .btn {
+            max-width: 220px;
+            margin-bottom: 6px;
+        }
+        .btn-green {
+            background: var(--green);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(46, 204, 113, 0.35);
+        }
+        .btn-green:hover {
+            background: #27ae60;
         }
 
-        @media (max-width: 600px) {
-            #game {
-                width: 100vw;
-                height: 100vh;
-                border: none;
-            }
+        /* ===== ADMIN SCREEN ===== */
+        #adminScreen .admin-card {
+            background: var(--panel);
+            border-radius: var(--radius);
+            padding: 24px 22px;
+            width: 100%;
+            max-width: 750px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        #adminScreen .admin-card h3 {
+            font-size: 18px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #adminScreen .admin-card .input-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        #adminScreen .admin-card input,
+        #adminScreen .admin-card select {
+            padding: 10px 14px;
+            border-radius: var(--btn-radius);
+            border: 2px solid #2a3a5a;
+            background: #1a1a35;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 100px;
+        }
+        #adminScreen .admin-card input:focus,
+        #adminScreen .admin-card select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+        }
+        #adminScreen .admin-card label {
+            font-size: 12px;
+            color: var(--text2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .admin-user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .admin-user-table th {
+            text-align: left;
+            padding: 7px 8px;
+            background: #0a0a1a;
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        .admin-user-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #ccc;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .admin-user-table .action-btn {
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #445;
+            background: transparent;
+            color: var(--text2);
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 4px;
+        }
+        .admin-user-table .action-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent2);
+        }
+        .admin-user-table .action-btn.danger:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+        .back-btn {
+            background: transparent;
+            border: 1px solid #445;
+            color: var(--text2);
+            padding: 8px 16px;
+            border-radius: var(--btn-radius);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: flex-start;
+        }
+        .back-btn:hover {
+            border-color: #888;
+            color: #fff;
+        }
 
-            h1 {
-                font-size: 34px;
+        /* ===== TOAST ===== */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #222;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 999;
+            pointer-events: none;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            body {
+                padding: 6px;
+            }
+            #app {
+                gap: 6px;
+            }
+            #header {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+            #header .logo {
+                font-size: 16px;
+            }
+            #header .user-info .badge {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+            #gameWrapper {
+                border-radius: 10px;
+                border-width: 2px;
+                aspect-ratio: auto;
+                height: min(45vh, 280px);
+            }
+            #gameHUD {
+                font-size: 12px;
+                top: 8px;
+                left: 10px;
+                right: 10px;
+            }
+            #gameOverlay h2 {
+                font-size: 24px;
+            }
+            #gameOverlay .final-score strong {
+                font-size: 22px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            #authScreen .auth-card {
+                padding: 20px 16px;
+            }
+            #menuScreen .menu-card {
+                padding: 16px 14px;
+                gap: 10px;
+            }
+            #adminScreen .admin-card {
+                padding: 16px 14px;
+                gap: 10px;
+            }
+            .leaderboard-table td,
+            .leaderboard-table th {
+                padding: 5px 6px;
+                font-size: 11px;
+            }
+            .admin-user-table td,
+            .admin-user-table th {
+                padding: 5px 6px;
+                font-size: 10px;
+            }
+        }
+        @media (max-width: 400px) {
+            #gameWrapper {
+                height: min(38vh, 220px);
+            }
+            #header .user-info {
+                gap: 6px;
+            }
+            #header .user-info .badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            #header .user-info .logout-btn {
+                padding: 4px 10px;
+                font-size: 10px;
             }
         }
     </style>
 </head>
-
 <body>
 
-<div id="game">
+    <div id="app">
+        <!-- HEADER -->
+        <div id="header">
+            <div class="logo">🦖 DINO<span>RUNNER</span></div>
+            <div class="user-info" id="headerUserInfo" style="display:none;">
+                <span class="badge" id="headerUsername">👤 </span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
 
-    <canvas id="canvas"></canvas>
+        <!-- AUTH SCREEN -->
+        <div class="screen active" id="authScreen">
+            <div class="auth-card">
+                <h2 id="authTitle">🔐 Login</h2>
+                <div class="sub" id="authSub">Masuk untuk bermain dan simpan skor</div>
+                <input type="text" id="authUsername" placeholder="Nama pengguna" maxlength="20" autocomplete="off">
+                <input type="password" id="authPassword" placeholder="Kata sandi" maxlength="30" autocomplete="off">
+                <button class="btn btn-primary" id="authSubmitBtn">Login</button>
+                <div class="auth-toggle" id="authToggle">Belum punya akun? <strong>Daftar</strong></div>
+                <button class="btn btn-admin" id="adminAccessBtn">🔑 Akses Admin</button>
+            </div>
+        </div>
 
-    <div id="ui">
-        <span>🏃 DINO</span>
-        <span>Score: <span id="score">0</span></span>
-    </div>
+        <!-- MENU SCREEN -->
+        <div class="screen" id="menuScreen">
+            <div class="menu-card">
+                <h3>🏆 Leaderboard</h3>
+                <div id="leaderboardContainer"></div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="playBtn">🎮 MAIN</button>
+                    <button class="btn btn-secondary" id="menuAdminBtn">🔑 Admin Panel</button>
+                </div>
+            </div>
+        </div>
 
-    <div id="startScreen">
-        <h1>🦖 Dino Runner</h1>
-        <p>Lompat dan hindari semua kaktus!</p>
-        <button id="startButton">MAIN</button>
-        <div class="hint">
-            Tap layar atau tekan SPACE untuk lompat
+        <!-- GAME SCREEN -->
+        <div class="screen" id="gameScreen">
+            <div id="gameWrapper">
+                <canvas id="canvas"></canvas>
+                <div id="gameHUD">
+                    <span>🦖 DINO</span>
+                    <span>Score: <span id="score">0</span></span>
+                </div>
+                <div id="gameOverlay">
+                    <h2>💥 GAME OVER</h2>
+                    <div class="final-score">Skor: <strong id="finalScore">0</strong></div>
+                    <div class="highscore-msg" id="highscoreMsg"></div>
+                    <button class="btn btn-primary" id="retryBtn">🔄 MAIN LAGI</button>
+                    <button class="btn btn-secondary" id="menuBtn">🏠 MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN SCREEN -->
+        <div class="screen" id="adminScreen">
+            <div class="admin-card" id="adminCard">
+                <!-- Filled dynamically -->
+            </div>
         </div>
     </div>
 
-    <div id="gameOverScreen">
-        <h1>GAME OVER</h1>
-        <p>Score kamu: <strong id="finalScore">0</strong></p>
-        <button id="restartButton">MAIN LAGI</button>
-        <div class="hint">
-            Tap layar atau tekan SPACE
-        </div>
-    </div>
-
-</div>
-
-<script>
-"use strict";
-
-/* =========================================
-   CANVAS
-========================================= */
-
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-const gameElement = document.getElementById("game");
-
-const scoreElement = document.getElementById("score");
-const finalScoreElement = document.getElementById("finalScore");
-
-const startScreen = document.getElementById("startScreen");
-const gameOverScreen = document.getElementById("gameOverScreen");
-
-const startButton = document.getElementById("startButton");
-const restartButton = document.getElementById("restartButton");
-
-
-/* =========================================
-   UKURAN CANVAS
-========================================= */
-
-let width = 900;
-let height = 500;
-
-function resizeCanvas() {
-    const rect = gameElement.getBoundingClientRect();
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    width = rect.width;
-    height = rect.height;
-
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-
-/* =========================================
-   GAME STATE
-========================================= */
-
-let running = false;
-let gameOver = false;
-
-let score = 0;
-let speed = 6;
-
-let lastTime = 0;
-
-let obstacleTimer = 0;
-let nextObstacle = 1000;
-
-
-/* =========================================
-   GROUND
-========================================= */
-
-const groundHeight = 80;
-
-function getGroundY() {
-    return height - groundHeight;
-}
-
-
-/* =========================================
-   DINO
-========================================= */
-
-const dino = {
-    x: 80,
-    y: 0,
-    width: 55,
-    height: 65,
-
-    velocityY: 0,
-
-    gravity: 0.9,
-    jumpPower: -17,
-
-    grounded: true
-};
-
-function resetDino() {
-    dino.x = Math.max(40, width * 0.1);
-    dino.y = getGroundY() - dino.height;
-
-    dino.velocityY = 0;
-    dino.grounded = true;
-}
-
-
-/* =========================================
-   OBSTACLES
-========================================= */
-
-let obstacles = [];
-
-function createObstacle() {
-
-    const small = Math.random() < 0.75;
-
-    const obstacle = {
-        x: width + 40,
-
-        width: small ? 28 : 45,
-        height: small ? 45 : 65,
-
-        speedMultiplier: 1
-    };
-
-    obstacle.y = getGroundY() - obstacle.height;
-
-    obstacles.push(obstacle);
-}
-
-
-/* =========================================
-   CLOUDS
-========================================= */
-
-let clouds = [];
-
-function createClouds() {
-
-    clouds = [];
-
-    for (let i = 0; i < 5; i++) {
-
-        clouds.push({
-            x: Math.random() * width,
-            y: 50 + Math.random() * 100,
-            width: 60 + Math.random() * 60,
-            speed: 0.5 + Math.random() * 0.5
-        });
-
-    }
-}
-
-createClouds();
-
-
-/* =========================================
-   RESET GAME
-========================================= */
-
-function resetGame() {
-
-    score = 0;
-    speed = 6;
-
-    obstacleTimer = 0;
-    nextObstacle = 1000;
-
-    obstacles = [];
-
-    running = true;
-    gameOver = false;
-
-    scoreElement.textContent = "0";
-
-    resetDino();
-
-    startScreen.style.display = "none";
-    gameOverScreen.style.display = "none";
-
-    lastTime = performance.now();
-
-    requestAnimationFrame(gameLoop);
-}
-
-
-/* =========================================
-   JUMP
-========================================= */
-
-function jump() {
-
-    if (!running || gameOver) {
-        return;
-    }
-
-    if (dino.grounded) {
-
-        dino.velocityY = dino.jumpPower;
-        dino.grounded = false;
-
-    }
-}
-
-
-/* =========================================
-   INPUT
-========================================= */
-
-startButton.addEventListener("click", function(e) {
-    e.stopPropagation();
-    resetGame();
-});
-
-restartButton.addEventListener("click", function(e) {
-    e.stopPropagation();
-    resetGame();
-});
-
-document.addEventListener("keydown", function(e) {
-
-    if (
-        e.code === "Space" ||
-        e.code === "ArrowUp"
-    ) {
-
-        e.preventDefault();
-
-        if (!running || gameOver) {
-            resetGame();
-        } else {
-            jump();
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script>
+        "use strict";
+
+        /* =====================================================
+           SOUND ENGINE (Web Audio API)
+        ===================================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(() => {});
+            }
+            return audioCtx;
         }
 
-    }
-
-});
-
-canvas.addEventListener("pointerdown", function(e) {
-
-    e.preventDefault();
-
-    if (!running || gameOver) {
-        resetGame();
-    } else {
-        jump();
-    }
-
-});
-
-
-/* =========================================
-   UPDATE DINO
-========================================= */
-
-function updateDino(delta) {
-
-    dino.velocityY += dino.gravity * delta;
-
-    dino.y += dino.velocityY * delta;
-
-    const groundY = getGroundY();
-
-    if (dino.y + dino.height >= groundY) {
-
-        dino.y = groundY - dino.height;
-
-        dino.velocityY = 0;
-
-        dino.grounded = true;
-
-    }
-
-}
-
-
-/* =========================================
-   UPDATE OBSTACLES
-========================================= */
-
-function updateObstacles(delta) {
-
-    obstacleTimer += delta * 16.67;
-
-    if (obstacleTimer >= nextObstacle) {
-
-        createObstacle();
-
-        obstacleTimer = 0;
-
-        nextObstacle =
-            800 +
-            Math.random() * 1000 -
-            Math.min(score * 2, 300);
-
-    }
-
-    for (const obstacle of obstacles) {
-
-        obstacle.x -=
-            speed *
-            obstacle.speedMultiplier *
-            delta;
-
-    }
-
-    obstacles =
-        obstacles.filter(
-            obstacle =>
-                obstacle.x + obstacle.width > -50
-        );
-
-}
-
-
-/* =========================================
-   UPDATE CLOUDS
-========================================= */
-
-function updateClouds(delta) {
-
-    for (const cloud of clouds) {
-
-        cloud.x -= cloud.speed * delta;
-
-        if (cloud.x + cloud.width < 0) {
-
-            cloud.x = width + Math.random() * 100;
-
-            cloud.y =
-                40 +
-                Math.random() * 100;
-
+        function playTone(freq, duration, type = 'square', vol = 0.12, freqEnd = null) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                if (freqEnd) {
+                    osc.frequency.exponentialRampToValueAtTime(freqEnd, ctx.currentTime + duration);
+                }
+                gain.gain.setValueAtTime(vol, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + duration + 0.02);
+            } catch (e) { /* silent fail */ }
         }
 
-    }
+        function playJumpSound() {
+            playTone(250, 0.12, 'square', 0.1, 520);
+            playTone(180, 0.08, 'triangle', 0.08, 400);
+        }
 
-}
+        function playCollisionSound() {
+            playTone(200, 0.18, 'sawtooth', 0.14, 60);
+            playTone(150, 0.2, 'square', 0.1, 40);
+            playTone(100, 0.25, 'triangle', 0.12, 30);
+        }
 
+        function playGameOverSound() {
+            playTone(400, 0.15, 'square', 0.1, 300);
+            setTimeout(() => playTone(300, 0.15, 'square', 0.1, 200), 150);
+            setTimeout(() => playTone(200, 0.25, 'sawtooth', 0.12, 80), 300);
+            setTimeout(() => playTone(120, 0.4, 'triangle', 0.14, 50), 500);
+        }
 
-/* =========================================
-   COLLISION
-========================================= */
+        function playScoreMilestoneSound() {
+            playTone(600, 0.06, 'sine', 0.06, 900);
+            playTone(800, 0.05, 'sine', 0.05, 1200);
+        }
 
-function checkCollision() {
+        function playClickSound() {
+            playTone(500, 0.04, 'sine', 0.05, 700);
+        }
 
-    const paddingX = 10;
-    const paddingY = 8;
+        function playLoginSound() {
+            playTone(300, 0.1, 'sine', 0.08, 600);
+            setTimeout(() => playTone(500, 0.12, 'sine', 0.08, 800), 100);
+        }
 
-    const dinoBox = {
-        x: dino.x + paddingX,
-        y: dino.y + paddingY,
-        width: dino.width - paddingX * 2,
-        height: dino.height - paddingY * 2
-    };
+        function playErrorSound() {
+            playTone(200, 0.2, 'square', 0.1, 100);
+            playTone(150, 0.25, 'square', 0.08, 80);
+        }
 
-    for (const obstacle of obstacles) {
+        /* =====================================================
+           DATA STORAGE
+        ===================================================== */
+        const USERS_KEY = 'dino_users';
+        const ADMIN_PASS_KEY = 'dino_admin_pass';
+        const CURRENT_USER_KEY = 'dino_current_user';
+        const DEFAULT_ADMIN_PASS = 'admin@ipan21';
 
-        const obstacleBox = {
-            x: obstacle.x + 5,
-            y: obstacle.y + 5,
-            width: obstacle.width - 10,
-            height: obstacle.height - 5
+        function getUsers() {
+            try {
+                return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+            } catch { return []; }
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        }
+
+        function getAdminPassword() {
+            return localStorage.getItem(ADMIN_PASS_KEY) || DEFAULT_ADMIN_PASS;
+        }
+
+        function setAdminPassword(newPass) {
+            localStorage.setItem(ADMIN_PASS_KEY, newPass);
+        }
+
+        function getCurrentUser() {
+            return localStorage.getItem(CURRENT_USER_KEY);
+        }
+
+        function setCurrentUser(username) {
+            if (username) {
+                localStorage.setItem(CURRENT_USER_KEY, username);
+            } else {
+                localStorage.removeItem(CURRENT_USER_KEY);
+            }
+        }
+
+        function findUser(username) {
+            const users = getUsers();
+            return users.find(u => u.username.toLowerCase() === username.toLowerCase());
+        }
+
+        function addUser(username, password) {
+            const users = getUsers();
+            if (findUser(username)) return false;
+            users.push({ username: username.trim(), password: password, highScore: 0, lastScore: 0 });
+            saveUsers(users);
+            return true;
+        }
+
+        function updateUserHighScore(username, newScore) {
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+            if (idx === -1) return;
+            users[idx].lastScore = newScore;
+            if (newScore > users[idx].highScore) {
+                users[idx].highScore = newScore;
+            }
+            saveUsers(users);
+        }
+
+        function updateUserPassword(username, newPassword) {
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+            if (idx === -1) return false;
+            users[idx].password = newPassword;
+            saveUsers(users);
+            return true;
+        }
+
+        function updateUserScoreByAdmin(username, newScore) {
+            const users = getUsers();
+            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+            if (idx === -1) return false;
+            users[idx].highScore = parseInt(newScore) || 0;
+            saveUsers(users);
+            return true;
+        }
+
+        function deleteUser(username) {
+            let users = getUsers();
+            users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+            saveUsers(users);
+            if (getCurrentUser() && getCurrentUser().toLowerCase() === username.toLowerCase()) {
+                setCurrentUser(null);
+            }
+        }
+
+        function getLeaderboard() {
+            const users = getUsers();
+            return users
+                .filter(u => u.highScore > 0)
+                .sort((a, b) => b.highScore - a.highScore)
+                .slice(0, 15);
+        }
+
+        function getUserRank(username) {
+            const users = getUsers().filter(u => u.highScore > 0).sort((a, b) => b.highScore - a.highScore);
+            const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+            return idx === -1 ? null : idx + 1;
+        }
+
+        /* =====================================================
+           TOAST
+        ===================================================== */
+        let toastTimeout = null;
+
+        function showToast(message, duration = 2200) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        /* =====================================================
+           UI HELPERS
+        ===================================================== */
+        const screens = {
+            auth: document.getElementById('authScreen'),
+            menu: document.getElementById('menuScreen'),
+            game: document.getElementById('gameScreen'),
+            admin: document.getElementById('adminScreen'),
         };
 
-        if (
-            dinoBox.x <
-                obstacleBox.x + obstacleBox.width &&
-
-            dinoBox.x + dinoBox.width >
-                obstacleBox.x &&
-
-            dinoBox.y <
-                obstacleBox.y + obstacleBox.height &&
-
-            dinoBox.y + dinoBox.height >
-                obstacleBox.y
-        ) {
-
-            endGame();
-            return;
-
+        function showScreen(name) {
+            Object.keys(screens).forEach(key => {
+                screens[key].classList.toggle('active', key === name);
+            });
+            if (name === 'menu') {
+                renderLeaderboard();
+            }
+            if (name === 'admin') {
+                renderAdminPanel();
+            }
+            if (name === 'game') {
+                // Game screen shown when starting
+            }
         }
 
-    }
-
-}
-
-
-/* =========================================
-   SCORE
-========================================= */
-
-function updateScore(delta) {
-
-    score += delta * 0.15;
-
-    const currentScore =
-        Math.floor(score);
-
-    scoreElement.textContent =
-        currentScore;
-
-    speed =
-        6 +
-        Math.min(currentScore / 100, 7);
-
-}
-
-
-/* =========================================
-   GAME OVER
-========================================= */
-
-function endGame() {
-
-    running = false;
-    gameOver = true;
-
-    const finalScore =
-        Math.floor(score);
-
-    finalScoreElement.textContent =
-        finalScore;
-
-    gameOverScreen.style.display =
-        "flex";
-
-}
-
-
-/* =========================================
-   DRAW BACKGROUND
-========================================= */
-
-function drawBackground() {
-
-    ctx.fillStyle = "#f7f7f7";
-
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-}
-
-
-/* =========================================
-   DRAW CLOUD
-========================================= */
-
-function drawCloud(cloud) {
-
-    ctx.fillStyle = "#dcdcdc";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cloud.x + 20,
-        cloud.y + 20,
-        18,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.arc(
-        cloud.x + 42,
-        cloud.y + 12,
-        25,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.arc(
-        cloud.x + 70,
-        cloud.y + 20,
-        18,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-}
-
-
-/* =========================================
-   DRAW GROUND
-========================================= */
-
-function drawGround() {
-
-    const groundY =
-        getGroundY();
-
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        0,
-        groundY
-    );
-
-    ctx.lineTo(
-        width,
-        groundY
-    );
-
-    ctx.stroke();
-
-    // garis kecil tanah
-
-    ctx.strokeStyle = "#777";
-    ctx.lineWidth = 1;
-
-    const offset =
-        (performance.now() / 10 * speed) % 50;
-
-    for (
-        let x = -50 + offset;
-        x < width;
-        x += 50
-    ) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            x,
-            groundY + 20
-        );
-
-        ctx.lineTo(
-            x + 20,
-            groundY + 20
-        );
-
-        ctx.stroke();
-
-    }
-
-}
-
-
-/* =========================================
-   DRAW DINO
-========================================= */
-
-function drawDino() {
-
-    const x = dino.x;
-    const y = dino.y;
-
-    ctx.fillStyle = "#222";
-
-    // badan
-
-    ctx.fillRect(
-        x + 10,
-        y + 20,
-        35,
-        35
-    );
-
-    // kepala
-
-    ctx.fillRect(
-        x + 28,
-        y,
-        30,
-        32
-    );
-
-    // moncong
-
-    ctx.fillRect(
-        x + 48,
-        y + 15,
-        15,
-        12
-    );
-
-    // kaki
-
-    const walking =
-        Math.floor(performance.now() / 100) % 2;
-
-    if (dino.grounded && walking === 0) {
-
-        ctx.fillRect(
-            x + 15,
-            y + 50,
-            9,
-            15
-        );
-
-        ctx.fillRect(
-            x + 35,
-            y + 50,
-            9,
-            10
-        );
-
-    } else {
-
-        ctx.fillRect(
-            x + 15,
-            y + 50,
-            9,
-            10
-        );
-
-        ctx.fillRect(
-            x + 35,
-            y + 50,
-            9,
-            15
-        );
-
-    }
-
-    // ekor
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x + 12,
-        y + 25
-    );
-
-    ctx.lineTo(
-        x - 10,
-        y + 35
-    );
-
-    ctx.lineTo(
-        x + 12,
-        y + 38
-    );
-
-    ctx.fill();
-
-    // mata
-
-    ctx.fillStyle = "#fff";
-
-    ctx.fillRect(
-        x + 45,
-        y + 7,
-        5,
-        5
-    );
-
-}
-
-
-/* =========================================
-   DRAW CACTUS
-========================================= */
-
-function drawObstacle(obstacle) {
-
-    const x = obstacle.x;
-    const y = obstacle.y;
-
-    ctx.fillStyle = "#287a35";
-
-    // batang
-
-    ctx.fillRect(
-        x + 10,
-        y,
-        obstacle.width - 20,
-        obstacle.height
-    );
-
-    // cabang kiri
-
-    if (obstacle.height > 50) {
-
-        ctx.fillRect(
-            x,
-            y + 20,
-            12,
-            25
-        );
-
-        ctx.fillRect(
-            x,
-            y + 20,
-            20,
-            10
-        );
-
-        // cabang kanan
-
-        ctx.fillRect(
-            x + obstacle.width - 12,
-            y + 30,
-            12,
-            25
-        );
-
-        ctx.fillRect(
-            x + obstacle.width - 20,
-            y + 30,
-            20,
-            10
-        );
-
-    }
-
-}
-
-
-/* =========================================
-   DRAW
-========================================= */
-
-function draw() {
-
-    drawBackground();
-
-    for (const cloud of clouds) {
-        drawCloud(cloud);
-    }
-
-    drawGround();
-
-    drawDino();
-
-    for (const obstacle of obstacles) {
-        drawObstacle(obstacle);
-    }
-
-}
-
-
-/* =========================================
-   GAME LOOP
-========================================= */
-
-function gameLoop(timestamp) {
-
-    if (!running) {
-        draw();
-        return;
-    }
-
-    let delta =
-        (timestamp - lastTime) / 16.67;
-
-    lastTime = timestamp;
-
-    // cegah lonjakan ketika tab pindah
-    delta = Math.min(delta, 2);
-
-    updateDino(delta);
-    updateObstacles(delta);
-    updateClouds(delta);
-
-    updateScore(delta);
-
-    checkCollision();
-
-    draw();
-
-    if (running) {
-        requestAnimationFrame(gameLoop);
-    }
-
-}
-
-
-/* =========================================
-   INITIAL DRAW
-========================================= */
-
-resetDino();
-draw();
-
-</script>
-
+        function updateHeader() {
+            const user = getCurrentUser();
+            const headerInfo = document.getElementById('headerUserInfo');
+            const headerUsername = document.getElementById('headerUsername');
+            if (user) {
+                headerInfo.style.display = 'flex';
+                const fullUser = findUser(user);
+                headerUsername.textContent = '👤 ' + user + (fullUser ? ' (🏆 ' + fullUser.highScore + ')' : '');
+            } else {
+                headerInfo.style.display = 'none';
+            }
+        }
+
+        /* =====================================================
+           AUTH LOGIC
+        ===================================================== */
+        let authMode = 'login'; // 'login' | 'register'
+        const authTitle = document.getElementById('authTitle');
+        const authSub = document.getElementById('authSub');
+        const authUsername = document.getElementById('authUsername');
+        const authPassword = document.getElementById('authPassword');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authToggle = document.getElementById('authToggle');
+        const authToggleStrong = authToggle.querySelector('strong');
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            if (mode === 'login') {
+                authTitle.textContent = '🔐 Login';
+                authSub.textContent = 'Masuk untuk bermain dan simpan skor';
+                authSubmitBtn.textContent = 'Login';
+                authToggle.innerHTML = 'Belum punya akun? <strong>Daftar</strong>';
+            } else {
+                authTitle.textContent = '📝 Daftar';
+                authSub.textContent = 'Buat akun baru untuk mulai bermain';
+                authSubmitBtn.textContent = 'Daftar';
+                authToggle.innerHTML = 'Sudah punya akun? <strong>Login</strong>';
+            }
+        }
+
+        authToggle.addEventListener('click', () => {
+            playClickSound();
+            setAuthMode(authMode === 'login' ? 'register' : 'login');
+        });
+
+        authSubmitBtn.addEventListener('click', () => {
+            playClickSound();
+            const username = authUsername.value.trim();
+            const password = authPassword.value;
+            if (!username || !password) {
+                playErrorSound();
+                showToast('⚠️ Nama dan sandi wajib diisi!');
+                return;
+            }
+            if (username.length < 2) {
+                playErrorSound();
+                showToast('⚠️ Nama minimal 2 karakter!');
+                return;
+            }
+            if (password.length < 3) {
+                playErrorSound();
+                showToast('⚠️ Sandi minimal 3 karakter!');
+                return;
+            }
+
+            if (authMode === 'register') {
+                if (findUser(username)) {
+                    playErrorSound();
+                    showToast('❌ Nama sudah digunakan!');
+                    return;
+                }
+                addUser(username, password);
+                setCurrentUser(username);
+                playLoginSound();
+                showToast('✅ Akun berhasil dibuat! Selamat datang, ' + username + '!');
+                updateHeader();
+                authUsername.value = '';
+                authPassword.value = '';
+                showScreen('menu');
+            } else {
+                const user = findUser(username);
+                if (!user || user.password !== password) {
+                    playErrorSound();
+                    showToast('❌ Nama atau sandi salah!');
+                    return;
+                }
+                setCurrentUser(username);
+                playLoginSound();
+                showToast('👋 Selamat datang, ' + username + '!');
+                updateHeader();
+                authUsername.value = '';
+                authPassword.value = '';
+                showScreen('menu');
+            }
+        });
+
+        authPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                authSubmitBtn.click();
+            }
+        });
+        authUsername.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                authPassword.focus();
+            }
+        });
+
+        /* =====================================================
+           LOGOUT
+        ===================================================== */
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            playClickSound();
+            setCurrentUser(null);
+            updateHeader();
+            showScreen('auth');
+            showToast('👋 Berhasil logout!');
+        });
+
+        /* =====================================================
+           ADMIN ACCESS FROM AUTH
+        ===================================================== */
+        document.getElementById('adminAccessBtn').addEventListener('click', () => {
+            playClickSound();
+            const pass = prompt('🔑 Masukkan sandi admin:');
+            if (pass === null) return;
+            if (pass === getAdminPassword()) {
+                showScreen('admin');
+                showToast('🔓 Masuk sebagai Admin');
+            } else {
+                playErrorSound();
+                showToast('❌ Sandi admin salah!');
+            }
+        });
+
+        /* =====================================================
+           MENU
+        ===================================================== */
+        document.getElementById('playBtn').addEventListener('click', () => {
+            playClickSound();
+            if (!getCurrentUser()) {
+                showToast('⚠️ Login dulu!');
+                showScreen('auth');
+                return;
+            }
+            startGame();
+        });
+
+        document.getElementById('menuAdminBtn').addEventListener('click', () => {
+            playClickSound();
+            const pass = prompt('🔑 Masukkan sandi admin:');
+            if (pass === null) return;
+            if (pass === getAdminPassword()) {
+                showScreen('admin');
+                showToast('🔓 Masuk sebagai Admin');
+            } else {
+                playErrorSound();
+                showToast('❌ Sandi admin salah!');
+            }
+        });
+
+        /* =====================================================
+           LEADERBOARD RENDER
+        ===================================================== */
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboardContainer');
+            const board = getLeaderboard();
+            const currentUser = getCurrentUser();
+
+            if (board.length === 0) {
+                container.innerHTML = '<div class="empty-msg">Belum ada skor. Main dulu yuk! 🎮</div>';
+                return;
+            }
+
+            let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>Nama</th><th>Skor</th></tr></thead><tbody>';
+            board.forEach((u, i) => {
+                const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+                const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
+                const extraClass = isMe ? 'rank-me' : '';
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+                html += `<tr class="${extraClass}">
+                    <td class="${rankClass}">${medal}</td>
+                    <td>${escapeHtml(u.username)}${isMe ? ' (kamu)' : ''}</td>
+                    <td class="${rankClass}">${u.highScore}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+
+            const userRank = currentUser ? getUserRank(currentUser) : null;
+            if (userRank && userRank > 15) {
+                const me = findUser(currentUser);
+                if (me && me.highScore > 0) {
+                    html += `<div style="text-align:center;padding:8px;font-size:12px;color:#aaa;border-top:1px solid #333;margin-top:4px;">
+                        Posisi kamu: #${userRank} (${me.highScore} poin)
+                    </div>`;
+                }
+            } else if (userRank && userRank <= 15) {
+                const me = findUser(currentUser);
+                if (me && me.highScore > 0) {
+                    html += `<div style="text-align:center;padding:8px;font-size:12px;color:#aaa;border-top:1px solid #333;margin-top:4px;">
+                        Posisi kamu: #${userRank} (${me.highScore} poin)
+                    </div>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /* =====================================================
+           ADMIN PANEL
+        ===================================================== */
+        function renderAdminPanel() {
+            const card = document.getElementById('adminCard');
+            const users = getUsers();
+            const adminPass = getAdminPassword();
+
+            let html = `
+                <button class="back-btn" id="adminBackBtn">← Kembali</button>
+                <h3>🔑 Panel Admin</h3>
+                <p style="font-size:12px;color:#aaa;margin-top:-6px;">
+                    Sandi admin saat ini: <code style="background:#222;padding:2px 8px;border-radius:4px;color:#f39c12;">${escapeHtml(adminPass)}</code>
+                </p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" id="adminChangePassBtn" style="flex:1;min-width:150px;width:auto;padding:10px;">🔒 Ganti Sandi Admin</button>
+                    <button class="btn btn-secondary" id="adminLogoutBtn" style="flex:1;min-width:150px;width:auto;padding:10px;background:var(--red);border-color:var(--red);">🚪 Keluar Admin</button>
+                </div>
+                <div style="border-top:1px solid #333;margin-top:6px;padding-top:12px;">
+                    <h4 style="font-size:14px;color:#fff;margin-bottom:8px;">👥 Daftar User (${users.length})</h4>
+            `;
+
+            if (users.length === 0) {
+                html += '<div class="empty-msg">Belum ada user terdaftar.</div>';
+            } else {
+                html += `<div style="overflow-x:auto;"><table class="admin-user-table">
+                    <thead><tr><th>Username</th><th>Sandi</th><th>HighScore</th><th>LastScore</th><th>Aksi</th></tr></thead><tbody>`;
+                users.forEach(u => {
+                    html += `<tr>
+                        <td>${escapeHtml(u.username)}</td>
+                        <td><code style="background:#222;padding:2px 6px;border-radius:3px;color:#f39c12;">${escapeHtml(u.password)}</code></td>
+                        <td><strong>${u.highScore || 0}</strong></td>
+                        <td>${u.lastScore || 0}</td>
+                        <td>
+                            <button class="action-btn" onclick="adminEditScore('${escapeHtml(u.username)}')">✏️ Skor</button>
+                            <button class="action-btn" onclick="adminEditPass('${escapeHtml(u.username)}')">🔑 Sandi</button>
+                            <button class="action-btn danger" onclick="adminDeleteUser('${escapeHtml(u.username)}')">🗑️</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            html += '</div>';
+            card.innerHTML = html;
+
+            document.getElementById('adminBackBtn').addEventListener('click', () => {
+                playClickSound();
+                if (getCurrentUser()) {
+                    showScreen('menu');
+                } else {
+                    showScreen('auth');
+                }
+            });
+
+            document.getElementById('adminChangePassBtn').addEventListener('click', () => {
+                playClickSound();
+                const oldPass = prompt('🔑 Masukkan sandi admin lama:');
+                if (oldPass === null) return;
+                if (oldPass !== getAdminPassword()) {
+                    playErrorSound();
+                    showToast('❌ Sandi lama salah!');
+                    return;
+                }
+                const newPass = prompt('🔑 Masukkan sandi admin baru:');
+                if (newPass === null) return;
+                if (newPass.length < 3) {
+                    playErrorSound();
+                    showToast('⚠️ Sandi minimal 3 karakter!');
+                    return;
+                }
+                setAdminPassword(newPass);
+                playLoginSound();
+                showToast('✅ Sandi admin berhasil diganti!');
+                renderAdminPanel();
+            });
+
+            document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+                playClickSound();
+                if (getCurrentUser()) {
+                    showScreen('menu');
+                } else {
+                    showScreen('auth');
+                }
+                showToast('👋 Keluar dari panel admin');
+            });
+        }
+
+        // Global functions for admin table buttons
+        window.adminEditScore = function(username) {
+            playClickSound();
+            const users = getUsers();
+            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+            if (!user) return;
+            const newScore = prompt(`✏️ Masukkan skor baru untuk "${username}" (skor saat ini: ${user.highScore}):`, user.highScore);
+            if (newScore === null) return;
+            const parsed = parseInt(newScore);
+            if (isNaN(parsed) || parsed < 0) {
+                playErrorSound();
+                showToast('⚠️ Skor harus angka positif!');
+                return;
+            }
+            updateUserScoreByAdmin(username, parsed);
+            playLoginSound();
+            showToast(`✅ Skor "${username}" diubah menjadi ${parsed}`);
+            renderAdminPanel();
+            renderLeaderboard();
+        };
+
+        window.adminEditPass = function(username) {
+            playClickSound();
+            const newPass = prompt(`🔑 Masukkan sandi baru untuk "${username}":`);
+            if (newPass === null) return;
+            if (newPass.length < 3) {
+                playErrorSound();
+                showToast('⚠️ Sandi minimal 3 karakter!');
+                return;
+            }
+            updateUserPassword(username, newPass);
+            playLoginSound();
+            showToast(`✅ Sandi "${username}" berhasil diganti!`);
+            renderAdminPanel();
+        };
+
+        window.adminDeleteUser = function(username) {
+            playClickSound();
+            if (!confirm(`⚠️ Yakin ingin menghapus user "${username}"? Ini tidak bisa dibatalkan!`)) return;
+            deleteUser(username);
+            playCollisionSound();
+            showToast(`🗑️ User "${username}" dihapus`);
+            renderAdminPanel();
+            updateHeader();
+        };
+
+        /* =====================================================
+           GAME ENGINE
+        ===================================================== */
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gameWrapper = document.getElementById('gameWrapper');
+        const scoreElement = document.getElementById('score');
+        const finalScoreElement = document.getElementById('finalScore');
+        const highscoreMsg = document.getElementById('highscoreMsg');
+        const gameOverlay = document.getElementById('gameOverlay');
+
+        let width = 820;
+        let height = 400;
+        let running = false;
+        let gameOver = false;
+        let score = 0;
+        let speed = 6;
+        let lastTime = 0;
+        let obstacleTimer = 0;
+        let nextObstacle = 1000;
+        let obstacles = [];
+        let clouds = [];
+        let lastScoreMilestone = 0;
+        const groundHeight = 60;
+
+        const dino = {
+            x: 70,
+            y: 0,
+            width: 50,
+            height: 58,
+            velocityY: 0,
+            gravity: 0.9,
+            jumpPower: -16.5,
+            grounded: true
+        };
+
+        function resizeCanvas() {
+            const rect = gameWrapper.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            resetDino();
+            draw();
+        }
+
+        function getGroundY() {
+            return height - groundHeight;
+        }
+
+        function resetDino() {
+            dino.x = Math.max(40, width * 0.08);
+            dino.y = getGroundY() - dino.height;
+            dino.velocityY = 0;
+            dino.grounded = true;
+        }
+
+        function createObstacle() {
+            const small = Math.random() < 0.75;
+            const obstacle = {
+                x: width + 30,
+                width: small ? 24 : 40,
+                height: small ? 38 : 55,
+                speedMultiplier: 1
+            };
+            obstacle.y = getGroundY() - obstacle.height;
+            obstacles.push(obstacle);
+        }
+
+        function createClouds() {
+            clouds = [];
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * width,
+                    y: 30 + Math.random() * 80,
+                    width: 50 + Math.random() * 50,
+                    speed: 0.3 + Math.random() * 0.4
+                });
+            }
+        }
+        createClouds();
+
+        function resetGameState() {
+            score = 0;
+            speed = 6;
+            obstacleTimer = 0;
+            nextObstacle = 1000;
+            obstacles = [];
+            lastScoreMilestone = 0;
+            scoreElement.textContent = '0';
+            resetDino();
+            createClouds();
+            gameOver = false;
+            running = true;
+            gameOverlay.classList.remove('active');
+        }
+
+        function startGame() {
+            resetGameState();
+            showScreen('game');
+            resizeCanvas();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            running = false;
+            gameOver = true;
+            const finalScore = Math.floor(score);
+            finalScoreElement.textContent = finalScore;
+
+            // Save score
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                const prevHigh = findUser(currentUser)?.highScore || 0;
+                updateUserHighScore(currentUser, finalScore);
+                if (finalScore > prevHigh) {
+                    highscoreMsg.textContent = '🎉 NEW HIGH SCORE! 🎉';
+                    highscoreMsg.style.color = '#2ecc71';
+                } else if (finalScore === prevHigh && finalScore > 0) {
+                    highscoreMsg.textContent = '👍 Menyamai high score kamu!';
+                    highscoreMsg.style.color = '#f39c12';
+                } else {
+                    highscoreMsg.textContent = `High score kamu: ${prevHigh}`;
+                    highscoreMsg.style.color = '#888';
+                }
+                updateHeader();
+            } else {
+                highscoreMsg.textContent = 'Login untuk menyimpan skor!';
+                highscoreMsg.style.color = '#888';
+            }
+
+            playCollisionSound();
+            playGameOverSound();
+            gameOverlay.classList.add('active');
+            renderLeaderboard();
+        }
+
+        function jump() {
+            if (!running || gameOver) return;
+            if (dino.grounded) {
+                dino.velocityY = dino.jumpPower;
+                dino.grounded = false;
+                playJumpSound();
+            }
+        }
+
+        function updateDino(delta) {
+            dino.velocityY += dino.gravity * delta;
+            dino.y += dino.velocityY * delta;
+            const groundY = getGroundY();
+            if (dino.y + dino.height >= groundY) {
+                dino.y = groundY - dino.height;
+                dino.velocityY = 0;
+                dino.grounded = true;
+            }
+        }
+
+        function updateObstacles(delta) {
+            obstacleTimer += delta * 16.67;
+            if (obstacleTimer >= nextObstacle) {
+                createObstacle();
+                obstacleTimer = 0;
+                nextObstacle = 700 + Math.random() * 800 - Math.min(score * 1.5, 250);
+                nextObstacle = Math.max(nextObstacle, 350);
+            }
+            for (const ob of obstacles) {
+                ob.x -= speed * ob.speedMultiplier * delta;
+            }
+            obstacles = obstacles.filter(ob => ob.x + ob.width > -40);
+        }
+
+        function updateClouds(delta) {
+            for (const cloud of clouds) {
+                cloud.x -= cloud.speed * delta;
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = width + Math.random() * 100;
+                    cloud.y = 25 + Math.random() * 80;
+                }
+            }
+        }
+
+        function checkCollision() {
+            const padX = 7;
+            const padY = 5;
+            const dinoBox = {
+                x: dino.x + padX,
+                y: dino.y + padY,
+                width: dino.width - padX * 2,
+                height: dino.height - padY * 2
+            };
+            for (const ob of obstacles) {
+                const obBox = {
+                    x: ob.x + 4,
+                    y: ob.y + 3,
+                    width: ob.width - 8,
+                    height: ob.height - 3
+                };
+                if (
+                    dinoBox.x < obBox.x + obBox.width &&
+                    dinoBox.x + dinoBox.width > obBox.x &&
+                    dinoBox.y < obBox.y + obBox.height &&
+                    dinoBox.y + dinoBox.height > obBox.y
+                ) {
+                    endGame();
+                    return;
+                }
+            }
+        }
+
+        function updateScore(delta) {
+            score += delta * 0.14;
+            const currentScore = Math.floor(score);
+            scoreElement.textContent = currentScore;
+            speed = 6 + Math.min(currentScore / 90, 7);
+            if (currentScore > 0 && currentScore % 50 === 0 && currentScore !== lastScoreMilestone) {
+                lastScoreMilestone = currentScore;
+                playScoreMilestoneSound();
+            }
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#f7f7f7';
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawCloud(cloud) {
+            ctx.fillStyle = '#dcdcdc';
+            ctx.beginPath();
+            ctx.arc(cloud.x + 16, cloud.y + 16, 14, 0, Math.PI * 2);
+            ctx.arc(cloud.x + 34, cloud.y + 10, 20, 0, Math.PI * 2);
+            ctx.arc(cloud.x + 56, cloud.y + 16, 14, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawGround() {
+            const groundY = getGroundY();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(width, groundY);
+            ctx.stroke();
+            ctx.strokeStyle = '#777';
+            ctx.lineWidth = 1;
+            const offset = (performance.now() / 10 * speed) % 40;
+            for (let x = -40 + offset; x < width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY + 15);
+                ctx.lineTo(x + 16, groundY + 15);
+                ctx.stroke();
+            }
+        }
+
+        function drawDino() {
+            const x = dino.x;
+            const y = dino.y;
+            ctx.fillStyle = '#222';
+            ctx.fillRect(x + 8, y + 18, 30, 30);
+            ctx.fillRect(x + 22, y, 26, 28);
+            ctx.fillRect(x + 40, y + 13, 13, 10);
+            const walking = Math.floor(performance.now() / 90) % 2;
+            if (dino.grounded && walking === 0) {
+                ctx.fillRect(x + 12, y + 45, 8, 13);
+                ctx.fillRect(x + 30, y + 45, 8, 8);
+            } else {
+                ctx.fillRect(x + 12, y + 45, 8, 8);
+                ctx.fillRect(x + 30, y + 45, 8, 13);
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + 10, y + 22);
+            ctx.lineTo(x - 8, y + 30);
+            ctx.lineTo(x + 10, y + 33);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x + 38, y + 6, 4, 4);
+        }
+
+        function drawObstacle(ob) {
+            const x = ob.x;
+            const y = ob.y;
+            ctx.fillStyle = '#287a35';
+            ctx.fillRect(x + 8, y, ob.width - 16, ob.height);
+            if (ob.height > 42) {
+                ctx.fillRect(x, y + 15, 10, 20);
+                ctx.fillRect(x, y + 15, 16, 8);
+                ctx.fillRect(x + ob.width - 10, y + 25, 10, 20);
+                ctx.fillRect(x + ob.width - 16, y + 25, 16, 8);
+            }
+        }
+
+        function draw() {
+            drawBackground();
+            for (const cloud of clouds) drawCloud(cloud);
+            drawGround();
+            drawDino();
+            for (const ob of obstacles) drawObstacle(ob);
+        }
+
+        function gameLoop(timestamp) {
+            if (!running) {
+                draw();
+                return;
+            }
+            let delta = (timestamp - lastTime) / 16.67;
+            lastTime = timestamp;
+            delta = Math.min(delta, 2.5);
+            updateDino(delta);
+            updateObstacles(delta);
+            updateClouds(delta);
+            updateScore(delta);
+            checkCollision();
+            draw();
+            if (running) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Game input
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                if (screens.game.classList.contains('active')) {
+                    if (!running || gameOver) {
+                        if (gameOver) {
+                            playClickSound();
+                            startGame();
+                        }
+                    } else {
+                        jump();
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (screens.game.classList.contains('active')) {
+                if (!running || gameOver) {
+                    if (gameOver) {
+                        playClickSound();
+                        startGame();
+                    }
+                } else {
+                    jump();
+                }
+            }
+        });
+
+        // Game overlay buttons
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            playClickSound();
+            startGame();
+        });
+
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            playClickSound();
+            running = false;
+            gameOver = true;
+            gameOverlay.classList.remove('active');
+            showScreen('menu');
+        });
+
+        /* =====================================================
+           WINDOW EVENTS
+        ===================================================== */
+        window.addEventListener('resize', () => {
+            if (screens.game.classList.contains('active')) {
+                resizeCanvas();
+            }
+        });
+
+        /* =====================================================
+           INIT
+        ===================================================== */
+        function init() {
+            const currentUser = getCurrentUser();
+            if (currentUser && findUser(currentUser)) {
+                updateHeader();
+                showScreen('menu');
+                renderLeaderboard();
+            } else {
+                if (currentUser) setCurrentUser(null);
+                updateHeader();
+                showScreen('auth');
+            }
+            resizeCanvas();
+        }
+
+        // Handle visibility change to prevent huge delta
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && running) {
+                lastTime = performance.now();
+            }
+        });
+
+        init();
+
+        // Expose for debugging
+        window.__dinoApp = {
+            getUsers,
+            saveUsers,
+            getAdminPassword,
+            setAdminPassword,
+            findUser,
+            addUser,
+            updateUserHighScore,
+            updateUserPassword,
+            updateUserScoreByAdmin,
+            deleteUser,
+            getLeaderboard,
+            getUserRank,
+            showToast,
+        };
+
+        console.log('🦖 Dino Runner - Leaderboard Edition loaded!');
+        console.log('🔑 Default admin password:', DEFAULT_ADMIN_PASS);
+        console.log('💡 Ganti sandi admin di panel admin setelah login.');
+    </script>
 </body>
-
 </html>
