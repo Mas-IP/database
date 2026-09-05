@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dino Runner</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+
+        #game {
+            position: relative;
+            width: min(100vw, 900px);
+            height: min(100vh, 500px);
+            overflow: hidden;
+            background: #f7f7f7;
+            border: 2px solid #222;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 18px;
+            color: #222;
+        }
+
+        #startScreen,
+        #gameOverScreen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(247, 247, 247, 0.88);
+            text-align: center;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 42px;
+        }
+
+        p {
+            margin: 6px 0 20px;
+            font-size: 17px;
+        }
+
+        button {
+            border: 2px solid #222;
+            background: #222;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .hint {
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 600px) {
+            #game {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+            }
+
+            h1 {
+                font-size: 34px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <canvas id="canvas"></canvas>
+
+    <div id="ui">
+        <span>🏃 DINO</span>
+        <span>Score: <span id="score">0</span></span>
+    </div>
+
+    <div id="startScreen">
+        <h1>🦖 Dino Runner</h1>
+        <p>Lompat dan hindari semua kaktus!</p>
+        <button id="startButton">MAIN</button>
+        <div class="hint">
+            Tap layar atau tekan SPACE untuk lompat
+        </div>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <p>Score kamu: <strong id="finalScore">0</strong></p>
+        <button id="restartButton">MAIN LAGI</button>
+        <div class="hint">
+            Tap layar atau tekan SPACE
+        </div>
+    </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =========================================
+   CANVAS
+========================================= */
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const gameElement = document.getElementById("game");
+
+const scoreElement = document.getElementById("score");
+const finalScoreElement = document.getElementById("finalScore");
+
+const startScreen = document.getElementById("startScreen");
+const gameOverScreen = document.getElementById("gameOverScreen");
+
+const startButton = document.getElementById("startButton");
+const restartButton = document.getElementById("restartButton");
+
+
+/* =========================================
+   UKURAN CANVAS
+========================================= */
+
+let width = 900;
+let height = 500;
+
+function resizeCanvas() {
+    const rect = gameElement.getBoundingClientRect();
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    width = rect.width;
+    height = rect.height;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+
+/* =========================================
+   GAME STATE
+========================================= */
+
+let running = false;
+let gameOver = false;
+
+let score = 0;
+let speed = 6;
+
+let lastTime = 0;
+
+let obstacleTimer = 0;
+let nextObstacle = 1000;
+
+
+/* =========================================
+   GROUND
+========================================= */
+
+const groundHeight = 80;
+
+function getGroundY() {
+    return height - groundHeight;
+}
+
+
+/* =========================================
+   DINO
+========================================= */
+
+const dino = {
+    x: 80,
+    y: 0,
+    width: 55,
+    height: 65,
+
+    velocityY: 0,
+
+    gravity: 0.9,
+    jumpPower: -17,
+
+    grounded: true
+};
+
+function resetDino() {
+    dino.x = Math.max(40, width * 0.1);
+    dino.y = getGroundY() - dino.height;
+
+    dino.velocityY = 0;
+    dino.grounded = true;
+}
+
+
+/* =========================================
+   OBSTACLES
+========================================= */
+
+let obstacles = [];
+
+function createObstacle() {
+
+    const small = Math.random() < 0.75;
+
+    const obstacle = {
+        x: width + 40,
+
+        width: small ? 28 : 45,
+        height: small ? 45 : 65,
+
+        speedMultiplier: 1
+    };
+
+    obstacle.y = getGroundY() - obstacle.height;
+
+    obstacles.push(obstacle);
+}
+
+
+/* =========================================
+   CLOUDS
+========================================= */
+
+let clouds = [];
+
+function createClouds() {
+
+    clouds = [];
+
+    for (let i = 0; i < 5; i++) {
+
+        clouds.push({
+            x: Math.random() * width,
+            y: 50 + Math.random() * 100,
+            width: 60 + Math.random() * 60,
+            speed: 0.5 + Math.random() * 0.5
+        });
+
+    }
+}
+
+createClouds();
+
+
+/* =========================================
+   RESET GAME
+========================================= */
+
+function resetGame() {
+
+    score = 0;
+    speed = 6;
+
+    obstacleTimer = 0;
+    nextObstacle = 1000;
+
+    obstacles = [];
+
+    running = true;
+    gameOver = false;
+
+    scoreElement.textContent = "0";
+
+    resetDino();
+
+    startScreen.style.display = "none";
+    gameOverScreen.style.display = "none";
+
+    lastTime = performance.now();
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+/* =========================================
+   JUMP
+========================================= */
+
+function jump() {
+
+    if (!running || gameOver) {
+        return;
+    }
+
+    if (dino.grounded) {
+
+        dino.velocityY = dino.jumpPower;
+        dino.grounded = false;
+
+    }
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+startButton.addEventListener("click", function(e) {
+    e.stopPropagation();
+    resetGame();
+});
+
+restartButton.addEventListener("click", function(e) {
+    e.stopPropagation();
+    resetGame();
+});
+
+document.addEventListener("keydown", function(e) {
+
+    if (
+        e.code === "Space" ||
+        e.code === "ArrowUp"
+    ) {
+
+        e.preventDefault();
+
+        if (!running || gameOver) {
+            resetGame();
+        } else {
+            jump();
+        }
+
+    }
+
+});
+
+canvas.addEventListener("pointerdown", function(e) {
+
+    e.preventDefault();
+
+    if (!running || gameOver) {
+        resetGame();
+    } else {
+        jump();
+    }
+
+});
+
+
+/* =========================================
+   UPDATE DINO
+========================================= */
+
+function updateDino(delta) {
+
+    dino.velocityY += dino.gravity * delta;
+
+    dino.y += dino.velocityY * delta;
+
+    const groundY = getGroundY();
+
+    if (dino.y + dino.height >= groundY) {
+
+        dino.y = groundY - dino.height;
+
+        dino.velocityY = 0;
+
+        dino.grounded = true;
+
+    }
+
+}
+
+
+/* =========================================
+   UPDATE OBSTACLES
+========================================= */
+
+function updateObstacles(delta) {
+
+    obstacleTimer += delta * 16.67;
+
+    if (obstacleTimer >= nextObstacle) {
+
+        createObstacle();
+
+        obstacleTimer = 0;
+
+        nextObstacle =
+            800 +
+            Math.random() * 1000 -
+            Math.min(score * 2, 300);
+
+    }
+
+    for (const obstacle of obstacles) {
+
+        obstacle.x -=
+            speed *
+            obstacle.speedMultiplier *
+            delta;
+
+    }
+
+    obstacles =
+        obstacles.filter(
+            obstacle =>
+                obstacle.x + obstacle.width > -50
+        );
+
+}
+
+
+/* =========================================
+   UPDATE CLOUDS
+========================================= */
+
+function updateClouds(delta) {
+
+    for (const cloud of clouds) {
+
+        cloud.x -= cloud.speed * delta;
+
+        if (cloud.x + cloud.width < 0) {
+
+            cloud.x = width + Math.random() * 100;
+
+            cloud.y =
+                40 +
+                Math.random() * 100;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   COLLISION
+========================================= */
+
+function checkCollision() {
+
+    const paddingX = 10;
+    const paddingY = 8;
+
+    const dinoBox = {
+        x: dino.x + paddingX,
+        y: dino.y + paddingY,
+        width: dino.width - paddingX * 2,
+        height: dino.height - paddingY * 2
+    };
+
+    for (const obstacle of obstacles) {
+
+        const obstacleBox = {
+            x: obstacle.x + 5,
+            y: obstacle.y + 5,
+            width: obstacle.width - 10,
+            height: obstacle.height - 5
+        };
+
+        if (
+            dinoBox.x <
+                obstacleBox.x + obstacleBox.width &&
+
+            dinoBox.x + dinoBox.width >
+                obstacleBox.x &&
+
+            dinoBox.y <
+                obstacleBox.y + obstacleBox.height &&
+
+            dinoBox.y + dinoBox.height >
+                obstacleBox.y
+        ) {
+
+            endGame();
+            return;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   SCORE
+========================================= */
+
+function updateScore(delta) {
+
+    score += delta * 0.15;
+
+    const currentScore =
+        Math.floor(score);
+
+    scoreElement.textContent =
+        currentScore;
+
+    speed =
+        6 +
+        Math.min(currentScore / 100, 7);
+
+}
+
+
+/* =========================================
+   GAME OVER
+========================================= */
+
+function endGame() {
+
+    running = false;
+    gameOver = true;
+
+    const finalScore =
+        Math.floor(score);
+
+    finalScoreElement.textContent =
+        finalScore;
+
+    gameOverScreen.style.display =
+        "flex";
+
+}
+
+
+/* =========================================
+   DRAW BACKGROUND
+========================================= */
+
+function drawBackground() {
+
+    ctx.fillStyle = "#f7f7f7";
+
+    ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+}
+
+
+/* =========================================
+   DRAW CLOUD
+========================================= */
+
+function drawCloud(cloud) {
+
+    ctx.fillStyle = "#dcdcdc";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cloud.x + 20,
+        cloud.y + 20,
+        18,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        cloud.x + 42,
+        cloud.y + 12,
+        25,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        cloud.x + 70,
+        cloud.y + 20,
+        18,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* =========================================
+   DRAW GROUND
+========================================= */
+
+function drawGround() {
+
+    const groundY =
+        getGroundY();
+
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        groundY
+    );
+
+    ctx.lineTo(
+        width,
+        groundY
+    );
+
+    ctx.stroke();
+
+    // garis kecil tanah
+
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 1;
+
+    const offset =
+        (performance.now() / 10 * speed) % 50;
+
+    for (
+        let x = -50 + offset;
+        x < width;
+        x += 50
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            groundY + 20
+        );
+
+        ctx.lineTo(
+            x + 20,
+            groundY + 20
+        );
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+/* =========================================
+   DRAW DINO
+========================================= */
+
+function drawDino() {
+
+    const x = dino.x;
+    const y = dino.y;
+
+    ctx.fillStyle = "#222";
+
+    // badan
+
+    ctx.fillRect(
+        x + 10,
+        y + 20,
+        35,
+        35
+    );
+
+    // kepala
+
+    ctx.fillRect(
+        x + 28,
+        y,
+        30,
+        32
+    );
+
+    // moncong
+
+    ctx.fillRect(
+        x + 48,
+        y + 15,
+        15,
+        12
+    );
+
+    // kaki
+
+    const walking =
+        Math.floor(performance.now() / 100) % 2;
+
+    if (dino.grounded && walking === 0) {
+
+        ctx.fillRect(
+            x + 15,
+            y + 50,
+            9,
+            15
+        );
+
+        ctx.fillRect(
+            x + 35,
+            y + 50,
+            9,
+            10
+        );
+
+    } else {
+
+        ctx.fillRect(
+            x + 15,
+            y + 50,
+            9,
+            10
+        );
+
+        ctx.fillRect(
+            x + 35,
+            y + 50,
+            9,
+            15
+        );
+
+    }
+
+    // ekor
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x + 12,
+        y + 25
+    );
+
+    ctx.lineTo(
+        x - 10,
+        y + 35
+    );
+
+    ctx.lineTo(
+        x + 12,
+        y + 38
+    );
+
+    ctx.fill();
+
+    // mata
+
+    ctx.fillStyle = "#fff";
+
+    ctx.fillRect(
+        x + 45,
+        y + 7,
+        5,
+        5
+    );
+
+}
+
+
+/* =========================================
+   DRAW CACTUS
+========================================= */
+
+function drawObstacle(obstacle) {
+
+    const x = obstacle.x;
+    const y = obstacle.y;
+
+    ctx.fillStyle = "#287a35";
+
+    // batang
+
+    ctx.fillRect(
+        x + 10,
+        y,
+        obstacle.width - 20,
+        obstacle.height
+    );
+
+    // cabang kiri
+
+    if (obstacle.height > 50) {
+
+        ctx.fillRect(
+            x,
+            y + 20,
+            12,
+            25
+        );
+
+        ctx.fillRect(
+            x,
+            y + 20,
+            20,
+            10
+        );
+
+        // cabang kanan
+
+        ctx.fillRect(
+            x + obstacle.width - 12,
+            y + 30,
+            12,
+            25
+        );
+
+        ctx.fillRect(
+            x + obstacle.width - 20,
+            y + 30,
+            20,
+            10
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   DRAW
+========================================= */
+
+function draw() {
+
+    drawBackground();
+
+    for (const cloud of clouds) {
+        drawCloud(cloud);
+    }
+
+    drawGround();
+
+    drawDino();
+
+    for (const obstacle of obstacles) {
+        drawObstacle(obstacle);
+    }
+
+}
+
+
+/* =========================================
+   GAME LOOP
+========================================= */
+
+function gameLoop(timestamp) {
+
+    if (!running) {
+        draw();
+        return;
+    }
+
+    let delta =
+        (timestamp - lastTime) / 16.67;
+
+    lastTime = timestamp;
+
+    // cegah lonjakan ketika tab pindah
+    delta = Math.min(delta, 2);
+
+    updateDino(delta);
+    updateObstacles(delta);
+    updateClouds(delta);
+
+    updateScore(delta);
+
+    checkCollision();
+
+    draw();
+
+    if (running) {
+        requestAnimationFrame(gameLoop);
+    }
+
+}
+
+
+/* =========================================
+   INITIAL DRAW
+========================================= */
+
+resetDino();
+draw();
+
+</script>
+
+</body>
+</html>
