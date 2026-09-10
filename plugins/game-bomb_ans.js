@@ -1,4 +1,3 @@
-// Thanks To Kasan
 
 import util from 'util';
 

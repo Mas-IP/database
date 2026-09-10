@@ -1,3 +1,5 @@
+//create code Wonge-bot
+
 import similarity from 'similarity'
 const threshold = 0.72
 
@@ -15,7 +17,7 @@ handler.before = async function (m) {
     if (!teksUser) return !0
     if (teksUser === jawaban) {
         global.db.data.users[m.sender].money += this.tebakkpop[id][2]
-        m.reply(`*Benar!*\n+${this.tebakkpop[id][2]} Kredit sosial`)
+        m.reply(`*Benar!*\n+${this.tebakkpop[id][2]} Money`)
         clearTimeout(this.tebakkpop[id][3])
         delete this.tebakkpop[id]
     } 

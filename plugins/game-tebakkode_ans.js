@@ -1,3 +1,5 @@
+//create code Wonge-bot
+
 let poin = 10000
 import similarity from 'similarity'
 const threshold = 0.72

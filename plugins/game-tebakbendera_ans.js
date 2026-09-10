@@ -1,3 +1,4 @@
+
 let poin = 10000
 import similarity from 'similarity'
 const threshold = 0.72
@@ -17,7 +18,7 @@ handler.before = async function (m) {
     if (teksUser === jawaban) {
         users.exp += this.tebakbendera2[id][2]
         users.money += poin
-        m.reply(`*Benar!*\n+${poin} Money`)
+        m.reply(`*Benar!*\n+${poin} Kredit sosial`)
         clearTimeout(this.tebakbendera2[id][3])
         delete this.tebakbendera2[id]
     } 
