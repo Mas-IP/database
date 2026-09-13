@@ -1,8 +1,9 @@
 <p align="center">
   <br>
-  <h1 align="center" style="color: #ff6b6b;">⚠️ P E R I N G A T A N ⚠️</h1>
+  <h1 align="center" style="color: #ff6b6b;">⚠️ P E R I N G A T A N </h1>
 
   <strong style="color: #4ecdc4;">Repositori Ini Hanya Untuk Belajar & Berbagi Kode Sumber</strong>
+  <br>
   <br>
   <em style="color: #95a5a6;">Seperti HTML, skrip sederhana, dan materi sejenisnya</em>
 </p>
@@ -16,8 +17,7 @@
 
 <p align="justify" style="color: #ecf0f1;">
   ❌ <strong>LARANGAN PENGGUNAAN:</strong><br>
-  Mohon jangan mengubah, memanfaatkan, atau mengembangkan isi kode ini dengan cara yang "aneh", menyimpang, tidak pantas, menghina, berbahaya, rasis, atau merugikan pihak lain. 
-  Gunakanlah dengan bijak dan sesuai aturan etika.
+  Mohon jangan mengubah, memanfaatkan, atau mengembangkan isi kode ini dengan cara yang "aneh", menyimpang, tidak pantas, menghina, berbahaya, rasis, atau merugikan pihak lain. Gunakanlah dengan bijak dan sesuai aturan etika.
 </p>
 
 <p align="justify" style="color: #ffb74d;">
