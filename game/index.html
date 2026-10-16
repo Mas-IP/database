@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10131a">
-  <meta name="description" content="Web Mas-IP All Hub — akses game dan fitur dalam satu tempat.">
+  <meta name="description" content="Web Mas-IP All IN — akses game dalam satu tempat.">
   <title>Web Mas-IP — All Hub</title>
   <style>
     :root {
@@ -206,69 +206,61 @@
 <body>
   <main>
     <section class="intro">
-      <div class="tag">Web Mas-IP All Hub</div>
-      <h1>Fiture &amp; game</h1>
-      <p>Pilih fitur yang mau dibuka.</p>
+      <div class="tag">Web Mas-IP All IN</div>
+      <h1>Daftar game</h1>
+      <p>Pilih game yang mau dibuka.</p>
     </section>
 
     <div class="section-title">
-      <h2>Daftar fitur</h2>
-      <span id="count">0 fitur</span>
+      <span id="count">0 game</span>
     </div>
 
-    <section id="features" class="grid" aria-label="Daftar fitur"></section>
+    <section id="features" class="grid" aria-label="Daftar game"></section>
   </main>
 
   <footer>
     <span class="credit-left">Web All Hub</span>
     <span class="credit-center">© 2026 Mas-IP</span>
-    <span class="credit-right">Hosted on GitHub Pages</span>
+    <span class="credit-right">Hosted on Website pages</span>
   </footer>
 
   <script>
-    // Ubah URL di sini untuk mengarahkan tombol ke halaman fitur yang diinginkan.
+    // Ubah URL di sini untuk mengarahkan tombol ke halaman game yang diinginkan.
     const FEATURES = [
-      {
-        id: 'sosmed',
-        name: 'Sosial Media',
-        description: 'All-in-one sosial media dari dev Mas-IP.',
-        icon: '🌐',
-        url: 'https://mas-ip.github.io/database/web/sosmed/index2.html'
-      },
       {
         id: 'dino',
         name: 'Dino Mlayu',
         description: 'Game lari menghindari rintangan.',
         icon: '🦖',
-        url: 'https://mas-ip.github.io/database/game/dino/index.html'
+        url: './dino/index.html'
       },
       {
         id: 'tictactoe',
         name: 'Tic Tac Toe',
         description: 'Main X dan O di papan 3×3 infinity.',
         icon: '⭕',
-        url: 'https://mas-ip.github.io/database/game/tictactoe/index6.html'
+        url: './tictactoe/index6.html'
       },
       {
         id: 'bola',
         name: 'Endi Bolane',
         description: 'Game dengan ritme cepat dan acak.',
         icon: '🥛',
-        url: 'https://mas-ip.github.io/database/game/bola/index.html'
+        url: './bola/index.html'
       },
       {
         id: 'catur',
         name: 'Catur Arena',
         description: 'Mainkan Catur dengan strategi dan mengasah otak.',
         icon: '♟️',
-        url: 'https://mas-ip.github.io/database/game/catur/index.html'
+        url: './catur/index.html'
       },
       {
         id: 'dash',
         name: 'Dash Game',
         description: 'Game platform dengan ritme cepat.',
         icon: '⚡',
-        url: 'https://mas-ip.github.io/database/game/dash/index.html'
+        url: './dash/index.html'
       }
     ];
 
@@ -276,7 +268,7 @@
       const root = document.querySelector('#features');
       const count = document.querySelector('#count');
       root.replaceChildren();
-      count.textContent = `${FEATURES.length} fitur`;
+      count.textContent = `${FEATURES.length} game`;
 
       for (const item of FEATURES) {
         const card = document.createElement('article');
@@ -305,8 +297,8 @@
         const open = document.createElement('a');
         open.className = 'btn primary';
         open.href = item.url;
-        open.textContent = 'Buka fitur ↗';
-        open.setAttribute('aria-label', `Buka fitur ${item.name}`);
+        open.textContent = 'Buka game ↗';
+        open.setAttribute('aria-label', `Buka game ${item.name}`);
         open.addEventListener('click', (event) => {
           // Biarkan browser menangani buka tab baru, klik tengah, dan shortcut modifier.
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

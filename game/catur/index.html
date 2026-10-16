@@ -293,11 +293,11 @@ body{
         <p>Dua pemain, satu perangkat.</p>
         <span class="badge on">Offline</span>
       </button>
-      <button class="menu-card" id="menuBot">
+      <button class="menu-card" id="menuBot" type="button" onclick="location.href='./index-ai.html'">
         <span class="icon">🤖</span>
-        <h3>Lawan Bot</h3>
-        <p>Bot menganalisis langkah legal, ancaman, dan kemungkinan balasan.</p>
-        <span class="badge">AI • 3 level</span>
+        <h3>Lawan AI</h3>
+        <p>Buka halaman permainan AI terpisah.</p>
+        <span class="badge">AI • 4 level</span>
       </button>
       <button class="menu-card" id="menuOnline">
         <span class="icon">🌐</span>
@@ -344,15 +344,6 @@ body{
 
       <div class="game-panel">
         <div class="game-status" id="gameStatus">Pilih mode untuk mulai bermain</div>
-        <div id="botDifficultyPanel" class="hidden">
-          <h3>Kesulitan Bot</h3>
-          <div class="game-actions">
-            <button class="btn btn-secondary bot-diff" data-diff="easy">Mudah · 30%</button>
-            <button class="btn btn-secondary bot-diff" data-diff="normal">Normal · 70%</button>
-            <button class="btn btn-secondary bot-diff" data-diff="hard">Sulit · 100%</button>
-          </div>
-          <div style="font-size:.75rem;color:var(--text2);margin-top:6px">Persentase = peluang bot memilih langkah terbaik yang ditemukan, bukan jaminan hasil pertandingan.</div>
-        </div>
         <div>
           <div class="move-log-heading">
             <h3>Riwayat Langkah</h3>
@@ -402,18 +393,6 @@ body{
   </div>
 </div>
 
-<div class="modal-overlay hidden" id="botDifficultyModal">
-  <div class="modal">
-    <h3>🤖 Pilih Level Bot</h3>
-    <p>Pilih tingkat kesulitan sebelum permainan dimulai.</p>
-    <div class="game-actions" style="flex-direction:column">
-      <button class="btn btn-secondary bot-diff-select" data-diff="easy">Mudah</button>
-      <button class="btn btn-secondary bot-diff-select" data-diff="normal">Normal</button>
-      <button class="btn btn-secondary bot-diff-select" data-diff="hard">Sulit</button>
-    </div>
-    <div class="modal-actions" style="margin-top:14px"><button class="btn btn-secondary" id="btnBotCancel">Batal</button></div>
-  </div>
-</div>
 
 <div class="modal-overlay hidden" id="boardThemeModal">
   <div class="modal">
@@ -521,13 +500,10 @@ const db = getDatabase(app);
 let currentUser = null;
 let currentGame = null;
 let gameMode = null;
-let botDifficulty = "normal";
-let botThinking = false;
 let soundEnabled = true;
 let moveLogVisible = true;
 let pendingPromotion = null;
 let lastStatusSoundKey = "";
-const botMoveMemory = [];
 let myColor = "w";
 let boardOrientation = "w";
 let selectedSq = null;
@@ -743,14 +719,6 @@ $("btnLogToggle").addEventListener("click", () => {
   btn.title = moveLogVisible ? "Sembunyikan riwayat langkah" : "Tampilkan riwayat langkah";
 });
 
-$("menuBot").addEventListener("click", () => show($("botDifficultyModal")));
-$("btnBotCancel").addEventListener("click", () => hide($("botDifficultyModal")));
-document.querySelectorAll(".bot-diff-select").forEach(btn => btn.addEventListener("click", () => {
-  botDifficulty = btn.dataset.diff;
-  document.querySelectorAll(".bot-diff-select").forEach(b => b.classList.toggle("btn-primary", b === btn));
-  hide($("botDifficultyModal"));
-  startGame("bot");
-}));
 
 function requestPromotion(from, to) {
   pendingPromotion = { from, to };
@@ -1226,7 +1194,7 @@ function updateStatusText() {
     status.textContent = `♛ Skakmat! ${winner} menang.`;
     status.classList.add("over");
     if (!gameOverFlag && lastStatusSoundKey !== "mate:" + fenKey) {
-      playSound(gameMode === "bot" && winner === "Putih" ? "win" : "checkmate");
+      playSound("checkmate");
       lastStatusSoundKey = "mate:" + fenKey;
     }
     gameOverFlag = true; return;
@@ -1278,7 +1246,6 @@ function updateMoveList() {
    ================================================================ */
 function onSquareClick(square) {
   if (!currentGame || gameOverFlag || pendingPromotion) return;
-  if (gameMode === "bot" && (currentGame.turn() === "b" || botThinking)) return;
   if (gameMode === "online" && currentGame.turn() !== myColor) {
     toast("Bukan giliran Anda.", "warn", 1500); return;
   }
@@ -1331,10 +1298,6 @@ function doMove(from, to, promotion = "q") {
     updateMoveList();
     playSound(move.captured ? "capture" : "move");
     updateStatusText();
-    if (gameMode === "bot" && !gameOverFlag && currentGame.turn() === "b") {
-      botMoveMemory.push({uci: move.from + move.to, san: move.san});
-      setTimeout(() => runBotTurn(), 180);
-    }
     return move;
   } catch (e) {
     toast("Langkah ilegal.", "error", 1500);
@@ -1346,107 +1309,6 @@ function doMove(from, to, promotion = "q") {
    SUARA
    ================================================================ */
 let audioCtx = null;
-
-/* ================================================================
-   BOT: evaluasi material + posisi, alpha-beta minimax.
-   Bot hitam melihat beberapa balasan legal, bukan hanya makan bidak.
-   ================================================================ */
-const BOT_VALUES = {p:100,n:320,b:335,r:500,q:900,k:20000};
-const BOT_DEPTH = {easy:1, normal:2, hard:3};
-
-function evaluatePosition(chess) {
-  if (chess.isCheckmate()) return chess.turn() === "b" ? -100000 : 100000;
-  if (chess.isDraw()) return 0;
-  let score = 0;
-  const board = chess.board();
-  for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
-    const p=board[r][c]; if(!p) continue;
-    const sign=p.color==="b" ? 1 : -1;
-    let value=BOT_VALUES[p.type] || 0;
-    // Bonus posisi ringan: pusat dan kemajuan pion.
-    const center = 3.5 - (Math.abs(3.5-r)+Math.abs(3.5-c))/2;
-    if (p.type==="n" || p.type==="b") value += center*8;
-    if (p.type==="p") value += (p.color==="b" ? r : 7-r)*5 + center*2;
-    score += sign*value;
-  }
-  if(chess.isCheck()) score += chess.turn()==="w" ? 25 : -25;
-  return score;
-}
-
-function minimax(chess, depth, alpha, beta, maximizing) {
-  if (depth===0 || chess.isGameOver()) return evaluatePosition(chess);
-  const moves=chess.moves({verbose:true});
-  // Urutkan makan bidak/skak agar pencarian lebih efektif.
-  moves.sort((a,b)=>{
-    const av=(a.captured ? (BOT_VALUES[a.captured]||0)*10-(BOT_VALUES[a.piece]||0) : 0)+(a.san.includes("+")?40:0);
-    const bv=(b.captured ? (BOT_VALUES[b.captured]||0)*10-(BOT_VALUES[b.piece]||0) : 0)+(b.san.includes("+")?40:0);
-    return bv-av;
-  });
-  if(maximizing){
-    let best=-Infinity;
-    for(const m of moves){ chess.move(m); const v=minimax(chess,depth-1,alpha,beta,false); chess.undo(); best=Math.max(best,v); alpha=Math.max(alpha,best); if(beta<=alpha) break; }
-    return best;
-  } else {
-    let best=Infinity;
-    for(const m of moves){ chess.move(m); const v=minimax(chess,depth-1,alpha,beta,true); chess.undo(); best=Math.min(best,v); beta=Math.min(beta,best); if(beta<=alpha) break; }
-    return best;
-  }
-}
-
-function chooseBotMove() {
-  let moves=currentGame.moves({verbose:true});
-  if(!moves.length) return null;
-  const depth=BOT_DEPTH[botDifficulty] || 2;
-  const movePriority = m =>
-    (m.captured ? (BOT_VALUES[m.captured] || 0) * 10 - (BOT_VALUES[m.piece] || 0) : 0) +
-    (m.san.includes("+") ? 40 : 0) + (m.san.includes("#") ? 100000 : 0);
-  moves.sort((a,b)=>movePriority(b)-movePriority(a));
-  // Kandidat akar dibatasi supaya mode sulit tetap responsif di ponsel.
-  const rootLimit = botDifficulty === "hard" ? 18 : botDifficulty === "normal" ? 22 : 30;
-  if (moves.length > rootLimit) moves = moves.slice(0, rootLimit);
-
-  const scored=[];
-  let rootAlpha=-Infinity;
-  for(const m of moves){
-    currentGame.move(m);
-    const score=minimax(currentGame,depth-1,rootAlpha,Infinity,false);
-    currentGame.undo();
-    scored.push({move:m,score});
-    rootAlpha=Math.max(rootAlpha,score);
-  }
-  scored.sort((a,b)=>b.score-a.score);
-  const bestScore=scored[0].score;
-  const best=scored.filter(x=>x.score>=bestScore-25);
-  const qualityChance={easy:.30,normal:.70,hard:1}[botDifficulty] ?? .70;
-  if(Math.random()<qualityChance) return best[Math.floor(Math.random()*best.length)].move;
-  const alternatives=scored.slice(Math.min(best.length,Math.max(1,Math.ceil(scored.length*.35))));
-  const pool=alternatives.length ? alternatives.slice(0,Math.max(1,Math.ceil(alternatives.length*.45))) : scored;
-  return pool[Math.floor(Math.random()*pool.length)].move;
-}
-
-function runBotTurn() {
-  if(gameMode!=="bot" || !currentGame || gameOverFlag || currentGame.turn()!=="b" || botThinking) return;
-  botThinking=true;
-  setText("gameStatus","🤖 Bot sedang menganalisis langkah…");
-  setTimeout(()=>{
-    try {
-      if(gameMode!=="bot" || !currentGame || gameOverFlag || currentGame.turn()!=="b") return;
-      const chosen=chooseBotMove();
-      if(!chosen) { updateStatusText(); return; }
-      const move=currentGame.move({from:chosen.from,to:chosen.to,promotion:"q"});
-      if(move){
-        currentFEN=currentGame.fen(); lastMove={from:move.from,to:move.to};
-        selectedSq=null; legalTargets=[];
-        renderPieces(); updateMoveList();
-        playSound(move.captured?"capture":"move");
-        updateStatusText();
-      }
-    } catch(err) {
-      console.error("Bot move error:",err);
-      toast("Bot gagal menghitung langkah. Coba reset permainan.","error");
-    } finally { botThinking=false; }
-  }, botDifficulty==="hard" ? 350 : 180);
-}
 
 function playSound(type) {
   if (!soundEnabled) return;
@@ -1662,16 +1524,12 @@ function startGame(mode) {
   hide($("onlineActions"));
   hide($("roomInfo"));
   $("btnResign").style.display = mode === "online" ? "" : "none";
-  hide($("botDifficultyPanel"));
-  hide($("botDifficultyModal"));
   hide($("promotionModal"));
   pendingPromotion = null;
-  botThinking = false;
-  botMoveMemory.length = 0;
   lastStatusSoundKey = "";
 
   setText("bottomName", "Player Putih");
-  setText("topName", mode === "bot" ? "Bot Hitam" : "Player Hitam");
+  setText("topName", "Player Hitam");
   setText("bottomColor", "Pion Putih");
   setText("topColor", "Pion Hitam");
 
@@ -1697,7 +1555,6 @@ $("btnBack").addEventListener("click", () => {
     hide($("gameSection"));
     show($("menuSection"));
     gameMode = null;
-    botThinking = false;
   }
 });
 
