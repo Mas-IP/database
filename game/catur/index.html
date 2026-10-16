@@ -1459,12 +1459,21 @@ $("btnLeaveRoom").addEventListener("click", () => {
 });
 
 function leaveOnlineRoom() {
+  // Hapus penanda pemulihan agar refresh tidak memasukkan pemain kembali.
+  try { localStorage.removeItem("lastRoomId"); } catch (e) {
+    console.warn("Tidak bisa menghapus sesi room lokal:", e);
+  }
   cleanupOnline();
   hide($("gameSection"));
+  hide($("onlineActions"));
+  hide($("roomInfo"));
   show($("menuSection"));
   gameMode = null;
   currentGame = null;
   gameOverFlag = false;
+  selectedSq = null;
+  legalTargets = [];
+  setText("roomTokenDisplay", "—");
 }
 
 function cleanupOnline() {

@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Catur Arena — Offline, Online &amp; Bot</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050505;--bg2:#111111;--bg3:#1c1c1c;--border:#3a3a3a;
+  --text:#f5f5f5;--text2:#b8b8b8;--accent:#d8d8d8;--accent2:#bdbdbd;
+  --danger:#d98282;--success:#a8c7ad;--warn:#d8c58a;
+  --light-sq:#f7f7f7;--dark-sq:#303030;
+  --radius:12px;--radius-sm:8px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+html,body{height:100%}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;
+  overflow-x:hidden;padding:0;margin:0;line-height:1.5;
+}
+#app{width:100%;max-width:960px;padding:12px;flex:1;display:flex;flex-direction:column;gap:12px}
+.hidden{display:none!important}
+
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--bg2);border-radius:var(--radius);
+  border:1px solid var(--border);gap:8px;flex-wrap:wrap;
+}
+.header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.header h1 span{color:var(--accent)}
+.user-badge{
+  display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text2);
+  background:var(--bg3);padding:6px 10px;border-radius:20px;border:1px solid var(--border);
+}
+.user-badge strong{color:var(--text);font-weight:600}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.on{background:var(--success);box-shadow:0 0 6px var(--success)}
+.status-dot.off{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 18px;border-radius:var(--radius-sm);border:none;
+  font-family:var(--font);font-size:.9rem;font-weight:600;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{background:#f5f5f5;color:#080808}
+.btn-primary:hover:not(:disabled){background:#d9d9d9}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover:not(:disabled){background:#303030}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover:not(:disabled){opacity:.85}
+.btn-success{background:var(--success);color:#111}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.btn-block{width:100%}
+
+.menu-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;width:100%;
+}
+.menu-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px 18px;cursor:pointer;transition:all .2s ease;
+  display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+  text-align:left;color:var(--text);font-family:var(--font);
+  -webkit-tap-highlight-color:transparent;
+}
+.menu-card:hover{border-color:var(--accent);background:var(--bg3);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.menu-card:active{transform:scale(.98)}
+.menu-card .icon{font-size:1.6rem;line-height:1}
+.menu-card h3{font-size:1rem;font-weight:700}
+.menu-card p{font-size:.78rem;color:var(--text2);line-height:1.4}
+.menu-card .badge{
+  font-size:.68rem;padding:2px 8px;border-radius:10px;
+  background:rgba(220,220,220,.08);color:var(--accent);font-weight:600;
+}
+.menu-card .badge.on{background:rgba(130,165,135,.14);color:var(--success)}
+
+.game-layout{display:flex;flex-direction:column;gap:12px;width:100%}
+.game-top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;flex-wrap:wrap;
+}
+.game-top-bar .room-info{
+  font-size:.78rem;color:var(--text2);background:var(--bg3);
+  padding:6px 12px;border-radius:20px;border:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;word-break:break-all;
+}
+.player-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  transition:border-color .2s;
+}
+.player-bar.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(220,220,220,.08)}
+.player-bar .avatar{
+  width:36px;height:36px;border-radius:50%;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  border:2px solid var(--border);flex-shrink:0;
+}
+.player-bar.active .avatar{border-color:var(--accent)}
+.player-bar .pname{font-weight:600;font-size:.88rem}
+.player-bar .pcolor{font-size:.72rem;color:var(--text2)}
+.player-bar .turn-indicator{
+  margin-left:auto;font-size:.72rem;padding:3px 10px;border-radius:10px;
+  background:var(--bg3);color:var(--text2);font-weight:600;
+}
+.player-bar.active .turn-indicator{background:rgba(220,220,220,.10);color:var(--accent)}
+
+.board-container{
+  width:100%;aspect-ratio:1/1;max-width:min(560px,90vw);
+  margin:0 auto;position:relative;border-radius:6px;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);border:3px solid var(--bg3);
+  touch-action:manipulation;
+}
+#board{
+  display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+  width:100%;height:100%;position:relative;
+}
+.sq{
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(27px,7.5vw,56px);font-weight:900;line-height:1;user-select:none;
+  position:relative;cursor:pointer;transition:background .1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.sq.light{background:var(--light-sq)}
+.sq.dark{background:var(--dark-sq)}
+.sq.selected{box-shadow:inset 0 0 0 4px rgba(210,210,210,.65)}
+.sq.legal-move::after{
+  content:'';position:absolute;width:28%;height:28%;border-radius:50%;
+  background:rgba(100,100,100,.30);pointer-events:none;
+}
+.sq.legal-capture::after{
+  content:'';position:absolute;width:100%;height:100%;border-radius:50%;
+  background:transparent;border:5px solid rgba(160,160,160,.45);pointer-events:none;
+}
+.sq.last-move{background:rgba(145,145,145,.28)!important}
+.sq.check{background:radial-gradient(circle,rgba(248,81,73,.7) 0%,transparent 70%)!important}
+.sq .coord{
+  position:absolute;font-size:clamp(8px,1.5vw,11px);font-weight:700;
+  opacity:.6;pointer-events:none;
+}
+.sq .coord.rank{top:2px;left:3px}
+.sq .coord.file{bottom:2px;right:4px}
+.sq.light .coord{color:#242424}
+.sq.dark .coord{color:#e8e8e8}
+.sq .piece-white{
+  color:#fffdf4;-webkit-text-stroke:1.7px #20231f;
+  text-shadow:0 1px 0 #fff,0 2px 2px rgba(0,0,0,.72);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.8));
+  paint-order:stroke fill;z-index:2;
+}
+.sq .piece-black{
+  color:#171916;-webkit-text-stroke:1.8px #fffdf0;
+  text-shadow:0 0 1px #fffdf0,0 2px 2px rgba(0,0,0,.6);
+  filter:drop-shadow(0 1px 1px rgba(255,255,255,.45));
+  paint-order:stroke fill;z-index:2;
+}
+.sq .piece-white,.sq .piece-black{font-weight:900;transform:scale(1.04)}
+.palette-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.palette-option{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:10px 12px;text-align:left}
+.palette-option[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.palette-preview{display:grid;grid-template-columns:repeat(2,13px);grid-template-rows:repeat(2,13px);flex-shrink:0;border:1px solid rgba(255,255,255,.25);border-radius:2px;overflow:hidden}
+.palette-preview i:nth-child(1),.palette-preview i:nth-child(4){background:var(--preview-light)}
+.palette-preview i:nth-child(2),.palette-preview i:nth-child(3){background:var(--preview-dark)}
+.app-credit{width:100%;text-align:center;color:#898989;font-size:.72rem;line-height:1.7;padding:4px 12px 14px;margin-top:2px}
+.app-credit strong{color:#c9c9c9;font-weight:700}
+.app-credit a{color:#bdbdbd;text-decoration:none}
+.app-credit .credit-note{font-size:.68rem;color:#737373}
+
+.game-panel{
+  display:flex;flex-direction:column;gap:10px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;
+}
+.game-panel h3{font-size:.85rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.move-list{
+  max-height:140px;overflow-y:auto;font-size:.82rem;font-family:monospace;
+  background:var(--bg3);border-radius:var(--radius-sm);padding:8px 10px;
+  display:flex;flex-wrap:wrap;gap:4px 12px;align-content:flex-start;
+}
+.move-list .mn{color:var(--text2);min-width:28px}
+.move-list .mv{color:var(--text);font-weight:600}
+.move-list::-webkit-scrollbar{width:6px}
+.move-list::-webkit-scrollbar-track{background:transparent}
+.move-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.move-log-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.move-log-heading h3{margin:0}
+.move-log-controls{display:flex;align-items:center;gap:5px}
+.sound-toggle,.mini-toggle{padding:4px 8px;font-size:.7rem;min-height:28px}
+.sound-toggle[aria-pressed="false"],.mini-toggle[aria-pressed="false"]{opacity:.7}
+
+.game-actions{display:flex;gap:8px;flex-wrap:wrap}
+.game-actions .btn{flex:1;min-width:100px}
+
+.game-status{
+  text-align:center;font-size:.9rem;font-weight:600;padding:10px;
+  background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);
+  min-height:42px;display:flex;align-items:center;justify-content:center;
+}
+.game-status.check{color:var(--warn);border-color:rgba(190,170,115,.4)}
+.game-status.over{color:var(--danger);border-color:rgba(190,120,120,.4)}
+
+#toast-container{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:flex;flex-direction:column;gap:8px;
+  width:min(92vw,400px);pointer-events:none;
+}
+.toast{
+  padding:12px 16px;border-radius:var(--radius-sm);font-size:.85rem;
+  font-weight:500;display:flex;align-items:center;gap:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.4);animation:slideDown .3s ease;
+  pointer-events:auto;word-break:break-word;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.toast.info{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.toast.success{background:rgba(130,165,135,.14);border:1px solid rgba(130,165,135,.35);color:var(--success)}
+.toast.error{background:rgba(180,105,105,.14);border:1px solid rgba(190,120,120,.4);color:var(--danger)}
+.toast.warn{background:rgba(190,170,115,.14);border:1px solid rgba(190,170,115,.4);color:var(--warn)}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:24px;width:100%;max-width:420px;box-shadow:0 12px 48px rgba(0,0,0,.6);
+  animation:fadeUp .25s ease;
+}
+.modal h3{font-size:1.1rem;margin-bottom:12px}
+.modal p{font-size:.88rem;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.modal-actions .btn{min-width:90px}
+
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:5px;font-weight:500}
+.form-input{
+  width:100%;padding:11px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg3);color:var(--text);
+  font-family:var(--font);font-size:.92rem;transition:border-color .15s;
+}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(210,210,210,.08)}
+.form-input::placeholder{color:#484f58}
+
+.spinner{
+  width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(5,5,5,.82);z-index:2000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  font-size:.9rem;color:var(--text2);
+}
+.loading-overlay .spinner{width:32px;height:32px;border-width:3px}
+
+@media(min-width:700px){
+  #app{padding:20px;gap:16px}
+  .game-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+  .board-container{max-width:560px}
+  .game-panel{position:sticky;top:16px}
+}
+@media(max-width:400px){
+  .header h1{font-size:.95rem}
+  .menu-card{padding:16px 14px}
+  .btn{padding:9px 14px;font-size:.85rem}
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div id="app">
+  <header class="header">
+    <h1>♟️ Catur<span>Arena</span></h1>
+    <div class="user-badge">
+      <span class="status-dot off" id="connDot" title="Koneksi"></span>
+      <span id="headerUsername">Mabar via token</span>
+    </div>
+  </header>
+
+  <div id="menuSection" class="hidden">
+    <div class="menu-grid">
+      <button class="menu-card" id="menuLocal">
+        <span class="icon">👥</span>
+        <h3>Local Multiplayer</h3>
+        <p>Dua pemain, satu perangkat.</p>
+        <span class="badge on">Offline</span>
+      </button>
+      <button class="menu-card" id="menuBot" type="button" onclick="location.href='./index-ai.html'">
+        <span class="icon">🤖</span>
+        <h3>Lawan AI</h3>
+        <p>Buka halaman permainan AI terpisah.</p>
+        <span class="badge">AI • 4 level</span>
+      </button>
+      <button class="menu-card" id="menuOnline">
+        <span class="icon">🌐</span>
+        <h3>Online Multiplayer</h3>
+        <p>Buat room dan bagikan token, atau masukkan token lawan.</p>
+        <span class="badge">Token saja</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="gameSection" class="hidden">
+    <div class="game-layout">
+      <div>
+        <div class="game-top-bar" style="margin-bottom:10px">
+          <button class="btn btn-secondary btn-sm" id="btnBack">← Menu</button>
+          <div class="room-info hidden" id="roomInfo">
+            <span>🔑</span><span id="roomTokenDisplay">—</span>
+            <button class="btn btn-sm" id="btnCopyToken" style="padding:2px 8px;font-size:.7rem;background:#d8d8d8;color:#111">Salin</button>
+          </div>
+        </div>
+
+        <div class="player-bar" id="playerTop">
+          <div class="avatar">🤴</div>
+          <div>
+            <div class="pname" id="topName">Hitam</div>
+            <div class="pcolor" id="topColor">Pion Hitam</div>
+          </div>
+          <div class="turn-indicator" id="topTurn">—</div>
+        </div>
+
+        <div class="board-container" style="margin:10px auto">
+          <div id="board"></div>
+        </div>
+
+        <div class="player-bar" id="playerBottom">
+          <div class="avatar">👑</div>
+          <div>
+            <div class="pname" id="bottomName">Putih</div>
+            <div class="pcolor" id="bottomColor">Pion Putih</div>
+          </div>
+          <div class="turn-indicator" id="bottomTurn">—</div>
+        </div>
+      </div>
+
+      <div class="game-panel">
+        <div class="game-status" id="gameStatus">Pilih mode untuk mulai bermain</div>
+        <div>
+          <div class="move-log-heading">
+            <h3>Riwayat Langkah</h3>
+            <div class="move-log-controls">
+              <button class="btn btn-secondary btn-sm sound-toggle" id="btnSoundToggle" type="button" aria-pressed="true" title="Matikan suara">🔊 Suara ON</button>
+              <button class="btn btn-secondary btn-sm mini-toggle" id="btnBoardTheme" type="button" title="Ganti warna papan">🎨 Warna</button>
+              <button class="btn btn-secondary btn-sm mini-toggle" id="btnLogToggle" type="button" aria-pressed="true" title="Sembunyikan riwayat langkah">Log ON</button>
+            </div>
+          </div>
+          <div class="move-list" id="moveList"><span style="color:var(--text2);font-size:.78rem">Belum ada langkah</span></div>
+        </div>
+        <div class="game-actions">
+          <button class="btn btn-secondary" id="btnReset">🔄 Reset</button>
+          <button class="btn btn-secondary" id="btnFlip">🔃 Putar Papan</button>
+          <button class="btn btn-danger" id="btnResign">🏳️ Menyerah</button>
+        </div>
+        <div class="hidden" id="onlineActions">
+          <button class="btn btn-danger btn-block btn-sm" id="btnLeaveRoom">Keluar Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="app-credit">
+    <div><strong>Mas-IP</strong> · CaturArena</strong> · Game-TwoPlayer</div>
+  </footer>
+</div>
+
+<div class="modal-overlay hidden" id="onlineModal">
+  <div class="modal">
+    <h3>🌐 Online Multiplayer</h3>
+    <p>Buat room baru atau gabung dengan token undangan.</p>
+    <button class="btn btn-primary btn-block" id="btnCreateRoom" style="margin-bottom:10px">➕ Buat Room Baru</button>
+    <div style="display:flex;gap:8px;align-items:center;margin:14px 0">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:.75rem;color:var(--text2)">ATAU</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <div class="form-group">
+      <label for="inpJoinToken">Token Undangan</label>
+      <input type="text" id="inpJoinToken" class="form-input" placeholder="Tempel token di sini..."
+             autocomplete="off" style="font-family:monospace;text-transform:uppercase" />
+    </div>
+    <button class="btn btn-success btn-block" id="btnJoinRoom">🔗 Gabung Room</button>
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn btn-secondary" id="btnOnlineCancel">Tutup</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="boardThemeModal">
+  <div class="modal">
+    <h3>🎨 Warna Papan</h3>
+    <p>Pilih kombinasi warna yang nyaman dilihat.</p>
+    <div class="palette-options">
+      <button class="btn btn-secondary palette-option" data-theme="classic" aria-pressed="true">
+        <span class="palette-preview" style="--preview-light:#eee6d2;--preview-dark:#78916b"><i></i><i></i><i></i><i></i></span>
+        <span>Klasik Hijau</span>
+      </button>
+      <button class="btn btn-secondary palette-option" data-theme="walnut" aria-pressed="false">
+        <span class="palette-preview" style="--preview-light:#ead5b5;--preview-dark:#936747"><i></i><i></i><i></i><i></i></span>
+        <span>Kayu</span>
+      </button>
+      <button class="btn btn-secondary palette-option" data-theme="slate" aria-pressed="false">
+        <span class="palette-preview" style="--preview-light:#e4e8eb;--preview-dark:#718697"><i></i><i></i><i></i><i></i></span>
+        <span>Batu Biru</span>
+      </button>
+      <button class="btn btn-secondary palette-option" data-theme="mono" aria-pressed="false">
+        <span class="palette-preview" style="--preview-light:#f1f1ed;--preview-dark:#777b78"><i></i><i></i><i></i><i></i></span>
+        <span>Monokrom</span>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="btnThemeClose">Selesai</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="promotionModal">
+  <div class="modal">
+    <h3>♟️ Promosi Pion</h3>
+    <p>Pion mencapai baris terakhir. Pilih bidak pengganti.</p>
+    <div class="game-actions promotion-options">
+      <button class="btn btn-secondary" data-promotion="q">♕ Menteri</button>
+      <button class="btn btn-secondary" data-promotion="r">♖ Benteng</button>
+      <button class="btn btn-secondary" data-promotion="b">♗ Gajah</button>
+      <button class="btn btn-secondary" data-promotion="n">♘ Kuda</button>
+    </div>
+    <div class="modal-actions" style="margin-top:14px"><button class="btn btn-secondary" id="btnPromotionCancel">Batal</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal">
+    <h3 id="confirmTitle">Konfirmasi</h3>
+    <p id="confirmMsg">Anda yakin?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="confirmNo">Batal</button>
+      <button class="btn btn-danger" id="confirmYes">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span id="loadingText">Memuat...</span>
+</div>
+
+<script type="module">
+/* ================================================================
+   KONFIGURASI FIREBASE
+   ================================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDqqLhzJf0OaTQaP11IQGI8v1cI-YxAxP0",
+  authDomain: "chess-fr-de470.firebaseapp.com",
+  databaseURL: "https://chess-fr-de470-default-rtdb.firebaseio.com",
+  projectId: "chess-fr-de470",
+  storageBucket: "chess-fr-de470.firebasestorage.app",
+  messagingSenderId: "1008451415633",
+  appId: "1:1008451415633:web:e0ba631d5eba404132d270",
+  measurementId: "G-LW0BJ46FRK"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import {
+  getAuth, signInAnonymously, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+import {
+  getDatabase, ref, set, get, update, onValue, runTransaction,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+
+if (firebaseConfig.apiKey.startsWith("GANTI")) {
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:24px;text-align:center;font-family:sans-serif;background:#050505;color:#f5f5f5">
+      <div style="max-width:480px">
+        <h1 style="font-size:1.4rem;margin-bottom:12px">⚙️ Konfigurasi Firebase Belum Diisi</h1>
+        <p style="color:#b8b8b8;font-size:.9rem;line-height:1.6">
+          Buka file HTML ini, cari <code>const firebaseConfig</code>, lalu isi sesuai Firebase Console.
+        </p>
+      </div>
+    </div>`;
+  throw new Error("Firebase config not set");
+}
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+/* ================================================================
+   STATE GLOBAL
+   ================================================================ */
+let currentUser = null;
+let currentGame = null;
+let gameMode = null;
+let soundEnabled = true;
+let moveLogVisible = true;
+let pendingPromotion = null;
+let lastStatusSoundKey = "";
+let myColor = "w";
+let boardOrientation = "w";
+let selectedSq = null;
+let legalTargets = [];
+let lastMove = null;
+let onlineRoomId = null;
+let onlineRoomRef = null;
+let onlineUnsubscribe = null;   // fungsi unsubscribe room
+let onlineRole = null;
+let moveInProgress = false;
+let currentFEN = null;
+let gameOverFlag = false;
+let connectionUnsubscribe = null;
+let signInPromise = null;
+let onlineMoveHistory = [];     // cache riwayat langkah online
+let pendingResetRequestId = null;
+let activeResetPromptId = null;
+
+/* ================================================================
+   DOM HELPERS
+   ================================================================ */
+const $ = (id) => document.getElementById(id);
+const show = (el) => el && el.classList.remove("hidden");
+const hide = (el) => el && el.classList.add("hidden");
+const setText = (id, txt) => { const e = $(id); if (e) e.textContent = txt; };
+
+/* ================================================================
+   TEMA PAPAN — tersimpan secara lokal, tidak mengubah data room.
+   ================================================================ */
+const BOARD_THEMES = {
+  classic: { light: "#eee6d2", dark: "#78916b" },
+  walnut:  { light: "#ead5b5", dark: "#936747" },
+  slate:   { light: "#e4e8eb", dark: "#718697" },
+  mono:    { light: "#f1f1ed", dark: "#777b78" }
+};
+let boardTheme = "classic";
+function applyBoardTheme(theme, save = true) {
+  const selected = BOARD_THEMES[theme] ? theme : "classic";
+  boardTheme = selected;
+  document.documentElement.style.setProperty("--light-sq", BOARD_THEMES[selected].light);
+  document.documentElement.style.setProperty("--dark-sq", BOARD_THEMES[selected].dark);
+  document.querySelectorAll(".palette-option").forEach(btn => {
+    btn.setAttribute("aria-pressed", String(btn.dataset.theme === selected));
+    btn.classList.toggle("btn-primary", btn.dataset.theme === selected);
+  });
+  if (save) {
+    try { localStorage.setItem("caturArenaBoardTheme", selected); } catch (_) {}
+  }
+}
+try {
+  const savedTheme = localStorage.getItem("caturArenaBoardTheme");
+  if (savedTheme && BOARD_THEMES[savedTheme]) boardTheme = savedTheme;
+} catch (_) {}
+applyBoardTheme(boardTheme, false);
+$("btnBoardTheme").addEventListener("click", () => show($("boardThemeModal")));
+$("btnThemeClose").addEventListener("click", () => hide($("boardThemeModal")));
+$("boardThemeModal").addEventListener("click", e => {
+  if (e.target === $("boardThemeModal")) hide($("boardThemeModal"));
+});
+document.querySelectorAll(".palette-option").forEach(btn => {
+  btn.addEventListener("click", () => applyBoardTheme(btn.dataset.theme));
+});
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+function toast(msg, type = "info", duration = 3500) {
+  const c = $("toast-container");
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  const icons = { info: "ℹ️", success: "✅", error: "❌", warn: "⚠️" };
+  t.innerHTML = `<span>${icons[type] || "ℹ️"}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transition = "opacity .3s";
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+/* ================================================================
+   LOADING + TIMEOUT
+   ================================================================ */
+function showLoading(text = "Memuat...") { setText("loadingText", text); show($("loadingOverlay")); }
+function hideLoading() { hide($("loadingOverlay")); }
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new Error(message);
+      err.code = "app/timeout";
+      reject(err);
+    }, ms);
+  });
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
+}
+function friendlyFirebaseError(error, action) {
+  const code = String(error?.code || "").toLowerCase();
+  const message = String(error?.message || error || "kesalahan tidak diketahui");
+  if (code.includes("permission-denied") || code.includes("permission_denied") || /permission denied|permission_denied/i.test(message)) {
+    return "Firebase menolak akses database. Rules yang dikirim mengizinkan baca/tulis jika sudah dipublikasikan; pastikan Rules tersimpan di database yang benar dan URL database cocok.";
+  }
+  if (code.includes("operation-not-allowed") || code.includes("admin-restricted-operation")) {
+    return "Login anonim belum aktif. Firebase Console → Authentication → Sign-in method → aktifkan Anonymous.";
+  }
+  if (code.includes("unauthorized-domain")) {
+    return "Domain situs belum diizinkan. Firebase Console → Authentication → Settings → Authorized domains, tambahkan domain GitHub Pages situs ini.";
+  }
+  if (code.includes("invalid-api-key") || code.includes("api-key-not-valid")) {
+    return "API key Firebase tidak valid atau dibatasi. Periksa apiKey dan pengaturan API key di Google Cloud Console.";
+  }
+  if (code.includes("network") || code.includes("unavailable") || code.includes("disconnected") || /failed to fetch|network|offline|timeout/i.test(message)) {
+    return "Koneksi Firebase gagal atau timeout. Periksa internet, Database URL, dan apakah layanan Firebase bisa dijangkau.";
+  }
+  if (code.includes("too-many-requests")) {
+    return "Terlalu banyak percobaan login. Tunggu sebentar lalu coba lagi.";
+  }
+  return `${action}: ${message}${code ? ` (kode: ${code})` : ""}`;
+}
+
+/* ================================================================
+   MODAL KONFIRMASI
+   ================================================================ */
+function confirmDialog(title, msg, onYes) {
+  setText("confirmTitle", title);
+  setText("confirmMsg", msg);
+  setText("confirmNo", "Batal");
+  setText("confirmYes", "Ya, Lanjutkan");
+  show($("confirmModal"));
+  const yes = $("confirmYes"), no = $("confirmNo");
+  const cleanup = () => { hide($("confirmModal")); yes.onclick = null; no.onclick = null; };
+  yes.onclick = () => { cleanup(); onYes(); };
+  no.onclick = cleanup;
+}
+
+/* ================================================================
+   AUTENTIKASI ANONIM (RACE-SAFE)
+   ================================================================ */
+async function ensureAnonymousUser() {
+  // Jangan bergantung pada onAuthStateChanged selesai lebih dulu.
+  // Firebase dapat mengembalikan user sebelum listener memperbarui currentUser.
+  if (auth.currentUser) {
+    currentUser = auth.currentUser;
+    return currentUser;
+  }
+  if (!signInPromise) {
+    signInPromise = withTimeout(
+      signInAnonymously(auth),
+      12000,
+      "Login anonim timeout. Aktifkan Anonymous di Firebase Authentication dan periksa koneksi."
+    ).then(cred => cred.user).finally(() => { signInPromise = null; });
+  }
+  const user = await signInPromise;
+  currentUser = user;
+  return user;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    setText("headerUsername", "Mabar via token");
+    show($("menuSection"));
+    setupConnectionMonitor();
+    await tryRestoreRoom(user.uid);
+  } else {
+    currentUser = null;
+    try {
+      await ensureAnonymousUser();
+    } catch (e) {
+      console.error("Gagal membuat sesi anonim:", e);
+      show($("menuSection"));
+      toast("Online belum tersedia. Aktifkan Anonymous Auth di Firebase.", "warn", 6000);
+    }
+  }
+});
+
+/* ================================================================
+   MONITOR KONEKSI (pakai unsubscribe langsung)
+   ================================================================ */
+function setupConnectionMonitor() {
+  if (connectionUnsubscribe) { connectionUnsubscribe(); connectionUnsubscribe = null; }
+  const connRef = ref(db, ".info/connected");
+  connectionUnsubscribe = onValue(connRef, (snap) => {
+    const dot = $("connDot");
+    if (snap.val() === true) {
+      dot.className = "status-dot on";
+      dot.title = "Terhubung ke Firebase";
+    } else {
+      dot.className = "status-dot off";
+      dot.title = "Terputus dari Firebase";
+    }
+  });
+}
+
+/* ================================================================
+   MENU
+   ================================================================ */
+$("menuLocal").addEventListener("click", () => startGame("local"));
+$("btnSoundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  const btn = $("btnSoundToggle");
+  btn.textContent = soundEnabled ? "🔊 Suara ON" : "🔇 Suara OFF";
+  btn.setAttribute("aria-pressed", String(soundEnabled));
+  btn.title = soundEnabled ? "Matikan suara" : "Nyalakan suara";
+  if (soundEnabled) playSound("move");
+});
+$("btnLogToggle").addEventListener("click", () => {
+  moveLogVisible = !moveLogVisible;
+  $("moveList").classList.toggle("hidden", !moveLogVisible);
+  const btn = $("btnLogToggle");
+  btn.textContent = moveLogVisible ? "Log ON" : "Log OFF";
+  btn.setAttribute("aria-pressed", String(moveLogVisible));
+  btn.title = moveLogVisible ? "Sembunyikan riwayat langkah" : "Tampilkan riwayat langkah";
+});
+
+
+function requestPromotion(from, to) {
+  pendingPromotion = { from, to };
+  show($("promotionModal"));
+}
+document.querySelectorAll("[data-promotion]").forEach(btn => btn.addEventListener("click", () => {
+  if (!pendingPromotion) return;
+  const { from, to } = pendingPromotion;
+  const promotion = btn.dataset.promotion;
+  pendingPromotion = null;
+  hide($("promotionModal"));
+  doMove(from, to, promotion);
+}));
+$("btnPromotionCancel").addEventListener("click", () => {
+  pendingPromotion = null;
+  hide($("promotionModal"));
+  selectedSq = null; legalTargets = [];
+  document.querySelectorAll(".sq").forEach(sq => sq.classList.remove("selected","legal-move","legal-capture"));
+});
+$("menuOnline").addEventListener("click", () => show($("onlineModal")));
+$("btnOnlineCancel").addEventListener("click", () => hide($("onlineModal")));
+
+/* ================================================================
+   GENERATE TOKEN
+   ================================================================ */
+function generateToken(len = 12) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+/* ================================================================
+   BUAT ROOM
+   ================================================================ */
+$("btnCreateRoom").addEventListener("click", async () => {
+  if ($("btnCreateRoom").disabled) return;
+  $("btnCreateRoom").disabled = true;
+  hide($("onlineModal"));
+  showLoading("Membuat room...");
+  let createRoomStage = "memulai";
+  try {
+    createRoomStage = "login anonim";
+    setText("loadingText", "Menghubungkan autentikasi Firebase...");
+    const user = await ensureAnonymousUser();
+    if (!user?.uid) throw new Error("Sesi pemain belum siap. Coba buat room sekali lagi.");
+    currentUser = user;
+    const token = generateToken(12);
+    const roomId = "room_" + token;
+    const uid = user.uid;
+    setText("roomTokenDisplay", token);
+
+    const roomData = {
+      roomId, token,
+      hostUid: uid,
+      hostName: "Player Putih",
+      guestUid: null,
+      guestName: null,
+      hostColor: "w",
+      guestColor: "b",
+      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      turn: "w",
+      moves: [],
+      lastMove: null,
+      status: "waiting",
+      result: null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    createRoomStage = "menulis room ke Realtime Database";
+    setText("loadingText", "Menyimpan room ke Firebase Realtime Database...");
+    await withTimeout(
+      set(ref(db, `rooms/${roomId}`), roomData),
+      20000,
+      "Timeout saat menyimpan room ke Realtime Database."
+    );
+    localStorage.setItem("lastRoomId", roomId);
+    hideLoading();
+    toast("Room dibuat! Bagikan token ke lawan.", "success");
+    enterOnlineRoom(roomId, "host");
+  } catch (e) {
+    hideLoading();
+    console.error("Gagal membuat room — detail diagnostik:", {
+      stage: createRoomStage,
+      code: e?.code || null,
+      message: e?.message || String(e),
+      name: e?.name || null,
+      databaseURL: firebaseConfig.databaseURL,
+      authState: auth.currentUser ? "signed-in" : "signed-out",
+      projectId: firebaseConfig.projectId
+    }, e);
+    setText("roomTokenDisplay", "—");
+    let stageHint = "";
+    if (createRoomStage === "login anonim") {
+      stageHint = "Gagal pada tahap LOGIN ANONIM. Buka Firebase Console → Authentication → Sign-in method dan aktifkan Anonymous. Pastikan domain GitHub Pages terdaftar di Authorized domains. Detail: ";
+    } else if (createRoomStage === "menulis room ke Realtime Database") {
+      stageHint = "Login berhasil, tetapi tahap MENULIS ROOM ke Realtime Database gagal. Periksa Rules yang sudah dipublikasikan, Database URL, dan koneksi browser. Detail: ";
+    }
+    const detail = e?.code === "app/timeout"
+      ? (e?.message || "operasi timeout")
+      : friendlyFirebaseError(e, "Gagal membuat room");
+    toast(stageHint + detail, "error", 15000);
+    show($("onlineModal"));
+  } finally {
+    $("btnCreateRoom").disabled = false;
+  }
+});
+
+/* ================================================================
+   GABUNG ROOM
+   ================================================================ */
+$("btnJoinRoom").addEventListener("click", async () => {
+  if ($("btnJoinRoom").disabled) return;
+  const rawInput = $("inpJoinToken").value.trim().toUpperCase().replace(/[\s-]/g, "");
+  const input = rawInput.replace(/[^A-Z0-9]/g, "");
+  if (!input || input.length !== 12 || /[IO01]/.test(input)) {
+    toast("Token harus 12 karakter. Huruf I/O dan angka 0/1 tidak dipakai dalam token.", "warn", 5000);
+    return;
+  }
+  const roomId = "room_" + input;
+  $("btnJoinRoom").disabled = true;
+  hide($("onlineModal"));
+  showLoading("Mencari room...");
+
+  try {
+    await ensureAnonymousUser();
+    const roomRef = ref(db, `rooms/${roomId}`);
+    const snap = await withTimeout(get(roomRef), 9000, "Pencarian token timeout.");
+
+    if (!snap.exists()) {
+      hideLoading(); toast("Room tidak ditemukan. Periksa token.", "error"); return;
+    }
+    const room = snap.val();
+
+    if (room.guestUid === currentUser.uid) {
+      hideLoading(); enterOnlineRoom(roomId, "guest"); return;
+    }
+    if (room.hostUid === currentUser.uid) {
+      hideLoading(); enterOnlineRoom(roomId, "host"); return;
+    }
+    if (room.guestUid && room.guestUid !== currentUser.uid) {
+      hideLoading(); toast("Room sudah penuh (2 pemain).", "error"); return;
+    }
+    if (room.status !== "waiting") {
+      hideLoading(); toast("Room sudah tidak tersedia.", "warn"); return;
+    }
+
+    const result = await withTimeout(runTransaction(roomRef, (cur) => {
+      if (cur === null) return cur;
+      if (cur.guestUid && cur.guestUid !== currentUser.uid) return;
+      if (cur.status !== "waiting") return;
+      cur.guestUid = currentUser.uid;
+      cur.guestName = "Player Hitam";
+      cur.guestColor = "b";
+      cur.status = "playing";
+      cur.updatedAt = Date.now();
+      return cur;
+    }), 10000, "Proses bergabung timeout.");
+
+    if (!result.committed) {
+      hideLoading(); toast("Gagal bergabung. Room mungkin sudah penuh.", "error"); return;
+    }
+
+    localStorage.setItem("lastRoomId", roomId);
+    hideLoading();
+    toast("Berhasil bergabung!", "success");
+    enterOnlineRoom(roomId, "guest");
+  } catch (e) {
+    hideLoading();
+    console.error("Gagal bergabung — detail diagnostik:", {
+      code: e?.code || null,
+      message: e?.message || String(e),
+      name: e?.name || null,
+      databaseURL: firebaseConfig.databaseURL,
+      authState: auth.currentUser ? "signed-in" : "signed-out",
+      projectId: firebaseConfig.projectId
+    }, e);
+    toast(friendlyFirebaseError(e, "Gagal bergabung"), "error", 12000);
+    show($("onlineModal"));
+  } finally {
+    $("btnJoinRoom").disabled = false;
+  }
+});
+
+/* ================================================================
+   MASUK ROOM ONLINE
+   ================================================================ */
+function enterOnlineRoom(roomId, role) {
+  cleanupOnline();
+  onlineRoomId = roomId;
+  onlineRole = role;
+  gameMode = "online";
+  myColor = role === "host" ? "w" : "b";
+  boardOrientation = myColor;
+
+  // Reset state papan
+  currentGame = new Chess();
+  currentFEN = currentGame.fen();
+  lastMove = null;
+  selectedSq = null;
+  legalTargets = [];
+  onlineMoveHistory = [];
+  gameOverFlag = false;
+  lastStatusSoundKey = "";
+
+  hide($("menuSection"));
+  show($("gameSection"));
+  show($("onlineActions"));
+  show($("roomInfo"));
+  $("btnResign").style.display = "";
+  hide($("roomInfo")) && show($("roomInfo")); // tetap tampil
+  show($("roomInfo"));
+
+  // PENTING: build papan DULU dengan orientasi yang benar
+  buildBoard();
+  renderPieces();
+  updateMoveListFromArray([]);
+
+  const roomRef = ref(db, `rooms/${roomId}`);
+  onlineRoomRef = roomRef;
+
+  // Simpan unsubscribe function ASLI dari onValue
+  onlineUnsubscribe = onValue(roomRef, (snap) => {
+    if (!snap.exists()) {
+      toast("Room telah dihapus.", "warn");
+      leaveOnlineRoom();
+      return;
+    }
+    handleRoomUpdate(snap.val());
+  }, (err) => {
+    console.error("Room listener error:", err);
+    toast("Gagal mendengarkan room.", "error");
+  });
+
+  setText("gameStatus", "Menunggu sinkronisasi...");
+}
+
+/* ================================================================
+   HANDLE ROOM UPDATE — FEN adalah sumber kebenaran
+   ================================================================ */
+function handleResetRequest(data) {
+  const request = data?.resetRequest;
+  if (!request || !request.id) return;
+
+  if (request.status === "pending") {
+    if (request.fromUid === currentUser?.uid) {
+      pendingResetRequestId = request.id;
+      setText("gameStatus", "Permintaan reset terkirim. Menunggu persetujuan lawan...");
+      return;
+    }
+    if (request.fromUid !== currentUser?.uid && activeResetPromptId !== request.id) {
+      activeResetPromptId = request.id;
+      confirmDialog(
+        "Permintaan Reset",
+        `${request.fromColor === "w" ? "Player Putih" : "Player Hitam"} meminta reset papan. Setujui untuk memulai ulang catur, atau tolak agar permainan berlanjut.`,
+        async () => {
+          try {
+            await runTransaction(onlineRoomRef, cur => {
+              if (!cur || cur.resetRequest?.id !== request.id || cur.resetRequest?.status !== "pending") return;
+              cur.fen = new Chess().fen();
+              cur.turn = "w";
+              cur.moves = [];
+              cur.lastMove = null;
+              cur.status = "playing";
+              cur.result = null;
+              cur.resetRequest = { ...cur.resetRequest, status: "accepted", resolvedBy: currentUser?.uid || null };
+              cur.updatedAt = Date.now();
+              return cur;
+            });
+          } catch (e) {
+            toast("Gagal menyetujui reset. Coba lagi.", "error");
+          } finally {
+            activeResetPromptId = null;
+          }
+        }
+      );
+      $("confirmNo").textContent = "Tolak";
+      $("confirmYes").textContent = "Setujui";
+      $("confirmNo").onclick = async () => {
+        hide($("confirmModal"));
+        $("confirmYes").onclick = null;
+        $("confirmNo").onclick = null;
+        try {
+          await runTransaction(onlineRoomRef, cur => {
+            if (!cur || cur.resetRequest?.id !== request.id || cur.resetRequest?.status !== "pending") return;
+            cur.resetRequest = { ...cur.resetRequest, status: "declined", resolvedBy: currentUser?.uid || null };
+            cur.updatedAt = Date.now();
+            return cur;
+          });
+        } catch (e) {
+          toast("Gagal menolak permintaan reset.", "error");
+        } finally {
+          activeResetPromptId = null;
+        }
+      };
+    }
+  } else if (request.id === pendingResetRequestId) {
+    if (request.status === "accepted") {
+      toast("Lawan menyetujui reset. Permainan dimulai ulang.", "success");
+    } else if (request.status === "declined") {
+      toast("Lawan menolak reset. Permainan dilanjutkan.", "info");
+    }
+    pendingResetRequestId = null;
+  }
+}
+
+function handleRoomUpdate(data) {
+  const previousFen = currentGame ? currentGame.fen() : null;
+  setText("roomTokenDisplay", data.token || "—");
+  handleResetRequest(data);
+
+  // Nama pemain sesuai warna
+  const isWhite = myColor === "w";
+  const myName = isWhite ? (data.hostName || "Player Putih") : (data.guestName || "Player Hitam");
+  const oppName = isWhite ? (data.guestName || "Player Hitam") : (data.hostName || "Player Putih");
+  setText("bottomName", myName);
+  setText("topName", oppName);
+  setText("bottomColor", isWhite ? "Pion Putih" : "Pion Hitam");
+  setText("topColor", isWhite ? "Pion Hitam" : "Pion Putih");
+
+  // Update game dari FEN saja (jangan rebuild dari moves)
+  if (data.fen) {
+    try {
+      currentGame = new Chess(data.fen);
+      currentFEN = data.fen;
+      lastMove = data.lastMove || null;
+    } catch (e) {
+      console.error("FEN tidak valid:", data.fen, e);
+      return;
+    }
+  }
+
+  // Riwayat langkah untuk display (array SAN)
+  onlineMoveHistory = Array.isArray(data.moves) ? data.moves.slice() : [];
+
+  renderPieces();
+  updateMoveListFromArray(onlineMoveHistory);
+  // Mainkan suara langkah lawan yang baru diterima; langkah lokal sudah berbunyi saat dikirim.
+  if (previousFen && data.fen && previousFen !== data.fen) {
+    const lastSan = onlineMoveHistory[onlineMoveHistory.length - 1] || "";
+    playSound(lastSan.includes("x") ? "capture" : "move");
+  }
+
+  // Status
+  if (data.status === "finished" && data.result) {
+    gameOverFlag = true;
+    const st = $("gameStatus");
+    st.textContent = `🏁 ${data.result}`;
+    st.classList.add("over");
+    st.classList.remove("check");
+  } else if (data.status === "waiting") {
+    setText("gameStatus", "⏳ Menunggu lawan bergabung... Bagikan token.");
+  } else if (data.status === "playing") {
+    updateStatusText();
+  }
+}
+
+/* ================================================================
+   PAPAN
+   ================================================================ */
+function buildBoard() {
+  const board = $("board");
+  board.innerHTML = "";
+  const files = ["a","b","c","d","e","f","g","h"];
+  const ranks = boardOrientation === "w" ? [8,7,6,5,4,3,2,1] : [1,2,3,4,5,6,7,8];
+  const fileOrder = boardOrientation === "w" ? files : [...files].reverse();
+
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const rank = ranks[r];
+      const file = fileOrder[f];
+      const sq = document.createElement("div");
+      const isLight = (r + f) % 2 === 0;
+      sq.className = `sq ${isLight ? "light" : "dark"}`;
+      sq.dataset.square = `${file}${rank}`;
+      if (f === 0) {
+        const c = document.createElement("span");
+        c.className = "coord rank";
+        c.textContent = rank;
+        sq.appendChild(c);
+      }
+      if (r === 7) {
+        const c = document.createElement("span");
+        c.className = "coord file";
+        c.textContent = file;
+        sq.appendChild(c);
+      }
+      sq.addEventListener("click", () => onSquareClick(sq.dataset.square));
+      board.appendChild(sq);
+    }
+  }
+}
+
+const PIECE_UNICODE = {
+  wK:"♔", wQ:"♕", wR:"♖", wB:"♗", wN:"♘", wP:"♙",
+  bK:"♚", bQ:"♛", bR:"♜", bB:"♝", bN:"♞", bP:"♟"
+};
+
+function renderPieces() {
+  if (!currentGame) return;
+  const boardArr = currentGame.board();
+  const files = ["a","b","c","d","e","f","g","h"];
+
+  document.querySelectorAll(".sq").forEach(sq => {
+    const coords = sq.querySelectorAll(".coord");
+    sq.innerHTML = "";
+    coords.forEach(c => sq.appendChild(c));
+    sq.classList.remove("selected","legal-move","legal-capture","last-move","check");
+  });
+
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const piece = boardArr[r][f];
+      if (!piece) continue;
+      const file = files[f];
+      const rank = 8 - r;
+      const sq = document.querySelector(`.sq[data-square="${file}${rank}"]`);
+      if (sq) {
+        const span = document.createElement("span");
+        span.className = piece.color === "w" ? "piece-white" : "piece-black";
+        span.textContent = PIECE_UNICODE[piece.color + piece.type.toUpperCase()] || "";
+        sq.appendChild(span);
+      }
+    }
+  }
+
+  if (lastMove) {
+    document.querySelector(`.sq[data-square="${lastMove.from}"]`)?.classList.add("last-move");
+    document.querySelector(`.sq[data-square="${lastMove.to}"]`)?.classList.add("last-move");
+  }
+
+  if (currentGame.isCheck && currentGame.isCheck()) {
+    const turn = currentGame.turn();
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const p = boardArr[r][f];
+        if (p && p.type === "k" && p.color === turn) {
+          const file = files[f];
+          const rank = 8 - r;
+          document.querySelector(`.sq[data-square="${file}${rank}"]`)?.classList.add("check");
+        }
+      }
+    }
+  }
+
+  updateTurnIndicators();
+}
+
+function updateTurnIndicators() {
+  if (!currentGame) return;
+  const turn = currentGame.turn();
+  const bottomIsTurn = (turn === boardOrientation);
+  $("playerBottom").classList.toggle("active", bottomIsTurn);
+  $("playerTop").classList.toggle("active", !bottomIsTurn);
+  setText("bottomTurn", bottomIsTurn ? "Giliran" : "Menunggu");
+  setText("topTurn", !bottomIsTurn ? "Giliran" : "Menunggu");
+}
+
+/* ================================================================
+   STATUS TEXT
+   ================================================================ */
+function updateStatusText() {
+  if (!currentGame) return;
+  const status = $("gameStatus");
+  status.classList.remove("check","over");
+  const fenKey = currentGame.fen();
+
+  if (currentGame.isCheckmate()) {
+    const winner = currentGame.turn() === "w" ? "Hitam" : "Putih";
+    status.textContent = `♛ Skakmat! ${winner} menang.`;
+    status.classList.add("over");
+    if (!gameOverFlag && lastStatusSoundKey !== "mate:" + fenKey) {
+      playSound("checkmate");
+      lastStatusSoundKey = "mate:" + fenKey;
+    }
+    gameOverFlag = true; return;
+  }
+  if (currentGame.isStalemate()) { status.textContent = "🤝 Remis (Stalemate)."; status.classList.add("over"); gameOverFlag = true; return; }
+  if (currentGame.isInsufficientMaterial && currentGame.isInsufficientMaterial()) { status.textContent = "🤝 Remis (Materi tidak cukup)."; status.classList.add("over"); gameOverFlag = true; return; }
+  if (currentGame.isThreefoldRepetition && currentGame.isThreefoldRepetition()) { status.textContent = "🤝 Remis (Repetisi 3x)."; status.classList.add("over"); gameOverFlag = true; return; }
+  if (currentGame.isDraw && currentGame.isDraw()) { status.textContent = "🤝 Remis (Remis)."; status.classList.add("over"); gameOverFlag = true; return; }
+  gameOverFlag = false;
+
+  if (currentGame.isCheck()) {
+    status.textContent = `⚠️ Skak! ${currentGame.turn() === "w" ? "Putih" : "Hitam"} harus menyelamatkan raja.`;
+    status.classList.add("check");
+    const checkKey = "check:" + fenKey;
+    if (lastStatusSoundKey !== checkKey) playSound("check");
+    lastStatusSoundKey = checkKey;
+  } else {
+    const t = currentGame.turn() === "w" ? "Putih" : "Hitam";
+    status.textContent = `Giliran ${t}.`;
+    lastStatusSoundKey = "";
+  }
+}
+
+function updateMoveListFromArray(moves) {
+  const el = $("moveList");
+  if (!moves || moves.length === 0) {
+    el.innerHTML = '<span style="color:var(--text2);font-size:.78rem">Belum ada langkah</span>';
+    return;
+  }
+  let html = "";
+  for (let i = 0; i < moves.length; i += 2) {
+    const n = Math.floor(i / 2) + 1;
+    html += `<span><span class="mn">${n}.</span> <span class="mv">${moves[i]}</span></span>`;
+    if (moves[i + 1]) {
+      html += `<span class="mv" style="color:var(--text2)">${moves[i + 1]}</span>`;
+    }
+  }
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateMoveList() {
+  if (!currentGame) return;
+  updateMoveListFromArray(currentGame.history());
+}
+
+/* ================================================================
+   KLIK KOTAK
+   ================================================================ */
+function onSquareClick(square) {
+  if (!currentGame || gameOverFlag || pendingPromotion) return;
+  if (gameMode === "online" && currentGame.turn() !== myColor) {
+    toast("Bukan giliran Anda.", "warn", 1500); return;
+  }
+  const piece = currentGame.get(square);
+
+  if (selectedSq && legalTargets.includes(square)) {
+    const candidate = currentGame.moves({ square: selectedSq, verbose: true }).find(m => m.to === square);
+    if (candidate && candidate.promotion) requestPromotion(selectedSq, square);
+    else doMove(selectedSq, square);
+    return;
+  }
+
+  if (piece && piece.color === currentGame.turn()) {
+    selectedSq = square;
+    const moves = currentGame.moves({ square, verbose: true });
+    legalTargets = moves.map(m => m.to);
+    document.querySelectorAll(".sq").forEach(sq =>
+      sq.classList.remove("selected","legal-move","legal-capture"));
+    document.querySelector(`.sq[data-square="${square}"]`)?.classList.add("selected");
+    moves.forEach(m => {
+      const el = document.querySelector(`.sq[data-square="${m.to}"]`);
+      if (el) el.classList.add(m.captured ? "legal-capture" : "legal-move");
+    });
+    return;
+  }
+
+  selectedSq = null; legalTargets = [];
+  document.querySelectorAll(".sq").forEach(sq =>
+    sq.classList.remove("selected","legal-move","legal-capture"));
+}
+
+/* ================================================================
+   EKSEKUSI LANGKAH
+   ================================================================ */
+function doMove(from, to, promotion = "q") {
+  if (!currentGame) return null;
+
+  if (gameMode === "online") {
+    void doOnlineMove(from, to, promotion);
+    return null;
+  }
+
+  try {
+    const move = currentGame.move({ from, to, promotion });
+    if (!move) return null;
+    currentFEN = currentGame.fen();
+    lastMove = { from: move.from, to: move.to };
+    selectedSq = null; legalTargets = [];
+    renderPieces();
+    updateMoveList();
+    playSound(move.captured ? "capture" : "move");
+    updateStatusText();
+    return move;
+  } catch (e) {
+    toast("Langkah ilegal.", "error", 1500);
+    return null;
+  }
+}
+
+/* ================================================================
+   SUARA
+   ================================================================ */
+let audioCtx = null;
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") void audioCtx.resume();
+    const now = audioCtx.currentTime;
+    const notes = {
+      move:      [{f:520,t:0,d:.075},{f:390,t:.035,d:.07}],
+      capture:   [{f:240,t:0,d:.075},{f:150,t:.045,d:.11},{f:620,t:.025,d:.045}],
+      check:     [{f:660,t:0,d:.09},{f:880,t:.10,d:.12}],
+      checkmate: [{f:440,t:0,d:.12},{f:330,t:.14,d:.15},{f:220,t:.31,d:.24}],
+      win:       [{f:523.25,t:0,d:.13},{f:659.25,t:.13,d:.13},{f:783.99,t:.26,d:.18},{f:1046.5,t:.44,d:.28}]
+    };
+    for (const note of (notes[type] || notes.move)) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type === "move" ? "triangle" : type === "capture" ? "square" : "sine";
+      osc.frequency.setValueAtTime(note.f, now + note.t);
+      gain.gain.setValueAtTime(0.0001, now + note.t);
+      gain.gain.linearRampToValueAtTime(type === "move" ? .035 : type === "capture" ? .065 : .055, now + note.t + .015);
+      gain.gain.exponentialRampToValueAtTime(.0001, now + note.t + note.d);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now + note.t); osc.stop(now + note.t + note.d + .02);
+    }
+  } catch (_) {}
+}
+
+async function doOnlineMove(from, to, promotion = "q") {
+  if (!onlineRoomRef || moveInProgress) return;
+  if (!currentGame || currentGame.turn() !== myColor) return;
+
+  moveInProgress = true;
+  try {
+    const testGame = new Chess(currentGame.fen());
+    const move = testGame.move({ from, to, promotion });
+    if (!move) { toast("Langkah ilegal.", "error", 1500); return; }
+
+    const newFen = testGame.fen();
+    const newMoves = [...(onlineMoveHistory), move.san];
+    const baseFen = currentFEN;
+
+    const result = await withTimeout(runTransaction(onlineRoomRef, (cur) => {
+      if (cur === null) return cur;
+      if (cur.fen !== baseFen) return; // konflik
+      if (cur.status !== "playing") return;
+      cur.fen = newFen;
+      cur.turn = testGame.turn();
+      cur.moves = newMoves;
+      cur.lastMove = { from: move.from, to: move.to };
+      cur.updatedAt = Date.now();
+      return cur;
+    }), 10000, "Kirim langkah timeout.");
+
+    if (!result.committed) {
+      toast("Konflik langkah! Menyinkronkan ulang...", "warn");
+      // listener onValue akan segera mengirim FEN terbaru
+    } else {
+      // Update lokal optimistis (listener juga akan konfirmasi)
+      currentGame = testGame;
+      currentFEN = newFen;
+      onlineMoveHistory = newMoves;
+      lastMove = { from: move.from, to: move.to };
+      selectedSq = null; legalTargets = [];
+      renderPieces();
+      updateMoveListFromArray(onlineMoveHistory);
+      playSound(move.captured ? "capture" : "move");
+      updateStatusText();
+    }
+  } catch (e) {
+    console.error(e);
+    toast("Gagal mengirim langkah: " + (e?.message || "unknown"), "error");
+  } finally {
+    moveInProgress = false;
+  }
+}
+
+/* ================================================================
+   RESET / FLIP / RESIGN
+   ================================================================ */
+$("btnReset").addEventListener("click", () => {
+  if (gameMode === "online") {
+    if (!onlineRoomRef || !currentUser?.uid) {
+      toast("Room belum siap. Coba lagi.", "warn");
+      return;
+    }
+    get(onlineRoomRef).then(snap => {
+      const room = snap.val();
+      if (!room) throw new Error("Room tidak ditemukan.");
+      if (room.resetRequest?.status === "pending") {
+        toast("Masih ada permintaan reset yang menunggu keputusan.", "warn");
+        return;
+      }
+      const requestId = `${currentUser.uid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      return update(onlineRoomRef, {
+        resetRequest: {
+          id: requestId,
+          fromUid: currentUser.uid,
+          fromColor: myColor,
+          status: "pending",
+          createdAt: Date.now()
+        },
+        updatedAt: serverTimestamp()
+      }).then(() => {
+        pendingResetRequestId = requestId;
+        toast("Permintaan reset dikirim. Menunggu persetujuan lawan.", "info", 5000);
+      });
+    }).catch(e => {
+      console.error("Gagal meminta reset:", e);
+      toast("Gagal mengirim permintaan reset.", "error");
+    });
+  } else {
+    startGame(gameMode);
+  }
+});
+
+$("btnFlip").addEventListener("click", () => {
+  boardOrientation = boardOrientation === "w" ? "b" : "w";
+  buildBoard();
+  renderPieces();
+  updateMoveListFromArray(gameMode === "online" ? onlineMoveHistory : (currentGame ? currentGame.history() : []));
+});
+
+$("btnResign").addEventListener("click", () => {
+  if (gameMode !== "online" || !onlineRoomRef) {
+    toast("Menyerah hanya tersedia di mode online.", "warn"); return;
+  }
+  confirmDialog("Menyerah", "Anda yakin ingin menyerah? Lawan akan menang.", async () => {
+    try {
+      const winner = myColor === "w" ? "Hitam" : "Putih";
+      await update(onlineRoomRef, {
+        status: "finished",
+        result: `${winner} menang (lawan menyerah).`,
+        updatedAt: serverTimestamp()
+      });
+      toast("Anda menyerah.", "info");
+    } catch (e) { toast("Gagal mengirim.", "error"); }
+  });
+});
+
+/* ================================================================
+   KELUAR ROOM
+   ================================================================ */
+$("btnLeaveRoom").addEventListener("click", () => {
+  confirmDialog("Keluar Room", "Anda akan keluar dari room ini. Room tetap tersimpan dan bisa dilanjutkan nanti.", () => {
+    leaveOnlineRoom();
+  });
+});
+
+function leaveOnlineRoom() {
+  cleanupOnline();
+  hide($("gameSection"));
+  show($("menuSection"));
+  gameMode = null;
+  currentGame = null;
+  gameOverFlag = false;
+}
+
+function cleanupOnline() {
+  if (onlineUnsubscribe) {
+    try { onlineUnsubscribe(); } catch (_) {}
+    onlineUnsubscribe = null;
+  }
+  onlineRoomId = null;
+  onlineRoomRef = null;
+  onlineRole = null;
+  moveInProgress = false;
+  onlineMoveHistory = [];
+  pendingResetRequestId = null;
+  activeResetPromptId = null;
+}
+
+/* ================================================================
+   PEMULIHAN ROOM
+   ================================================================ */
+async function tryRestoreRoom(uid) {
+  const lastRoomId = localStorage.getItem("lastRoomId");
+  if (!lastRoomId) return;
+  try {
+    const snap = await get(ref(db, `rooms/${lastRoomId}`));
+    if (!snap.exists()) { localStorage.removeItem("lastRoomId"); return; }
+    const room = snap.val();
+    if (room.hostUid === uid) {
+      enterOnlineRoom(lastRoomId, "host");
+      toast("Room sebelumnya dipulihkan.", "info");
+    } else if (room.guestUid === uid) {
+      enterOnlineRoom(lastRoomId, "guest");
+      toast("Room sebelumnya dipulihkan.", "info");
+    } else {
+      localStorage.removeItem("lastRoomId");
+    }
+  } catch (e) {
+    console.error("Gagal memulihkan room:", e);
+  }
+}
+
+/* ================================================================
+   START LOCAL
+   ================================================================ */
+function startGame(mode) {
+  cleanupOnline();
+  gameMode = mode;
+  gameOverFlag = false;
+  currentGame = new Chess();
+  currentFEN = currentGame.fen();
+  lastMove = null;
+  selectedSq = null;
+  legalTargets = [];
+  boardOrientation = "w";
+
+  hide($("menuSection"));
+  show($("gameSection"));
+  hide($("onlineActions"));
+  hide($("roomInfo"));
+  $("btnResign").style.display = mode === "online" ? "" : "none";
+  hide($("promotionModal"));
+  pendingPromotion = null;
+  lastStatusSoundKey = "";
+
+  setText("bottomName", "Player Putih");
+  setText("topName", "Player Hitam");
+  setText("bottomColor", "Pion Putih");
+  setText("topColor", "Pion Hitam");
+
+  buildBoard();
+  renderPieces();
+  updateMoveList();
+  updateStatusText();
+}
+
+/* ================================================================
+   BACK
+   ================================================================ */
+$("btnBack").addEventListener("click", () => {
+  if (gameMode === "online") {
+    confirmDialog("Kembali ke Menu", "Anda akan meninggalkan tampilan game. Room tetap aktif; gunakan token untuk bergabung kembali.", () => {
+      if (onlineUnsubscribe) { try { onlineUnsubscribe(); } catch(_){} onlineUnsubscribe = null; }
+      onlineRoomRef = null;
+      hide($("gameSection"));
+      show($("menuSection"));
+      gameMode = null;
+    });
+  } else {
+    hide($("gameSection"));
+    show($("menuSection"));
+    gameMode = null;
+  }
+});
+
+/* ================================================================
+   COPY TOKEN
+   ================================================================ */
+$("btnCopyToken").addEventListener("click", async () => {
+  const token = $("roomTokenDisplay").textContent;
+  if (!token || token === "—") return;
+  try {
+    await navigator.clipboard.writeText(token);
+    toast("Token disalin ke clipboard.", "success", 2000);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = token; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+    toast("Token disalin.", "success", 2000);
+  }
+});
+
+/* ================================================================
+   KEYBOARD ESC
+   ================================================================ */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    selectedSq = null; legalTargets = [];
+    document.querySelectorAll(".sq").forEach(sq =>
+      sq.classList.remove("selected","legal-move","legal-capture"));
+  }
+});
+
+/* ================================================================
+   BERSIHKAN SAAT REFRESH
+   ================================================================ */
+window.addEventListener("beforeunload", () => {
+  if (onlineUnsubscribe) { try { onlineUnsubscribe(); } catch(_){} }
+  if (connectionUnsubscribe) { try { connectionUnsubscribe(); } catch(_){} }
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+show($("menuSection"));
+buildBoard();
+
+console.log("♟️ Catur Online siap. Firebase:", firebaseConfig.projectId);
+</script>
+</body>
+</html>
