@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4f5f7">
+<title>Tic Tac Toe</title>
+
+<style>
+:root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-alt: #f0f2f5;
+    --text: #292e35;
+    --muted: #777f8b;
+    --border: #e3e6eb;
+    --primary: #536b91;
+    --primary-dark: #405779;
+    --x: #ff1744;
+    --o: #00e6a0;
+    --success: #358365;
+    --danger: #c75353;
+    --shadow: 0 12px 36px rgba(31, 41, 55, .07);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 22px 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button, input, select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.container {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid rgba(220, 224, 230, .8);
+    border-radius: 22px;
+    padding: 23px;
+    box-shadow: var(--shadow);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+h1 {
+    font-size: clamp(24px, 6vw, 30px);
+    letter-spacing: -.8px;
+    font-weight: 750;
+}
+
+.subtitle {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.score-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.score-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 13px;
+    border-radius: 15px;
+    text-align: center;
+    min-width: 0;
+}
+
+.player-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-weight: 650;
+    font-size: 13px;
+}
+
+.player-symbol {
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.x-text { color: var(--x); }
+.o-text { color: var(--o); }
+
+.score-val {
+    display: block;
+    font-size: 27px;
+    font-weight: 750;
+    margin: 7px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.connection {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #b7bdc7;
+    flex-shrink: 0;
+}
+
+.dot.online {
+    background: #43a57b;
+    box-shadow: 0 0 0 3px rgba(67, 165, 123, .12);
+}
+
+.dot.waiting {
+    background: #d5a34d;
+}
+
+.dot.offline {
+    background: #d46b6b;
+}
+
+.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 5px;
+    background: var(--surface-alt);
+    border-radius: 13px;
+    margin-bottom: 16px;
+}
+
+.mode-btn {
+    padding: 10px 4px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #707783;
+    font-size: 12px;
+    font-weight: 650;
+    transition: background .2s, color .2s;
+}
+
+.mode-btn.active {
+    background: white;
+    color: var(--primary-dark);
+    box-shadow: 0 2px 7px rgba(30, 41, 59, .07);
+}
+
+.panel {
+    display: none;
+    margin-bottom: 16px;
+    padding: 14px;
+    background: #f7f8fa;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.panel.visible {
+    display: block;
+}
+
+.panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.field {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #d9dee6;
+    border-radius: 10px;
+    background: white;
+    color: var(--text);
+    outline: none;
+}
+
+.field:focus {
+    border-color: #8196b5;
+    box-shadow: 0 0 0 3px rgba(83, 107, 145, .09);
+}
+
+.online-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.online-actions .field {
+    flex: 1;
+    width: auto;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.btn {
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    transition: filter .15s, transform .15s;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(.98);
+}
+
+.btn-primary {
+    color: white;
+    background: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    color: #49515e;
+    background: #e8ebf0;
+}
+
+.btn-danger {
+    color: white;
+    background: var(--danger);
+}
+
+.btn-success {
+    color: white;
+    background: var(--success);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.room-info {
+    margin-top: 11px;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    color: var(--primary-dark);
+}
+
+.room-code {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 4px;
+}
+
+.status {
+    text-align: center;
+    min-height: 25px;
+    margin: 16px 0;
+    color: #535d6b;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.game-board {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 18px;
+}
+
+.cell {
+    position: relative;
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fafbfc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(42px, 12vw, 58px);
+    font-weight: 750;
+    user-select: none;
+    overflow: hidden;
+    transition: background .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+.cell:not(.disabled):hover {
+    background: #f0f3f7;
+    box-shadow: 0 4px 12px rgba(41, 46, 53, .06);
+}
+
+.cell:active:not(.disabled) {
+    transform: scale(.98);
+}
+
+.cell.x { color: var(--x); }
+.cell.o { color: var(--o); }
+
+.cell .mark-symbol {
+    font-weight: 950;
+    text-shadow: 0 1px 0 currentColor, 0 0 10px color-mix(in srgb, currentColor 22%, transparent);
+    -webkit-text-stroke: .6px currentColor;
+}
+
+.mark-symbol {
+    display: block;
+    line-height: 1;
+    transform-origin: center;
+    will-change: transform, opacity;
+}
+
+.cell.mark-pop .mark-symbol {
+    animation: mark-pop .34s cubic-bezier(.22,.8,.25,1) both;
+}
+
+.cell.disabled {
+    cursor: default;
+}
+
+.cell.fading .mark-symbol {
+    animation: fading 1.35s ease-in-out infinite;
+}
+
+.cell.winning {
+    background: #fafbfc !important;
+    border-color: var(--border) !important;
+    box-shadow: none !important;
+}
+
+.cell.winning.x { color: var(--x) !important; }
+.cell.winning.o { color: var(--o) !important; }
+
+.departing-mark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+    animation: mark-depart .26s ease-out forwards;
+}
+
+.win-line-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.win-line {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+}
+
+.win-line.visible {
+    opacity: 1;
+    animation: win-line-appear .28s ease-out both;
+}
+
+@keyframes mark-pop {
+    0% { opacity: .35; transform: scale(.72); }
+    65% { opacity: 1; transform: scale(1.07); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fading {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .32; transform: scale(.96); }
+}
+
+@keyframes mark-depart {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(.72); }
+}
+
+@keyframes win-line-appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.footer {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+.footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.brand-watermark {
+    margin-top: 18px;
+    padding-top: 13px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    user-select: none;
+}
+
+.brand-name {
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 1.8px;
+    line-height: 1.25;
+    opacity: .82;
+}
+
+.brand-credit {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.25px;
+}
+
+.brand-credit span {
+    color: var(--x);
+    padding: 0 3px;
+}
+
+.brand-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 9px;
+    opacity: .8;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.footer-actions .btn {
+    flex: 1;
+}
+
+.notice {
+    padding: 12px;
+    border-radius: 11px;
+    background: #edf1f7;
+    color: #485a76;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+}
+
+.notice-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.notice-actions .btn {
+    flex: 1;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 360px) {
+    .container { padding: 16px; }
+    .mode-btn { font-size: 11px; }
+    .online-actions { flex-wrap: wrap; }
+    .online-actions .field { min-width: 100%; }
+}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+
+<body>
+<main class="container">
+    <header class="header">
+        <h1>Tic Tac Toe</h1>
+        <p>
+    </header>
+
+
+
+    <nav class="mode-selector">
+        <button class="mode-btn active" id="btn-pvp"
+                onclick="setMode('pvp')">Lokal</button>
+        <button class="mode-btn" id="btn-pvb"
+                onclick="setMode('pvb')">🤖 Bot</button>
+        <button class="mode-btn" id="btn-online"
+                onclick="setMode('online')">🌐 Online</button>
+    </nav>
+
+    <section class="panel" id="diff-panel">
+        <div class="panel-title">Tingkat kesulitan bot</div>
+        <select class="field" id="bot-difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+        </select>
+    </section>
+
+    <section class="panel" id="online-panel">
+        <div class="panel-title">Mabar bersama teman</div>
+
+        <button class="btn btn-primary btn-block"
+                id="create-btn" onclick="createRoom()">
+            + Buat Room Baru
+        </button>
+
+        <div style="text-align:center;margin:12px 0;color:#8a9099;font-size:12px">
+            atau gabung room teman
+        </div>
+
+        <div class="online-actions">
+            <input class="field" id="room-input"
+                   maxlength="5" inputmode="numeric"
+                   placeholder="KODE ROOM">
+            <button class="btn btn-secondary"
+                    id="join-btn" onclick="joinRoom()">Gabung</button>
+        </div>
+
+        <div class="room-info" id="room-info"></div>
+    </section>
+
+    <section class="score-board">
+        <div class="score-card">
+            <div class="player-heading">
+                <span class="player-symbol x-text">X</span>
+                <span id="label-x">Player X</span>
+            </div>
+            <span class="score-val x-text" id="score-x">0</span>
+            <div class="connection" id="connection-x">
+                <span class="dot"></span>
+                <span id="connection-x-text">Mode lokal</span>
+            </div>
+        </div>
+
+        <div class="score-card">
+            <div class="player-heading">
+                <span class="player-symbol o-text">O</span>
+                <span id="label-o">Player O</span>
+            </div>
+            <span class="score-val o-text" id="score-o">0</span>
+            <div class="connection" id="connection-o">
+                <span class="dot"></span>
+                <span id="connection-o-text">Mode lokal</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="status" id="status" aria-live="polite">
+        Giliran Player X
+    </div>
+
+    <section class="game-board" id="board" aria-label="Papan permainan">
+        <svg id="win-line-overlay" class="win-line-overlay" aria-hidden="true">
+            <line id="win-line" class="win-line"
+                  x1="0" y1="0" x2="0" y2="0"/>
+        </svg>
+        <button class="cell" data-index="0" aria-label="Kotak 1"></button>
+        <button class="cell" data-index="1" aria-label="Kotak 2"></button>
+        <button class="cell" data-index="2" aria-label="Kotak 3"></button>
+        <button class="cell" data-index="3" aria-label="Kotak 4"></button>
+        <button class="cell" data-index="4" aria-label="Kotak 5"></button>
+        <button class="cell" data-index="5" aria-label="Kotak 6"></button>
+        <button class="cell" data-index="6" aria-label="Kotak 7"></button>
+        <button class="cell" data-index="7" aria-label="Kotak 8"></button>
+        <button class="cell" data-index="8" aria-label="Kotak 9"></button>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-actions">
+            <button class="btn btn-secondary" id="reset-score-btn"
+                    onclick="requestResetScore()">
+                Reset Score
+            </button>
+            <button class="btn btn-secondary" id="sound-btn"
+                    onclick="toggleSound()">🔊 Suara Aktif</button>
+        </div>
+
+        <div id="reset-notice" class="notice hidden" aria-live="polite">
+            <div id="reset-message"></div>
+            <div class="notice-actions" id="reset-actions"></div>
+        </div>
+
+        <p class="footer-note">
+            Langkah ke-4 menghapus langkah pertama pemain tersebut.
+            <br>Skor tetap tersimpan selama room aktif.
+        </p>
+
+        <div class="brand-watermark" aria-label="Kredit Mas-IP dan Webmasip Game Hub">
+            <div class="brand-credit">WEB MAS-IP<span>•</span>INFINITY TIC TAC TOE<span>•</span>GAME HUB TWO-PLAYER</div>
+            <div class="brand-meta">Score system &amp; game interface</div>
+        </div>
+    </footer>
+</main>
+
+<script>
+'use strict';
+
+/* =========================================================
+   FIREBASE CONFIGURATION
+   ========================================================= */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAlwswN6Pb_5BRb0V1-fACD6rvabadSqR0",
+    authDomain: "tictactoe-1b0ac.firebaseapp.com",
+    databaseURL: "https://tictactoe-1b0ac-default-rtdb.firebaseio.com",
+    projectId: "tictactoe-1b0ac",
+    storageBucket: "tictactoe-1b0ac.firebasestorage.app",
+    messagingSenderId: "300482218483",
+    appId: "1:300482218483:web:5106509cc593e25b602a86",
+    measurementId: "G-9N47NHZS0Z"
+};
+
+if (!window.firebase || !firebase.initializeApp || !firebase.database) {
+    throw new Error('Firebase SDK gagal dimuat. Periksa koneksi internet atau CDN Firebase.');
+}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let firebaseConnected = false;
+db.ref('.info/connected').on('value', snapshot => {
+    firebaseConnected = snapshot.val() === true;
+    document.documentElement.dataset.firebaseConnected = firebaseConnected ? 'true' : 'false';
+    if (!firebaseConnected && gameMode === 'online' && !currentRoomId) {
+        statusDisplay.textContent = 'Menghubungkan ke Firebase...';
+    } else if (firebaseConnected && gameMode === 'online' && !currentRoomId &&
+               statusDisplay.textContent === 'Menghubungkan ke Firebase...') {
+        statusDisplay.textContent = 'Firebase terhubung. Buat room atau masukkan kode teman.';
+    }
+});
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+const EMPTY_BOARD = () => Array(9).fill('');
+
+let board = EMPTY_BOARD();
+let currentPlayer = 'X';
+let nextFirstPlayer = 'X';
+let gameActive = true;
+let gameMode = 'pvp';
+
+let history = { X: [], O: [] };
+let scores = { X: 0, O: 0 };
+
+let isBotThinking = false;
+let myRole = null;
+let currentRoomId = null;
+let roomListener = null;
+let presenceListener = null;
+let onlineState = null;
+let roomData = null;
+
+let soundEnabled = true;
+let lastResultId = null;
+let autoRoundTimer = null;
+let botTimer = null;
+let resetBusy = false;
+let resetMessageTimer = null;
+
+const winningConditions = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+];
+
+const cells = [...document.querySelectorAll('.cell')];
+
+const $ = id => document.getElementById(id);
+
+const statusDisplay = $('status');
+const roomInfo = $('room-info');
+const onlinePanel = $('online-panel');
+const diffPanel = $('diff-panel');
+const scoreXEl = $('score-x');
+const scoreOEl = $('score-o');
+
+/* =========================================================
+   SOUND
+   ========================================================= */
+
+let audioContext = null;
+let previousRenderedBoard = EMPTY_BOARD();
+
+function playMoveSound() {
+    playTone(620, 0.075, 0, 'sine');
+}
+
+function playTone(frequency, duration, delay = 0, type = 'sine') {
+    if (!soundEnabled) return;
+
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+
+        audioContext ||= new AudioCtx();
+
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const start = audioContext.currentTime + delay;
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, start);
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.13, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start(start);
+        oscillator.stop(start + duration + 0.03);
+    } catch (error) {
+        console.warn('Audio tidak tersedia:', error);
+    }
+}
+
+function playWinSound() {
+    playTone(523.25, 0.20, 0);
+    playTone(659.25, 0.20, 0.13);
+    playTone(783.99, 0.32, 0.26);
+}
+
+function playLoseSound() {
+    playTone(392, 0.23, 0, 'triangle');
+    playTone(311, 0.25, 0.17, 'triangle');
+    playTone(233, 0.38, 0.34, 'triangle');
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    $('sound-btn').textContent =
+        soundEnabled ? '🔊 Suara Aktif' : '🔇 Suara Mati';
+
+    if (soundEnabled) playTone(520, 0.1);
+}
+
+/* =========================================================
+   UI AND CONNECTION INDICATORS
+   ========================================================= */
+
+function setConnection(role, state, label) {
+    const container = $('connection-' + role.toLowerCase());
+    const dot = container.querySelector('.dot');
+    const text = $('connection-' + role.toLowerCase() + '-text');
+
+    dot.className = 'dot ' + state;
+    text.textContent = label;
+}
+
+function renderConnections() {
+    if (gameMode !== 'online' || !currentRoomId) {
+        setConnection('X', '', 'Mode lokal');
+        setConnection('O', '', 'Mode lokal');
+        return;
+    }
+
+    const players = roomData && roomData.players
+        ? roomData.players : {};
+
+    for (const role of ['X', 'O']) {
+        const player = players[role];
+
+        if (!player) {
+            setConnection(
+                role, 'waiting',
+                role === 'O' ? 'Menunggu lawan' : 'Menunggu pemain'
+            );
+        } else if (player.connected === true) {
+            setConnection(role, 'online', 'Terhubung');
+        } else {
+            setConnection(role, 'offline', 'Terputus');
+        }
+    }
+}
+
+function updateScoreUI() {
+    scoreXEl.textContent = scores.X || 0;
+    scoreOEl.textContent = scores.O || 0;
+}
+
+function renderBoard() {
+    cells.forEach((cell, index) => {
+        const mark = board[index] || '';
+        const previousMark = previousRenderedBoard[index] || '';
+        const isNewMark = Boolean(mark) && previousMark !== mark;
+
+        // Bidak yang baru terhapus tetap ditampilkan sesaat sebagai animasi keluar.
+        // Ini membuat perpindahan bidak tertua terasa lebih halus.
+        cell.replaceChildren();
+
+        if (mark) {
+            const symbol = document.createElement('span');
+            symbol.className = 'mark-symbol';
+            symbol.textContent = mark;
+            cell.appendChild(symbol);
+        } else if (previousMark && previousMark !== mark) {
+            const departing = document.createElement('span');
+            departing.className = 'departing-mark ' + previousMark.toLowerCase();
+            departing.style.color = previousMark === 'X' ? 'var(--x)' : 'var(--o)';
+            departing.textContent = previousMark;
+            cell.appendChild(departing);
+            departing.addEventListener('animationend', () => departing.remove(), { once: true });
+        }
+
+        cell.className = 'cell';
+
+        if (mark) {
+            cell.classList.add(mark.toLowerCase(), 'disabled');
+            if (isNewMark) cell.classList.add('mark-pop');
+        }
+
+        cell.disabled = Boolean(mark) || !gameActive;
+    });
+
+    previousRenderedBoard = [...board];
+
+    // Bidak tertua dari kedua pemain berkedip ketika masing-masing
+    // sudah memiliki tiga bidak aktif dan akan memindahkan bidak berikutnya.
+    if (gameActive) {
+        for (const player of ['X', 'O']) {
+            if (history[player].length === 3) {
+                const oldestIndex = history[player][0];
+
+                if (board[oldestIndex] === player) {
+                    cells[oldestIndex]?.classList.add('fading');
+                }
+            }
+        }
+    }
+
+    const line = $('win-line');
+    if (line) {
+        line.classList.remove('visible');
+        line.setAttribute('x1', '0');
+        line.setAttribute('y1', '0');
+        line.setAttribute('x2', '0');
+        line.setAttribute('y2', '0');
+    }
+}
+
+function highlightWinner(indices) {
+    if (!indices || indices.length !== 3) return;
+
+    const boardElement = $('board');
+    const svg = $('win-line-overlay');
+    const line = $('win-line');
+
+    if (!boardElement || !svg || !line) return;
+
+    const boardRect = boardElement.getBoundingClientRect();
+    const firstRect = cells[indices[0]].getBoundingClientRect();
+    const lastRect = cells[indices[2]].getBoundingClientRect();
+
+    const x1 = firstRect.left + firstRect.width / 2 - boardRect.left;
+    const y1 = firstRect.top + firstRect.height / 2 - boardRect.top;
+    const x2 = lastRect.left + lastRect.width / 2 - boardRect.left;
+    const y2 = lastRect.top + lastRect.height / 2 - boardRect.top;
+
+    svg.setAttribute('viewBox', `0 0 ${boardElement.clientWidth} ${boardElement.clientHeight}`);
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+
+    const winner = board[indices[0]];
+    line.setAttribute('stroke', winner === 'X' ? 'var(--x)' : 'var(--o)');
+
+    line.classList.remove('visible');
+    void line.getBoundingClientRect();
+    line.classList.add('visible');
+
+    indices.forEach(index => cells[index].classList.add('winning'));
+}
+
+function checkWin(targetBoard = board) {
+    for (const line of winningConditions) {
+        const [a, b, c] = line;
+
+        if (
+            targetBoard[a] &&
+            targetBoard[a] === targetBoard[b] &&
+            targetBoard[a] === targetBoard[c]
+        ) {
+            return line;
+        }
+    }
+
+    return null;
+}
+
+function clearTimers() {
+    clearTimeout(autoRoundTimer);
+    clearTimeout(botTimer);
+    autoRoundTimer = null;
+    botTimer = null;
+    isBotThinking = false;
+}
+
+/* =========================================================
+   MODE SELECTION
+   ========================================================= */
+
+function setMode(mode) {
+    if (mode === gameMode) return;
+
+    clearTimers();
+    detachRoomListeners();
+
+    gameMode = mode;
+    currentRoomId = null;
+    myRole = null;
+    roomData = null;
+    onlineState = null;
+    lastResultId = null;
+    resetBusy = false;
+
+    $('btn-pvp').classList.toggle('active', mode === 'pvp');
+    $('btn-pvb').classList.toggle('active', mode === 'pvb');
+    $('btn-online').classList.toggle('active', mode === 'online');
+
+    onlinePanel.classList.toggle('visible', mode === 'online');
+    diffPanel.classList.toggle('visible', mode === 'pvb');
+
+    $('label-x').textContent = 'Player X';
+    $('label-o').textContent = mode === 'pvb' ? 'Bot' : 'Player O';
+
+    $('create-btn').disabled = false;
+    $('join-btn').disabled = false;
+    roomInfo.textContent = '';
+
+    hideResetNotice();
+
+    board = EMPTY_BOARD();
+    history = { X: [], O: [] };
+    scores = { X: 0, O: 0 };
+    currentPlayer = 'X';
+    nextFirstPlayer = 'X';
+    gameActive = true;
+
+    updateScoreUI();
+    renderBoard();
+    renderConnections();
+
+    statusDisplay.textContent =
+        mode === 'online'
+            ? 'Buat room atau gabung room teman'
+            : 'Giliran Player X';
+
+    $('reset-score-btn').disabled = false;
+}
+
+/* =========================================================
+   ROOM MANAGEMENT AND PRESENCE
+   ========================================================= */
+
+function detachRoomListeners() {
+    if (currentRoomId && roomListener) {
+        db.ref('rooms/' + currentRoomId).off('value', roomListener);
+    }
+
+    if (presenceListener) {
+        db.ref('.info/connected').off('value', presenceListener);
+    }
+
+    roomListener = null;
+    presenceListener = null;
+}
+
+function listenRoom() {
+    if (!currentRoomId) return;
+
+    const roomRef = db.ref('rooms/' + currentRoomId);
+
+    roomListener = snapshot => {
+        const data = snapshot.val();
+
+        if (!data) {
+            roomData = null;
+            statusDisplay.textContent = 'Room sudah tidak tersedia.';
+            renderConnections();
+            return;
+        }
+
+        roomData = data;
+        board = Array.isArray(data.board) ? data.board : EMPTY_BOARD();
+
+        history = {
+            X: Array.isArray(data.historyX) ? data.historyX : [],
+            O: Array.isArray(data.historyO) ? data.historyO : []
+        };
+
+        scores = data.scores || { X: 0, O: 0 };
+        currentPlayer = data.currentPlayer || 'X';
+        nextFirstPlayer = data.nextFirstPlayer || 'X';
+        gameActive = data.gameActive !== false;
+
+        updateScoreUI();
+        renderBoard();
+        renderConnections();
+        renderResetRequest(data.resetRequest);
+
+        statusDisplay.textContent = data.status || 'Game siap';
+
+        const winningLine = checkWin();
+
+        if (winningLine) {
+            highlightWinner(winningLine);
+        }
+
+        handleOnlineResult(data);
+    };
+
+    roomRef.on('value', roomListener, error => {
+        console.error('[Firebase] Gagal membaca room:', error);
+        statusDisplay.textContent = 'Gagal membaca room: ' + (error.code || error.message);
+    });
+}
+
+function attachPresence() {
+    if (!currentRoomId || !myRole) return;
+
+    const connectedRef = db.ref('.info/connected');
+    const playerRef = db.ref(
+        'rooms/' + currentRoomId + '/players/' + myRole
+    );
+
+    presenceListener = snapshot => {
+        if (snapshot.val() !== true) {
+            playerRef.update({ connected: false }).catch(() => {});
+            return;
+        }
+
+        playerRef.onDisconnect().update({
+            connected: false,
+            disconnectedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => playerRef.update({
+            connected: true,
+            lastSeen: firebase.database.ServerValue.TIMESTAMP,
+            disconnectedAt: null
+        }))
+            .catch(error => {
+                console.warn('Presence gagal:', error);
+            });
+    };
+
+    connectedRef.on('value', presenceListener);
+}
+
+async function createRoom() {
+    if (gameMode !== 'online' || currentRoomId) return;
+
+    const roomId = Math.floor(10000 + Math.random() * 90000).toString();
+    const roomRef = db.ref('rooms/' + roomId);
+
+    $('create-btn').disabled = true;
+    $('join-btn').disabled = true;
+    statusDisplay.textContent = 'Membuat room...';
+
+    const initialRoom = {
+        board: EMPTY_BOARD(),
+        historyX: [],
+        historyO: [],
+        scores: { X: 0, O: 0 },
+        currentPlayer: 'X',
+        nextFirstPlayer: 'X',
+        gameActive: true,
+        status: 'Menunggu lawan bergabung...',
+        players: {
+            X: { connected: false }
+        },
+        resetRequest: null,
+        roundId: 0,
+        lastActivityAt: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    try {
+        const result = await roomRef.transaction(current => {
+            if (current !== null) return;
+            return initialRoom;
+        });
+
+        if (!result.committed) {
+            $('create-btn').disabled = false;
+            $('join-btn').disabled = false;
+            return createRoom();
+        }
+
+        currentRoomId = roomId;
+        myRole = 'X';
+
+        roomInfo.innerHTML =
+            'Kode room kamu:<br><span class="room-code">' +
+            roomId + '</span><br>Bagikan kode ini kepada temanmu.';
+
+        listenRoom();
+        attachPresence();
+
+    } catch (error) {
+        console.error('[Firebase] Gagal membuat room:', error);
+        statusDisplay.textContent = 'Gagal membuat room: ' + (error.code || error.message);
+        roomInfo.textContent = 'Periksa Firebase Realtime Database Rules dan Console browser.';
+        $('create-btn').disabled = false;
+        $('join-btn').disabled = false;
+    }
+}
+
+async function joinRoom() {
+    if (gameMode !== 'online' || currentRoomId) return;
+
+    const roomId = $('room-input').value.trim();
+
+    if (!/^\d{5}$/.test(roomId)) {
+        alert('Masukkan kode room 5 angka.');
+        return;
+    }
+
+    $('create-btn').disabled = true;
+    $('join-btn').disabled = true;
+    statusDisplay.textContent = 'Menghubungkan ke room...';
+
+    const roomRef = db.ref('rooms/' + roomId);
+    const playerORef = roomRef.child('players/O');
+
+    try {
+        // Pastikan room benar-benar ada sebelum mencoba mengambil slot O.
+        const roomSnapshot = await roomRef.once('value');
+        const room = roomSnapshot.val();
+
+        if (!room) {
+            alert('Room tidak ditemukan. Pastikan kode benar dan teman sudah berhasil membuat room.');
+            statusDisplay.textContent = 'Room tidak ditemukan.';
+            return;
+        }
+
+        // Transaksi hanya pada slot Player O. Transaksi seluruh room sebelumnya
+        // bisa dibatalkan ketika callback Firebase pertama kali menerima data null.
+        const result = await playerORef.transaction(playerO => {
+            if (playerO == null) {
+                return {
+                    connected: false,
+                    joinedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+            }
+
+            const disconnectedAt = Number(playerO.disconnectedAt || 0);
+            const joinedAt = Number(playerO.joinedAt || 0);
+            const now = Date.now();
+
+            const staleDisconnect = playerO.connected === false &&
+                disconnectedAt > 0 && now - disconnectedAt > 15000;
+            const legacyStaleSlot = playerO.connected === false &&
+                disconnectedAt === 0 && joinedAt === 0;
+            const expiredReservation = playerO.connected === false &&
+                joinedAt > 0 && now - joinedAt > 30000;
+
+            // Jangan mengambil alih slot pemain yang masih aktif.
+            if (staleDisconnect || legacyStaleSlot || expiredReservation) {
+                return {
+                    connected: false,
+                    joinedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+            }
+
+            // Slot terisi dan belum terbukti kedaluwarsa: batalkan transaksi.
+            return;
+        }, undefined, false);
+
+        if (!result.committed) {
+            const latestSnapshot = await roomRef.once('value');
+            const latestRoom = latestSnapshot.val();
+
+            if (!latestRoom) {
+                alert('Room tidak ditemukan atau sudah dihapus.');
+                statusDisplay.textContent = 'Room tidak ditemukan.';
+            } else if (latestRoom.players && latestRoom.players.O) {
+                alert('Slot Player O sudah terisi atau sesi sebelumnya belum terdeteksi terputus. Jika pemain lama sudah keluar, buat room baru.');
+                statusDisplay.textContent = 'Slot Player O belum tersedia.';
+            } else {
+                alert('Gagal mengambil slot Player O. Coba lagi dan periksa Firebase Realtime Database Rules.');
+                statusDisplay.textContent = 'Gagal mengambil slot Player O.';
+            }
+            return;
+        }
+
+        // Status room bersifat informatif; kegagalan update status tidak boleh
+        // membatalkan keanggotaan yang sudah berhasil direservasi.
+        roomRef.update({
+            status: 'Kedua pemain bergabung. Giliran Player X',
+            lastActivityAt: firebase.database.ServerValue.TIMESTAMP
+        }).catch(error => {
+            console.warn('[Firebase] Slot O berhasil, tetapi status room gagal diperbarui:', error);
+        });
+
+        currentRoomId = roomId;
+        myRole = 'O';
+
+        roomInfo.innerHTML =
+            'Room: <strong>' + roomId +
+            '</strong><br>Kamu bermain sebagai Player O.';
+
+        listenRoom();
+        attachPresence();
+
+    } catch (error) {
+        console.error('[Firebase] Gagal bergabung ke room:', error);
+        const detail = (error.code ? error.code + ': ' : '') + (error.message || error);
+        alert('Tidak dapat bergabung: ' + detail +
+            '\n\nPeriksa Firebase Realtime Database Rules dan Console browser.');
+        statusDisplay.textContent = 'Koneksi room gagal: ' + (error.code || error.message || 'unknown');
+    } finally {
+        if (!currentRoomId) {
+            $('create-btn').disabled = false;
+            $('join-btn').disabled = false;
+        }
+    }
+}
+
+/* =========================================================
+   GAME ENGINE
+   ========================================================= */
+
+function canPlay(index) {
+    if (!gameActive || board[index] || isBotThinking) return false;
+
+    if (gameMode === 'online') {
+        if (!currentRoomId || !myRole) return false;
+        if (!roomData?.players?.X || !roomData?.players?.O) return false;
+        if (currentPlayer !== myRole) return false;
+        if (roomData.resetRequest) return false;
+    }
+
+    return true;
+}
+
+function handleCellClick(event) {
+    const index = Number(event.currentTarget.dataset.index);
+
+    if (!canPlay(index)) {
+        if (gameMode === 'online' && !currentRoomId) {
+            statusDisplay.textContent = 'Buat atau gabung room terlebih dahulu.';
+        }
+        return;
+    }
+
+    if (gameMode === 'online') {
+        playOnlineMove(index);
+    } else {
+        playLocalMove(index);
+    }
+}
+
+function calculateMove(data, index) {
+    if (
+        !data ||
+        data.gameActive === false ||
+        data.board[index] ||
+        data.currentPlayer == null
+    ) {
+        return null;
+    }
+
+    const player = data.currentPlayer;
+    const nextBoard = Array.isArray(data.board)
+        ? [...data.board] : EMPTY_BOARD();
+
+    const nextHistory = {
+        X: Array.isArray(data.historyX) ? [...data.historyX] : [],
+        O: Array.isArray(data.historyO) ? [...data.historyO] : []
+    };
+
+    nextBoard[index] = player;
+    nextHistory[player].push(index);
+
+    if (nextHistory[player].length > 3) {
+        const removed = nextHistory[player].shift();
+        nextBoard[removed] = '';
+    }
+
+    const winningLine = checkWin(nextBoard);
+    const nextPlayer = player === 'X' ? 'O' : 'X';
+    const nextScores = {
+        X: data.scores?.X || 0,
+        O: data.scores?.O || 0
+    };
+
+    let status = 'Giliran Player ' + nextPlayer;
+    let active = true;
+    let first = data.nextFirstPlayer || 'X';
+
+    if (winningLine) {
+        active = false;
+        nextScores[player]++;
+        first = player;
+        status = player + ' menang!';
+    }
+
+    return {
+        board: nextBoard,
+        historyX: nextHistory.X,
+        historyO: nextHistory.O,
+        currentPlayer: nextPlayer,
+        nextFirstPlayer: first,
+        scores: nextScores,
+        gameActive: active,
+        status,
+        roundId: data.roundId || 0,
+        lastWinner: winningLine ? player : null,
+        lastResultId: winningLine
+            ? String(data.roundId || 0) + '-' + player + '-' +
+                nextScores[player]
+            : null,
+        lastActivityAt: firebase.database.ServerValue.TIMESTAMP
+    };
+}
+
+function playLocalMove(index) {
+    const data = {
+        board,
+        historyX: history.X,
+        historyO: history.O,
+        scores,
+        currentPlayer,
+        nextFirstPlayer,
+        gameActive
+    };
+
+    const result = calculateMove(data, index);
+    if (!result) return;
+
+    playMoveSound();
+    board = result.board;
+    history = { X: result.historyX, O: result.historyO };
+    scores = result.scores;
+    currentPlayer = result.currentPlayer;
+    nextFirstPlayer = result.nextFirstPlayer;
+    gameActive = result.gameActive;
+
+    updateScoreUI();
+    renderBoard();
+
+    const line = checkWin();
+
+    if (line) {
+        highlightWinner(line);
+        statusDisplay.textContent =
+            (gameMode === 'pvb' && result.lastWinner === 'O')
+                ? 'Bot menang!'
+                : 'Player ' + result.lastWinner + ' menang!';
+
+        const winner = result.lastWinner;
+        const humanWon = gameMode !== 'pvb' || winner === 'X';
+
+        if (humanWon) playWinSound();
+        else playLoseSound();
+
+        scheduleLocalNextRound();
+        return;
+    }
+
+    statusDisplay.textContent = 'Giliran Player ' + currentPlayer;
+
+    if (gameMode === 'pvb' && currentPlayer === 'O') {
+        isBotThinking = true;
+        renderBoard();
+        statusDisplay.textContent = 'Bot sedang berpikir...';
+        botTimer = setTimeout(makeBotMove, 450);
+    }
+}
+
+async function playOnlineMove(index) {
+    if (!currentRoomId || !myRole) return;
+
+    const roomRef = db.ref('rooms/' + currentRoomId);
+
+    try {
+        const result = await roomRef.transaction(data => {
+            if (
+                !data ||
+                data.currentPlayer !== myRole ||
+                data.gameActive === false ||
+                data.resetRequest ||
+                data.board?.[index]
+            ) {
+                return;
+            }
+
+            const move = calculateMove(data, index);
+            if (!move) return;
+
+            return { ...data, ...move };
+        });
+
+        if (!result.committed) {
+            statusDisplay.textContent = 'Langkah tidak diterima. Coba lagi.';
+        } else {
+            playMoveSound();
+        }
+    } catch (error) {
+        statusDisplay.textContent = 'Koneksi terganggu. Coba lagi.';
+        console.error(error);
+    }
+}
+
+/* =========================================================
+   BOT
+   ========================================================= */
+
+function simulateMove(index, player) {
+    const simulatedBoard = [...board];
+    const simulatedHistory = [...history[player]];
+
+    simulatedBoard[index] = player;
+    simulatedHistory.push(index);
+
+    if (simulatedHistory.length > 3) {
+        simulatedBoard[simulatedHistory.shift()] = '';
+    }
+
+    return checkWin(simulatedBoard) !== null;
+}
+
+function getSmartMove(emptySpots) {
+    for (const index of emptySpots) {
+        if (simulateMove(index, 'O')) return index;
+    }
+
+    for (const index of emptySpots) {
+        if (simulateMove(index, 'X')) return index;
+    }
+
+    if (emptySpots.includes(4)) return 4;
+
+    const corners = [0, 2, 6, 8].filter(i => emptySpots.includes(i));
+
+    if (corners.length) {
+        return corners[Math.floor(Math.random() * corners.length)];
+    }
+
+    return emptySpots.length
+        ? emptySpots[Math.floor(Math.random() * emptySpots.length)]
+        : -1;
+}
+
+function makeBotMove() {
+    if (!gameActive || gameMode !== 'pvb' || currentPlayer !== 'O') {
+        isBotThinking = false;
+        return;
+    }
+
+    const emptySpots = board
+        .map((value, index) => value === '' ? index : -1)
+        .filter(index => index !== -1);
+
+    if (!emptySpots.length) {
+        isBotThinking = false;
+        return;
+    }
+
+    const difficulty = $('bot-difficulty').value;
+    const probability = {
+        easy: 0.3,
+        normal: 0.7,
+        hard: 1
+    }[difficulty] ?? 0.7;
+
+    let index = -1;
+
+    if (Math.random() < probability) {
+        index = getSmartMove(emptySpots);
+    }
+
+    if (index < 0) {
+        index = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+    }
+
+    isBotThinking = false;
+    playLocalMove(index);
+}
+
+/* =========================================================
+   AUTOMATIC NEXT ROUND
+   ========================================================= */
+
+function scheduleLocalNextRound() {
+    clearTimeout(autoRoundTimer);
+
+    autoRoundTimer = setTimeout(() => {
+        board = EMPTY_BOARD();
+        history = { X: [], O: [] };
+        currentPlayer = nextFirstPlayer;
+        gameActive = true;
+        lastResultId = null;
+
+        renderBoard();
+        statusDisplay.textContent = 'Giliran Player ' + currentPlayer;
+
+        if (gameMode === 'pvb' && currentPlayer === 'O') {
+            isBotThinking = true;
+            statusDisplay.textContent = 'Bot sedang berpikir...';
+            botTimer = setTimeout(makeBotMove, 450);
+        }
+    }, 2000);
+}
+
+function handleOnlineResult(data) {
+    if (data.gameActive || !data.lastResultId) return;
+    if (lastResultId === data.lastResultId) return;
+
+    lastResultId = data.lastResultId;
+
+    const winner = data.lastWinner;
+    if (!winner) return;
+
+    statusDisplay.textContent = winner + ' menang! Ronde berikutnya segera dimulai.';
+    playTone(winner === myRole ? 660 : 300, 0.25);
+
+    if (winner === myRole) playWinSound();
+    else playLoseSound();
+
+    clearTimeout(autoRoundTimer);
+
+    autoRoundTimer = setTimeout(async () => {
+        if (!currentRoomId) return;
+
+        const roomRef = db.ref('rooms/' + currentRoomId);
+
+        try {
+            await roomRef.transaction(data => {
+                if (
+                    !data ||
+                    data.gameActive !== false ||
+                    data.lastResultId !== lastResultId
+                ) {
+                    return;
+                }
+
+                return {
+                    ...data,
+                    board: EMPTY_BOARD(),
+                    historyX: [],
+                    historyO: [],
+                    currentPlayer: data.nextFirstPlayer || 'X',
+                    gameActive: true,
+                    roundId: (data.roundId || 0) + 1,
+                    lastWinner: null,
+                    lastResultId: null,
+                    status: 'Giliran Player ' + (data.nextFirstPlayer || 'X'),
+                    lastActivityAt: firebase.database.ServerValue.TIMESTAMP
+                };
+            });
+        } catch (error) {
+            console.error('Gagal memulai ronde berikutnya:', error);
+        }
+    }, 2000);
+}
+
+/* =========================================================
+   RESET SCORE: MUTUAL CONSENT
+   ========================================================= */
+
+function hideResetNotice() {
+    $('reset-notice').classList.add('hidden');
+    $('reset-message').textContent = '';
+    $('reset-actions').replaceChildren();
+    clearTimeout(resetMessageTimer);
+}
+
+function showResetNotice(message, buttons = []) {
+    const notice = $('reset-notice');
+    const actions = $('reset-actions');
+
+    notice.classList.remove('hidden');
+    $('reset-message').textContent = message;
+    actions.replaceChildren();
+
+    buttons.forEach(item => {
+        const button = document.createElement('button');
+        button.className = 'btn ' + item.className;
+        button.textContent = item.label;
+        button.onclick = item.action;
+        actions.appendChild(button);
+    });
+}
+
+async function requestResetScore() {
+    if (resetBusy) return;
+
+    if (gameMode !== 'online' || !currentRoomId) {
+        scores = { X: 0, O: 0 };
+        updateScoreUI();
+
+        if (gameMode === 'online') return;
+
+        showResetNotice('Skor berhasil direset.');
+        resetMessageTimer = setTimeout(hideResetNotice, 1800);
+        return;
+    }
+
+    if (!myRole || !roomData?.players?.O || !roomData?.players?.X) {
+        showResetNotice('Kedua pemain harus bergabung sebelum reset skor.');
+        return;
+    }
+
+    const existing = roomData.resetRequest;
+
+    if (existing) {
+        if (existing.requester === myRole) {
+            showResetNotice('Menunggu lawan menyetujui reset skor.');
+            return;
+        }
+
+        renderResetRequest(existing);
+        return;
+    }
+
+    resetBusy = true;
+
+    const requestId = Date.now() + '-' +
+        Math.random().toString(36).slice(2, 8);
+
+    try {
+        const roomRef = db.ref('rooms/' + currentRoomId);
+
+        const result = await roomRef.transaction(data => {
+            if (
+                !data ||
+                !data.players?.X ||
+                !data.players?.O ||
+                data.resetRequest
+            ) {
+                return;
+            }
+
+            data.resetRequest = {
+                id: requestId,
+                requester: myRole,
+                approvals: { [myRole]: true },
+                status: 'pending',
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            data.status = 'Menunggu persetujuan reset skor...';
+            return data;
+        });
+
+        if (!result.committed) {
+            showResetNotice('Permintaan reset gagal. Periksa status room.');
+        } else {
+            showResetNotice('Permintaan reset dikirim. Menunggu persetujuan lawan.');
+        }
+    } catch (error) {
+        showResetNotice('Gagal mengirim permintaan: ' + error.message);
+    } finally {
+        resetBusy = false;
+    }
+}
+
+function renderResetRequest(request) {
+    if (!request || !currentRoomId) {
+        if (gameMode === 'online') hideResetNotice();
+        return;
+    }
+
+    const otherRole = myRole === 'X' ? 'O' : 'X';
+
+    if (request.requester === myRole) {
+        showResetNotice(
+            'Permintaan reset skor terkirim. Menunggu Player ' +
+            otherRole + ' menyetujui atau menolak.'
+        );
+        return;
+    }
+
+    if (request.status !== 'pending') {
+        showResetNotice('Permintaan reset sudah diproses.');
+        return;
+    }
+
+    showResetNotice(
+        'Player ' + request.requester +
+        ' meminta reset skor. Setujui untuk menghapus skor kedua pemain?',
+        [
+            {
+                label: 'Setuju',
+                className: 'btn-success',
+                action: () => answerResetRequest(request.id, true)
+            },
+            {
+                label: 'Tolak',
+                className: 'btn-danger',
+                action: () => answerResetRequest(request.id, false)
+            }
+        ]
+    );
+}
+
+async function answerResetRequest(requestId, accepted) {
+    if (!currentRoomId || !myRole || resetBusy) return;
+
+    resetBusy = true;
+
+    try {
+        const roomRef = db.ref('rooms/' + currentRoomId);
+
+        const result = await roomRef.transaction(data => {
+            if (
+                !data ||
+                !data.resetRequest ||
+                data.resetRequest.id !== requestId ||
+                data.resetRequest.status !== 'pending' ||
+                data.resetRequest.requester === myRole
+            ) {
+                return;
+            }
+
+            if (!accepted) {
+                // Hapus permintaan agar kedua pemain bisa langsung melanjutkan
+                // permainan. Jika status dibiarkan 'rejected' di resetRequest,
+                // canPlay() tetap memblokir semua langkah karena resetRequest masih ada.
+                data.resetRequest = null;
+                data.status = 'Reset skor ditolak. Permainan dilanjutkan.';
+                data.lastActivityAt = firebase.database.ServerValue.TIMESTAMP;
+                return data;
+            }
+
+            data.resetRequest.approvals ||= {};
+            data.resetRequest.approvals[myRole] = true;
+
+            const approvals = data.resetRequest.approvals;
+
+            if (approvals.X === true && approvals.O === true) {
+                data.scores = { X: 0, O: 0 };
+                data.board = EMPTY_BOARD();
+                data.historyX = [];
+                data.historyO = [];
+                data.currentPlayer = data.nextFirstPlayer || 'X';
+                data.gameActive = true;
+                data.roundId = (data.roundId || 0) + 1;
+                data.lastWinner = null;
+                data.lastResultId = null;
+                data.resetRequest = null;
+                data.status = 'Skor direset. Giliran Player ' +
+                    data.currentPlayer;
+            }
+
+            return data;
+        });
+
+        if (!result.committed) {
+            showResetNotice('Permintaan sudah diproses atau tidak berlaku.');
+        }
+    } catch (error) {
+        showResetNotice('Gagal memproses persetujuan: ' + error.message);
+    } finally {
+        resetBusy = false;
+    }
+}
+
+/* =========================================================
+   EVENTS AND INITIALIZATION
+   ========================================================= */
+
+cells.forEach(cell => {
+    cell.addEventListener('click', handleCellClick);
+});
+
+$('bot-difficulty').addEventListener('change', () => {
+    clearTimers();
+    board = EMPTY_BOARD();
+    history = { X: [], O: [] };
+    currentPlayer = 'X';
+    nextFirstPlayer = 'X';
+    gameActive = true;
+
+    renderBoard();
+    statusDisplay.textContent = 'Giliran Player X';
+});
+
+$('room-input').addEventListener('input', event => {
+    event.target.value = event.target.value
+        .replace(/\D/g, '')
+        .slice(0, 5);
+});
+
+window.addEventListener('beforeunload', () => {
+    detachRoomListeners();
+});
+
+renderBoard();
+updateScoreUI();
+renderConnections();
+</script>
+</body>
+</html>

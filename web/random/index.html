@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prank Minta PAP</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #0b141a;
+            color: #e9edef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            overflow: hidden; 
+        }
+
+        .chat-card {
+            background: #111b21;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #222d34;
+        }
+
+        .chat-box {
+            background-color: #202c33;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #d1d5db;
+            margin-bottom: 24px;
+        }
+
+        /* PERBAIKAN: Layout tombol dibikin stabil */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            min-height: 50px;
+        }
+
+        /* Wadah ini fungsinya nahan ruang kosong pas tombol engga kabur */
+        .btn-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-yes {
+            background-color: #00a884;
+            color: #ffffff;
+        }
+
+        .btn-yes:hover {
+            background-color: #008f70;
+        }
+
+        .btn-no {
+            background-color: #ef4444;
+            color: #ffffff;
+            /* Efek mulus pas tombol lari */
+            transition: left 0.15s ease-out, top 0.15s ease-out; 
+        }
+
+        .btn-no:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-card">
+        <div class="chat-box" id="text-display">Hai! Lagi sibuk ga? 🙈</div>
+        
+        <div class="btn-group" id="btn-container">
+            <div class="btn-wrapper">
+                <button class="btn-yes" id="btn-yes" onclick="handleChoice('iya')">Iya, lumayan</button>
+            </div>
+            <div class="btn-wrapper">
+                <button class="btn-no" id="btn-no" 
+                    onclick="handleChoice('engga')" 
+                    onmouseover="kabur(event)" 
+                    ontouchstart="kabur(event)">Engga kok, santai</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kumpulan teks drama kalau di awal dia pencet 'Engga' terus
+        const dramaTexts = [
+            "Yah kok gitu sih... padahal penting loh 🥺",
+            "Jahat banget sih 😭 kasian tau aku nungguin keberanian daritadi...",
+            "Plisss... sekali ini aja dengerin aku ya? Kasian tau 🥺🙏",
+            "Masa ga mau dengerin sih? Penting banget tau 😭",
+            "Ayolah... sekali ini aja, kasih aku kesempatan ngomong! 🥺",
+            "Tega banget sih ngacangin aku 💔",
+            "Ayo dong pencet Iya! Nanti nyesel loh ga dengerin 😤",
+            "Aku bakal terus nanya nih sampe kamu pencet Iya! 😡",
+            "Ih ngeyel banget deh! Pencet iya aja susah amat 😩",
+            "Yaudah gapapa, aku bakal terus nge-spam sampe kamu nyerah! 😜"
+        ];
+        let dramaIndex = 0;
+
+        const story = {
+            start: {
+                text: "Hai! Lagi sibuk ga? 🙈",
+                iyaText: "Iya, lumayan",
+                enggaText: "Engga kok, santai",
+                iya: "satu_iya",
+                engga: "satu_engga"
+            },
+            satu_iya: {
+                text: "Waduh ganggu ga nih kalau aku mau minta tolong sesuatu?",
+                iyaText: "Engga kok, minta apa?",
+                enggaText: "Iya nih lagi repot",
+                iya: "minta_pap_trap"
+            },
+            satu_engga: {
+                text: "Asyik! Aku boleh minta sesuatu ga ke kamu?",
+                iyaText: "Boleh, apa tuh?",
+                enggaText: "Engga boleh!",
+                iya: "minta_pap_trap"
+            },
+
+            // FASE JEBAKAN MINTA PAP 
+            minta_pap_trap: {
+                text: "Hehe... Boleh minta PAP IMUT kamu sekarang ga? 👉👈",
+                iyaText: "Boleh dong 😘",
+                enggaText: "Engga! 😜",
+                iya: "final_iya",
+                isTrap: true
+            },
+
+            // AKHIR CERITA 
+            final_iya: {
+                text: "Asyiik! Mana PAP imutnya? Aku tungguin nih ya! Jangan kabur! 😘📸",
+                end: true
+            }
+        };
+
+        let currentStep = "start";
+        let isTrapActive = false;
+
+        function updateUI(stepData) {
+            document.getElementById("text-display").innerText = stepData.text;
+            
+            if (stepData.end) {
+                document.getElementById("btn-container").style.display = "none";
+            } else {
+                document.getElementById("btn-yes").innerText = stepData.iyaText;
+                document.getElementById("btn-no").innerText = stepData.enggaText;
+                
+                if (stepData.isTrap) {
+                    isTrapActive = true;
+                }
+            }
+        }
+
+        function handleChoice(choice) {
+            // Kalau udah masuk jebakan PAP, tombol Engga ga bisa dipencet (langsung return)
+            if (isTrapActive && choice === 'engga') return; 
+
+            // LOGIKA DRAMA TIADA AKHIR (Kalau dia nolak terus di awal)
+            if (choice === 'engga' && (currentStep === 'satu_iya' || currentStep === 'satu_engga' || currentStep === 'drama')) {
+                currentStep = 'drama';
+                
+                // Muter array bujukan (drama loop)
+                document.getElementById("text-display").innerText = dramaTexts[dramaIndex % dramaTexts.length];
+                document.getElementById("btn-yes").innerText = "Iya deh iya, mau minta apa?";
+                document.getElementById("btn-no").innerText = "Bodo amat, tetep gamau! 😜";
+                
+                dramaIndex++;
+                return; // Stop eksekusi disini, alur ga maju
+            }
+
+            // Kalau akhirnya di fase drama dia mencet 'Iya'
+            if (currentStep === 'drama' && choice === 'iya') {
+                currentStep = 'minta_pap_trap';
+            } 
+            // Alur normal kalau dia dari awal baik-baik pencet 'Iya'
+            else if (currentStep !== 'drama') {
+                currentStep = story[currentStep][choice];
+            }
+
+            updateUI(story[currentStep]);
+        }
+
+        function kabur(e) {
+            if (!isTrapActive) return;
+
+            // Cegah klik ga sengaja kalau pakai HP
+            if (e && e.type === 'touchstart') {
+                e.preventDefault();
+            }
+
+            const noBtn = document.getElementById("btn-no");
+            
+            // Pas tombol dicopot dari posisi aslinya, kita kunci ukurannya 
+            // biar ga mengecil/membesar pas kabur
+            if (noBtn.style.position !== "fixed") {
+                noBtn.style.width = noBtn.offsetWidth + "px";
+                noBtn.style.height = noBtn.offsetHeight + "px";
+                noBtn.style.position = "fixed";
+            }
+            
+            const amanX = window.innerWidth - noBtn.offsetWidth - 20;
+            const amanY = window.innerHeight - noBtn.offsetHeight - 20;
+
+            const posisiX = Math.max(10, Math.floor(Math.random() * amanX));
+            const posisiY = Math.max(10, Math.floor(Math.random() * amanY));
+
+            noBtn.style.left = posisiX + "px";
+            noBtn.style.top = posisiY + "px";
+        }
+    </script>
+</body>
+</html>

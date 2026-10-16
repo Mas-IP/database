@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f7f6">
+<meta name="description" content="Temukan grup, saluran, dan media sosial MAS-IP.">
+<title>MAS-IP</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f7f6;
+  --surface: #fff;
+  --text: #252525;
+  --muted: #777;
+  --border: #e6e6e4;
+  --hover: #f1f1ef;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+.shell { width: min(100% - 32px, 500px); margin: 0 auto; }
+main { min-height: calc(100dvh - 86px); padding: 38px 0 28px; }
+.profile { text-align: center; }
+.avatar {
+  width: 104px; height: 104px; display: block; margin: 0 auto 17px;
+  border-radius: 50%; object-fit: cover; background: #e8e8e6;
+  border: 1px solid var(--border);
+}
+h1 { margin: 0; font-size: 25px; line-height: 1.25; font-weight: 700; letter-spacing: -.5px; }
+.bio { max-width: 390px; margin: 10px auto 28px; color: var(--muted); font-size: 14px; }
+.menu, .view-list { display: grid; gap: 11px; }
+.menu[hidden], .view[hidden] { display: none !important; }
+.link-card {
+  position: relative; display: flex; align-items: center; gap: 14px;
+  min-height: 72px; padding: 14px 15px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 11px; text-decoration: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.link-card:hover, .link-card:focus-visible {
+  background: var(--hover); border-color: #d4d4d0; outline: none;
+}
+.link-card:focus-visible { box-shadow: 0 0 0 3px #dcdcd6; }
+.link-card:active { transform: scale(.985); background: #eaeae7; }
+.symbol {
+  width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center;
+  background: #f0f0ee; border: 1px solid #ebebe8; border-radius: 10px; color: #424242;
+}
+.symbol svg {
+  width: 22px; height: 22px; display: block; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.copy { flex: 1; min-width: 0; text-align: left; }
+.copy strong { display: block; font-size: 15px; line-height: 1.45; font-weight: 650; }
+.copy small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.arrow { flex: 0 0 auto; color: #858585; font-size: 23px; line-height: 1; transition: transform .18s ease; }
+.link-card:hover .arrow { transform: translateX(3px); }
+.view { animation: viewIn .25s ease both; }
+.view-head { margin: 0 0 19px; }
+.back {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0 0 20px;
+  padding: 7px 0; color: #656565; font-size: 13px; text-decoration: none;
+  transition: color .18s ease, transform .18s ease;
+}
+.back:hover { color: #222; }
+.back:active { transform: translateX(-3px); }
+h2 { margin: 0 0 4px; font-size: 24px; line-height: 1.3; font-weight: 700; letter-spacing: -.4px; }
+.view-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.view-list { gap: 10px; }
+footer { border-top: 1px solid var(--border); padding: 15px 0 20px; color: #858585; text-align: center; font-size: 12px; }
+.credit { margin-top: 4px; color: #999; font-size: 11px; }
+.watermark {
+  display: inline-block; margin-top: 8px; padding: 4px 8px;
+  border: 1px solid #e7e7e5; border-radius: 5px; color: #a0a09c;
+  font-size: 9px; letter-spacing: 1px; user-select: none;
+}
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 420px) {
+  main { padding-top: 27px; }
+  .avatar { width: 94px; height: 94px; }
+  h1 { font-size: 23px; }
+  .link-card { min-height: 68px; padding: 12px; gap: 11px; }
+  .symbol { width: 39px; height: 39px; flex-basis: 39px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <main>
+    <section id="home-view" class="view">
+      <div class="profile">
+        <img id="profile-image" class="avatar" alt="Foto profil MAS-IP" width="104" height="104">
+        <h1>MAS-IP</h1>
+        <p class="bio">Tempat berkumpul, berbagi informasi, dan menemukan komunitas, saluran, serta media sosial MAS-IP.</p>
+      </div>
+      <nav class="menu" aria-label="Menu utama">
+        <a class="link-card" href="#grup">
+          <span class="symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <span class="copy"><strong>Grup</strong><small>Gabung dan berdiskusi bersama komunitas</small></span>
+          <span class="arrow" aria-hidden="true">›</span>
+        </a>
+        <a class="link-card" href="#saluran">
+          <span class="symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          </span>
+          <span class="copy"><strong>Saluran</strong><small>Informasi dan pembaruan MAS-IP</small></span>
+          <span class="arrow" aria-hidden="true">›</span>
+        </a>
+        <a class="link-card" href="#sosmed">
+          <span class="symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+          </span>
+          <span class="copy"><strong>Sosmed</strong><small>Temukan akun media sosial MAS-IP</small></span>
+          <span class="arrow" aria-hidden="true">›</span>
+        </a>
+      </nav>
+    </section>
+    <section id="category-view" class="view" hidden>
+      <a class="back" href="#home"><span aria-hidden="true">←</span> Kembali</a>
+      <div class="view-head"><h2 id="category-title"></h2><p id="category-description"></p></div>
+      <div class="view-list" id="category-list"></div>
+    </section>
+  </main>
+  <footer>
+    <div>© 2026 MAS-IP. All rights reserved.</div>
+    <div class="credit">Designed &amp; maintained by MAS-IP</div>
+    <div class="watermark" aria-label="MAS-IP original">MAS-IP • ORIGINAL</div>
+  </footer>
+</div>
+<script>
+'use strict';
+
+const SITE_CONFIG = {
+  name: "MAS-IP",
+  description: "Tempat berkumpul dan Sharing.",
+  profileImage: "https://raw.githubusercontent.com/Mas-IP/Storage/main/assets/image/image_1791922039059.jpg",
+  groups: [
+    {
+      name: "Komunitas MAS-IP",
+      description: "Tempat ngobrol bersama dan Have Fun.",
+      members: "60 Members",
+      icon: "👥",
+      link: "https://chat.whatsapp.com/GKrJ3Di95FK62abOoVxSaX"
+    },
+    {
+      name: "MAS-IP Programming",
+      description: "Belajar programming.",
+      members: "6 Members",
+      icon: "💻",
+      link: "https://chat.whatsapp.com/CjSxYIoOBGkHAPFe8XI2pL?s=cl&p=a&mlu=4&ilr=4"
+    }
+  ],
+  channels: [
+    {
+      name: "MAS-IP Official",
+      description: "Informasi resmi MAS-IP.",
+      followers: "0 Followers",
+      icon: "📢",
+      link: "https://whatsapp.com/channel/0029VbCH7xYAu3aFuRqPiI1O"
+    }
+  ],
+  social: [
+    {
+      name: "Instagram",
+      username: "nurahman_021",
+      description: "Follow Instagram MAS-IP.",
+      icon: "📸",
+      link: "https://www.instagram.com/nurhmn_021?igsh=MXVub3FqM2V5OGczdQ=="
+    },
+    {
+      name: "Facebook",
+      username: "@IpanII",
+      description: "Ikuti Facebook MAS-IP.",
+      icon: "👤",
+      link: "https://www.facebook.com/ipan.nur.395"
+    },
+    {
+      name: "TikTok",
+      username: "@ipan02163",
+      description: "Ikuti TikTok MAS-IP.",
+      icon: "🎵",
+      link: "https://www.tiktok.com/@ipan02163?_r=1&_t=ZS-98ij6uoXkHd"
+    },
+    {
+      name: "YouTube",
+      username: "Belum tersedia",
+      description: "Subscribe YouTube MAS-IP.",
+      icon: "▶️",
+      link: "https://youtube.com/"
+    },
+    {
+      name: "Telegram",
+      username: "Belum tersedia",
+      description: "Gabung Telegram MAS-IP.",
+      icon: "✈️",
+      link: "https://telegram.org/"
+    }
+  ]
+};
+
+const homeView = document.getElementById("home-view");
+const categoryView = document.getElementById("category-view");
+const categoryTitle = document.getElementById("category-title");
+const categoryDescription = document.getElementById("category-description");
+const categoryList = document.getElementById("category-list");
+const profileImage = document.getElementById("profile-image");
+
+if (SITE_CONFIG.profileImage) {
+  profileImage.src = SITE_CONFIG.profileImage;
+  profileImage.addEventListener("error", () => {
+    profileImage.hidden = true;
+  }, { once: true });
+} else {
+  profileImage.hidden = true;
+}
+
+const categories = {
+  grup: {
+    title: "Grup",
+    description: "Pilih komunitas yang ingin kamu ikuti.",
+    items: SITE_CONFIG.groups,
+    kind: "group"
+  },
+  saluran: {
+    title: "Saluran",
+    description: "Informasi dan pembaruan MAS-IP.",
+    items: SITE_CONFIG.channels,
+    kind: "channel"
+  },
+  sosmed: {
+    title: "Sosmed",
+    description: "Akun media sosial MAS-IP.",
+    items: SITE_CONFIG.social,
+    kind: "social"
+  }
+};
+
+function externalUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function makeCard(item, kind) {
+  const link = document.createElement("a");
+  const validUrl = externalUrl(item.link);
+  link.className = "link-card";
+
+  if (validUrl) {
+    link.href = validUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+  } else {
+    link.href = "#";
+    link.setAttribute("aria-disabled", "true");
+    link.addEventListener("click", event => event.preventDefault());
+  }
+
+  const symbol = document.createElement("span");
+  symbol.className = "symbol";
+  symbol.setAttribute("aria-hidden", "true");
+  symbol.textContent = item.icon || "↗";
+
+  const copy = document.createElement("span");
+  copy.className = "copy";
+
+  const name = document.createElement("strong");
+  name.textContent = item.name || "Tanpa nama";
+  copy.appendChild(name);
+
+  if (kind === "social" && item.username) {
+    const username = document.createElement("small");
+    username.textContent = item.username;
+    copy.appendChild(username);
+  }
+
+  if (item.description) {
+    const desc = document.createElement("small");
+    desc.textContent = item.description;
+    copy.appendChild(desc);
+  }
+
+  const detail = kind === "group" ? item.members :
+    kind === "channel" ? item.followers : "";
+
+  if (detail) {
+    const extra = document.createElement("small");
+    extra.textContent = detail;
+    copy.appendChild(extra);
+  }
+
+  const arrow = document.createElement("span");
+  arrow.className = "arrow";
+  arrow.textContent = "↗";
+  arrow.setAttribute("aria-hidden", "true");
+
+  link.append(symbol, copy, arrow);
+  return link;
+}
+
+function animateView(element) {
+  element.classList.remove("view");
+  void element.offsetWidth;
+  element.classList.add("view");
+}
+
+function showRoute() {
+  const route = location.hash.replace(/^#/, "") || "home";
+
+  if (route === "home" || !categories[route]) {
+    categoryView.hidden = true;
+    homeView.hidden = false;
+    animateView(homeView);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  const category = categories[route];
+  categoryTitle.textContent = category.title;
+  categoryDescription.textContent = category.description;
+
+  const fragment = document.createDocumentFragment();
+  category.items.forEach(item => fragment.appendChild(makeCard(item, category.kind)));
+  categoryList.replaceChildren(fragment);
+
+  homeView.hidden = true;
+  categoryView.hidden = false;
+  animateView(categoryView);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+window.addEventListener("hashchange", showRoute);
+showRoute();
+</script>
+</body>
+</html>

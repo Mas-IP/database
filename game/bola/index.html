@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f3ee">
+<title>Endi Bolane?</title>
+<style>
+:root{--bg:#f5f3ee;--card:#fffefa;--ink:#282a27;--muted:#85857c;--line:#e8e5dc;--green:#3f684d;--green-hover:#31563d;--red:#b34c42}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:26px 15px 32px;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,select{font:inherit}button{touch-action:manipulation}
+.app{max-width:720px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:25px}
+.brand h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(30px,6vw,40px);font-weight:700;letter-spacing:-1.4px}
+.brand h1 span{color:var(--green)}.brand p{color:var(--muted);margin:7px 0 0;font-size:13px}
+.sound-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--line);background:var(--card);border-radius:20px;color:var(--ink);font-size:12px;font-weight:650;cursor:pointer}
+.sound-indicator{width:7px;height:7px;background:#4e885c;border-radius:50%}.sound-btn[aria-pressed="false"] .sound-indicator{background:#aaa79f}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 8px;text-align:center}
+.stat-label{color:var(--muted);font-size:11px;margin-bottom:7px}.stat-value{font-family:Georgia,serif;font-size:25px;font-weight:700}
+#arena{position:relative;isolation:isolate;height:clamp(245px,55vw,325px);overflow:hidden;border:1px solid #785438;border-radius:12px;background:linear-gradient(180deg,#67472f 0%,#7e5538 20%,#9c714c 21%,#916442 65%,#795135 66%,#68452e 100%);box-shadow:inset 0 1px 0 #ffffff25,0 5px 15px #3023180d}
+#arena::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.25;background:repeating-linear-gradient(178deg,transparent 0px,transparent 22px,#4a2e1c 23px,transparent 25px,transparent 43px,#e7b98b 44px,transparent 46px)}
+.table-label{position:absolute;top:14px;left:0;right:0;color:#f6e6d2;text-align:center;font-family:Georgia,serif;font-size:13px;opacity:.9}
+.table-edge{position:absolute;left:0;right:0;bottom:13%;height:2px;background:#432b1c35}
+.cup{position:absolute;top:50%;width:23%;max-width:108px;height:125px;padding:0;border:0;background:transparent;transform:translate(-50%,-39%);cursor:pointer;z-index:2;will-change:left,transform}
+.cup:disabled{cursor:default}.cup:not(:disabled):hover .cup-body{filter:brightness(1.035)}
+.cup-shadow{position:absolute;left:9%;bottom:1px;width:82%;height:12px;border-radius:50%;background:#2b1b11a0;filter:blur(5px);transition:transform .3s ease,opacity .3s ease}
+.cup-art{position:absolute;inset:16px 9% 10px;transform-origin:center bottom;transition:transform .3s ease;filter:drop-shadow(0 3px 2px #3c261b40)}
+.cup-body{position:absolute;inset:0;clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);background:linear-gradient(90deg,#b5b0a5 0%,#e5e1d6 14%,#faf8f0 37%,#f0ede4 66%,#c9c5b9 89%,#aaa69a 100%)}
+.cup-base{position:absolute;top:-2px;left:15%;right:15%;height:10px;border-radius:50%;border:1px solid #bdb7a9;background:linear-gradient(180deg,#fffef8,#dedacd);box-shadow:inset 0 -2px 2px #b4ad9e40}
+.cup-rim{position:absolute;bottom:-3px;left:-2%;right:-2%;height:9px;border:1px solid #bcb6a8;border-radius:50%;background:linear-gradient(180deg,#fffdf6,#d8d3c7)}
+.cup-band{position:absolute;left:7%;right:7%;bottom:13px;height:19px;clip-path:polygon(0 0,100% 0,96% 100%,4% 100%);background:linear-gradient(90deg,#a84437,#c96653,#b44b3c)}
+.cup-mark{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);display:grid;place-items:center;width:25px;height:25px;border:1px solid #b7a998;border-radius:50%;color:#a14b3d;font-family:Georgia,serif;font-size:13px;font-weight:bold;background:#fffaf0a0}
+.ball{position:absolute;left:50%;top:72%;width:23px;height:23px;margin-left:-11px;border-radius:50%;opacity:0;pointer-events:none;z-index:3;background:radial-gradient(circle at 30% 25%,#ffb6a6,#e24c3f 42%,#9d211b 100%);box-shadow:0 3px 5px #2c180d66;transition:opacity .22s ease}
+.ball.show{opacity:1}.cup.lifted{z-index:5}.cup.lifted .cup-art{transform:translateY(-65px)}.cup.lifted .cup-shadow{transform:scale(.8);opacity:.65}.cup.correct .cup-art{filter:drop-shadow(0 0 5px #f8e0a5)}.cup.wrong .cup-art{animation:wrong .24s ease}
+@keyframes wrong{0%,100%{margin-left:0}35%{margin-left:-4px}70%{margin-left:4px}}
+.status{min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:12px 3px}
+.status strong{font-family:Georgia,serif;font-size:18px}.status p{color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 0}.status.win strong{color:var(--green)}.status.lose strong{color:var(--red)}
+.setting{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:12px}.setting label{display:block;color:var(--muted);font-size:11px;margin-bottom:8px}.setting select{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-weight:650;font-size:13px}
+.buttons{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin-top:11px}
+.action{min-height:47px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:13px;font-weight:650;cursor:pointer;transition:background .16s,transform .16s}
+.action:active{transform:scale(.985)}.action.primary{background:var(--green);border-color:var(--green);color:white}.action.primary:hover{background:var(--green-hover)}.action:disabled{opacity:.5;cursor:not-allowed}
+.instructions{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}.instructions h2{font-family:Georgia,serif;font-size:15px;margin:0 0 8px}.instructions ol{padding-left:19px;margin:0;color:var(--muted);font-size:12px;line-height:1.9}
+footer{margin-top:20px;text-align:center;color:#a19a8d;font-size:11px}
+@media(max-width:400px){body{padding:18px 11px 25px}.cup{width:25%;max-width:94px;height:120px}.cup-art{inset:16px 7% 10px}.cup-mark{width:22px;height:22px}}
+@media(prefers-reduced-motion:reduce){.cup,.cup-art,.cup-shadow{transition:none!important}.cup.wrong .cup-art{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div class="brand"><h1>Endi <span>Bolane?</span></h1><p>Temukan bola di balik gelas.</p></div>
+  <button id="soundBtn" class="sound-btn" aria-pressed="true" aria-label="Matikan suara"><span id="soundIcon">♪</span><span id="soundLabel">Suara ON</span><span class="sound-indicator"></span></button>
+</header>
+<section class="stats">
+  <div class="stat"><div class="stat-label">Menang</div><div class="stat-value" id="wins">0</div></div>
+  <div class="stat"><div class="stat-label">Kalah</div><div class="stat-value" id="losses">0</div></div>
+  <div class="stat"><div class="stat-label">Streak</div><div class="stat-value" id="streak">0</div></div>
+</section>
+<section id="arena">
+  <div class="table-edge"></div><div class="ball" id="ball"></div>
+  <button class="cup" data-id="0" aria-label="Pilih gelas 1" disabled><span class="cup-shadow"></span><span class="cup-art"><span class="cup-body"></span><span class="cup-base"></span><span class="cup-band"></span><span class="cup-mark">S</span><span class="cup-rim"></span></span></button>
+  <button class="cup" data-id="1" aria-label="Pilih gelas 2" disabled><span class="cup-shadow"></span><span class="cup-art"><span class="cup-body"></span><span class="cup-base"></span><span class="cup-band"></span><span class="cup-mark">S</span><span class="cup-rim"></span></span></button>
+  <button class="cup" data-id="2" aria-label="Pilih gelas 3" disabled><span class="cup-shadow"></span><span class="cup-art"><span class="cup-body"></span><span class="cup-base"></span><span class="cup-band"></span><span class="cup-mark">S</span><span class="cup-rim"></span></span></button>
+</section>
+<div class="status" id="status" aria-live="polite"><strong id="statusTitle">Siap bermain?</strong><p id="statusText">Tekan Mulai Game untuk memulai.</p></div>
+<div class="setting"><label for="difficulty">TINGKAT KESULITAN</label><select id="difficulty"><option value="4">Mudah · 4 gerakan</option><option value="8" selected>Normal · 8 gerakan</option><option value="14">Sulit · 14 gerakan</option><option value="22">Ekstrem · 22 gerakan</option></select></div>
+<div class="buttons"><button class="action primary" id="startBtn">Mulai Game</button><button class="action" id="resetBtn">Reset Skor</button></div>
+<section class="instructions"><h2>Cara bermain</h2><ol><li>Tekan Mulai Game dan ingat posisi bola.</li><li>Perhatikan gelas yang bertukar posisi.</li><li>Pilih gelas yang menurutmu menyimpan bola.</li></ol></section>
+<footer>MAS-IP • ENDI BOLANE • SHELL GAME</footer>
+</main>
+<script>
+'use strict';
+
+const cups = [...document.querySelectorAll('.cup')];
+const ball = document.getElementById('ball');
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+const difficulty = document.getElementById('difficulty');
+const statusBox = document.getElementById('status');
+const statusTitle = document.getElementById('statusTitle');
+const statusText = document.getElementById('statusText');
+const winsEl = document.getElementById('wins');
+const lossesEl = document.getElementById('losses');
+const streakEl = document.getElementById('streak');
+const soundBtn = document.getElementById('soundBtn');
+const soundIcon = document.getElementById('soundIcon');
+const soundLabel = document.getElementById('soundLabel');
+
+const slots = [20, 50, 80];
+let shells = [];
+let wins = 0, losses = 0, streak = 0;
+let gameActive = false, animating = false, soundEnabled = true, roundId = 0;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function randomInt(max) {
+  if (window.crypto?.getRandomValues) {
+    const range = 0x100000000;
+    const limit = range - range % max;
+    const data = new Uint32Array(1);
+    do { window.crypto.getRandomValues(data); } while (data[0] >= limit);
+    return data[0] % max;
+  }
+  return Math.floor(Math.random() * max);
+}
+
+/* AUDIO: master gain + compressor. Web Audio tetap dibatasi oleh perangkat/browser. */
+let audioContext = null;
+let masterGain = null;
+let compressor = null;
+let audioReadyPromise = null;
+
+function getAudio() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  if (!audioContext) {
+    try {
+      audioContext = new AudioContextClass();
+
+      compressor = audioContext.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-18, audioContext.currentTime);
+      compressor.knee.setValueAtTime(18, audioContext.currentTime);
+      compressor.ratio.setValueAtTime(6, audioContext.currentTime);
+      compressor.attack.setValueAtTime(0.004, audioContext.currentTime);
+      compressor.release.setValueAtTime(0.22, audioContext.currentTime);
+
+      masterGain = audioContext.createGain();
+      masterGain.gain.setValueAtTime(2.2, audioContext.currentTime);
+
+      masterGain.connect(compressor);
+      compressor.connect(audioContext.destination);
+    } catch (error) {
+      console.warn('Audio tidak dapat dibuat:', error);
+      audioContext = null;
+      masterGain = null;
+      compressor = null;
+      return null;
+    }
+  }
+
+  if (audioContext.state === 'suspended') {
+    audioReadyPromise = audioContext.resume().catch(error => {
+      console.warn('Audio belum dapat diaktifkan:', error);
+    });
+  }
+  return audioContext;
+}
+
+function tone(freq, duration, type = 'sine', volume = 0.18, delay = 0) {
+  if (!soundEnabled) return;
+  const ctx = getAudio();
+  if (!ctx || !masterGain) return;
+
+  const osc = ctx.createOscillator();
+  const voiceGain = ctx.createGain();
+  const start = ctx.currentTime + Math.max(0, delay);
+  const safeVolume = Math.max(0.0001, Math.min(volume, 0.65));
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, start);
+
+  voiceGain.gain.setValueAtTime(0.0001, start);
+  voiceGain.gain.exponentialRampToValueAtTime(safeVolume, start + 0.012);
+  voiceGain.gain.exponentialRampToValueAtTime(0.0001, start + Math.max(0.04, duration));
+
+  osc.connect(voiceGain);
+  voiceGain.connect(masterGain);
+  osc.start(start);
+  osc.stop(start + Math.max(0.04, duration) + 0.04);
+}
+
+function playMoveSound() {
+  tone(350 + Math.random() * 80, 0.085, 'triangle', 0.16);
+}
+function playWinSound() {
+  tone(523.25, 0.18, 'sine', 0.24, 0);
+  tone(659.25, 0.18, 'sine', 0.24, 0.13);
+  tone(783.99, 0.31, 'sine', 0.26, 0.26);
+}
+function playLoseSound() {
+  tone(310, 0.20, 'triangle', 0.22, 0);
+  tone(240, 0.22, 'triangle', 0.22, 0.18);
+  tone(185, 0.30, 'sine', 0.20, 0.36);
+}
+
+soundBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.setAttribute('aria-pressed', String(soundEnabled));
+  soundBtn.setAttribute('aria-label', soundEnabled ? 'Matikan suara' : 'Aktifkan suara');
+  soundIcon.textContent = soundEnabled ? '♪' : '×';
+  soundLabel.textContent = soundEnabled ? 'Suara ON' : 'Suara OFF';
+  if (soundEnabled) {
+    const ctx = getAudio();
+    if (ctx) tone(660, 0.08, 'sine', 0.12);
+  }
+});
+
+function renderShells() {
+  for (const shell of shells) cups[shell.id].style.left = slots[shell.position] + '%';
+  const holder = shells.find(shell => shell.hasBall);
+  if (holder) ball.style.left = slots[holder.position] + '%';
+}
+function createRound() {
+  shells = cups.map((cup, id) => ({id, position:id, hasBall:false}));
+  shells[randomInt(shells.length)].hasBall = true;
+  ball.classList.remove('show');
+  ball.style.opacity = '0';
+  cups.forEach(cup => {
+    cup.classList.remove('lifted','correct','wrong');
+    cup.disabled = true;
+    cup.style.transform = '';
+    cup.getAnimations().forEach(animation => animation.cancel());
+  });
+  renderShells();
+}
+function setStatus(title, message, result = '') {
+  statusTitle.textContent = title;
+  statusText.textContent = message;
+  statusBox.className = 'status';
+  if (result) statusBox.classList.add(result);
+}
+function updateScore() {
+  winsEl.textContent = wins;
+  lossesEl.textContent = losses;
+  streakEl.textContent = streak;
+}
+function revealBall() {
+  const holder = shells.find(shell => shell.hasBall);
+  if (!holder) return;
+  ball.style.left = slots[holder.position] + '%';
+  ball.classList.add('show');
+  ball.style.opacity = '1';
+}
+function animateSwap(first, second) {
+  const firstElement = cups[first.id], secondElement = cups[second.id];
+  const beforeFirst = firstElement.getBoundingClientRect();
+  const beforeSecond = secondElement.getBoundingClientRect();
+  [first.position, second.position] = [second.position, first.position];
+  renderShells();
+  const afterFirst = firstElement.getBoundingClientRect();
+  const afterSecond = secondElement.getBoundingClientRect();
+  const dxFirst = beforeFirst.left - afterFirst.left;
+  const dxSecond = beforeSecond.left - afterSecond.left;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+  const count = Number(difficulty.value);
+  const duration = Math.max(350, 490 - count * 5);
+  function animateCup(element, dx) {
+    element.animate([
+      {transform:`translate(calc(-50% + ${dx}px), -39%)`},
+      {transform:`translate(calc(-50% + ${dx * 0.5}px), calc(-39% - 10px))`},
+      {transform:'translate(-50%, -39%)'}
+    ], {duration, easing:'cubic-bezier(.22,.72,.18,1)', fill:'none'});
+  }
+  animateCup(firstElement, dxFirst);
+  animateCup(secondElement, dxSecond);
+}
+async function startGame() {
+  if (animating) return;
+  const currentRound = ++roundId;
+  animating = true;
+  gameActive = false;
+  startBtn.disabled = true;
+  difficulty.disabled = true;
+
+  /* Panggilan ini terjadi dari klik pengguna, membantu membuka audio di Android. */
+  if (soundEnabled) getAudio();
+
+  createRound();
+  setStatus('Perhatikan bola merah.','Ingat posisi bola sebelum gelas bergerak.');
+  ball.classList.add('show');
+  ball.style.opacity = '1';
+  await sleep(900);
+  if (currentRound !== roundId) return;
+  ball.classList.remove('show');
+  ball.style.opacity = '0';
+  await sleep(300);
+
+  const count = Number(difficulty.value);
+  for (let i = 0; i < count; i++) {
+    if (currentRound !== roundId) return;
+    const aPosition = randomInt(3);
+    let bPosition = randomInt(2);
+    if (bPosition >= aPosition) bPosition++;
+    const first = shells.find(shell => shell.position === aPosition);
+    const second = shells.find(shell => shell.position === bPosition);
+    animateSwap(first, second);
+    playMoveSound();
+    await sleep(Math.max(360, 510 - count * 5));
+  }
+  if (currentRound !== roundId) return;
+  animating = false;
+  gameActive = true;
+  cups.forEach(cup => cup.disabled = false);
+  startBtn.disabled = false;
+  startBtn.textContent = 'Main Lagi';
+  difficulty.disabled = false;
+  setStatus('Pilih gelas.','Di mana bola merah sekarang?');
+}
+function finishRound(id) {
+  if (!gameActive || animating) return;
+  const chosen = shells.find(shell => shell.id === id);
+  const holder = shells.find(shell => shell.hasBall);
+  if (!chosen || !holder) return;
+  gameActive = false;
+  cups.forEach(cup => { cup.disabled = true; cup.classList.remove('correct','wrong'); });
+  cups[id].classList.add('lifted');
+  cups[holder.id].classList.add('lifted','correct');
+  if (chosen.hasBall) {
+    wins++; streak++;
+    setStatus('Benar! Bola ditemukan.','Tebakan tepat. Siap untuk ronde berikutnya?','win');
+    playWinSound();
+  } else {
+    losses++; streak = 0;
+    cups[id].classList.add('wrong');
+    setStatus('Tebakan belum tepat.','Bola ternyata berada di gelas yang lain.','lose');
+    playLoseSound();
+  }
+  revealBall();
+  updateScore();
+  startBtn.disabled = false;
+  startBtn.textContent = 'Main Lagi';
+  difficulty.disabled = false;
+}
+cups.forEach(cup => cup.addEventListener('click', () => finishRound(Number(cup.dataset.id))));
+startBtn.addEventListener('click', startGame);
+resetBtn.addEventListener('click', () => {
+  roundId++;
+  animating = false;
+  gameActive = false;
+  wins = 0; losses = 0; streak = 0;
+  updateScore();
+  createRound();
+  startBtn.disabled = false;
+  startBtn.textContent = 'Mulai Game';
+  difficulty.disabled = false;
+  setStatus('Skor direset.','Tekan Mulai Game untuk bermain lagi.');
+});
+createRound();
+</script>
+</body>
+</html>
