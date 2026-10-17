@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <div><div class="brand">UNO<span>Game</span></div><div class="tiny">Mode offline • tidak perlu internet</div></div>
+    <div><div class="brand">UNO<span>Game</span></div><div class="tiny">Main UNO klasik bersama teman atau tantang AI.</div></div>
     <div class="status"><button type="button" id="soundToggle" class="secondary" aria-pressed="true" style="margin-bottom:8px">🔊 Suara & getar: ON</button><div class="pill"><i class="dot" id="connDot"></i><span id="connText">Menghubungkan Firebase…</span></div><div id="whoami" class="tiny" style="margin-top:6px">Menyiapkan sesi anonim</div></div>
   </header>
 
@@ -251,7 +251,7 @@ async function saveNickname(n){profile=profile||{};profile.nickname=n;await db.r
 function watchRoom(code){localMode=false;if(roomListener&&roomRef)roomRef.off('value',roomListener);roomCode=code;roomRef=db.ref('rooms/'+code);roomListener=s=>{room=s.val();if(!room){stopRoomWatch();show('lobby');hide('roomView');setNotice('Room sudah tidak tersedia.',true);storageRemove('unoSession');return}if(!room.players||!room.players[uid]){stopRoomWatch();show('lobby');hide('roomView');storageRemove('unoSession');setNotice('Kamu tidak lagi terdaftar di room.',true);return}show('roomView');hide('lobby');render();if(room?.aiMatch&&isHost()&&room.status==='playing'&&room.turnUid===room.aiUid)runAiTurn();};roomRef.on('value',roomListener);storageSet('unoSession',JSON.stringify({code,uid}));setupPresence(code)}
 function stopRoomWatch(){if(roomRef&&roomListener)roomRef.off('value',roomListener);roomRef=null;roomListener=null;room=null;roomCode=null;localMode=false;localAiBusy=false;if(uid==='LOCAL_PLAYER')uid=authUid;if(heartbeat)clearInterval(heartbeat);heartbeat=null;if(disconnectRef)disconnectRef.cancel().catch(()=>{});disconnectRef=null}
 async function setupPresence(code){if(heartbeat)clearInterval(heartbeat);const conn=db.ref('.info/connected');if(connectionRef)connectionRef.off();connectionRef=conn;connectionRef.on('value',async s=>{if(!s.val())return;const p=db.ref(`rooms/${code}/players/${uid}/connected`);disconnectRef=p;await p.onDisconnect().set(false);await p.set(true);await db.ref(`rooms/${code}/players/${uid}/lastSeen`).set(firebase.database.ServerValue.TIMESTAMP)});heartbeat=setInterval(async()=>{if(roomCode!==code)return;db.ref(`rooms/${code}/players/${uid}/lastSeen`).set(firebase.database.ServerValue.TIMESTAMP).catch(()=>{});try{const snap=await db.ref('rooms/'+code).once('value'),r=snap.val();if(!r)return;const now=Date.now();if(r.expiresAt&&r.expiresAt<now){await db.ref('rooms/'+code).remove();return}if(r.players){for(const [pid,pl] of Object.entries(r.players)){if(pid!==uid&&pl.connected===false&&now-(pl.lastSeen||0)>120000){await db.ref('rooms/'+code+'/players/'+pid).remove()}}}}catch(e){console.warn('Room cleanup:',e)}},15000)}
-async function createRoom(){try{const nickname=nameValue();try{await saveNickname(nickname)}catch(profileError){console.warn('Profil tidak tersimpan; lanjut membuat room:',profileError)}let code=randCode();while((await db.ref('rooms/'+code).once('value')).exists())code=randCode();const roomData={code,hostUid:uid,status:'waiting',handSize:Number($('handSize').value),createdAt:Date.now(),expiresAt:Date.now()+6*60*60*1000,direction:1,turnUid:null,players:{[uid]:{nickname,seat:0,hand:[],connected:true,lastSeen:Date.now()}},deck:[],discard:[],revision:0};await db.ref('rooms/'+code).set(roomData);watchRoom(code)}catch(e){const detail=e?.code==='PERMISSION_DENIED'||String(e?.message||'').toLowerCase().includes('permission_denied')?'Akses database ditolak. Periksa Realtime Database Rules untuk path rooms.':'Gagal membuat room: '+(e?.message||String(e));setNotice(detail,true);console.error('createRoom gagal:',e)}}
+async function createRoom(){if(!db||!uid){setNotice('Firebase belum siap. Muat ulang halaman dan periksa koneksi Firebase.',true);return}try{const nickname=nameValue();try{await saveNickname(nickname)}catch(profileError){console.warn('Profil tidak tersimpan; lanjut membuat room:',profileError)}let code=randCode();while((await db.ref('rooms/'+code).once('value')).exists())code=randCode();const roomData={code,hostUid:uid,status:'waiting',handSize:Number($('handSize').value),createdAt:Date.now(),expiresAt:Date.now()+6*60*60*1000,direction:1,turnUid:null,players:{[uid]:{nickname,seat:0,hand:[],connected:true,lastSeen:Date.now()}},deck:[],discard:[],revision:0};await db.ref('rooms/'+code).set(roomData);watchRoom(code)}catch(e){const detail=e?.code==='PERMISSION_DENIED'||String(e?.message||'').toLowerCase().includes('permission_denied')?'Akses database ditolak. Periksa Realtime Database Rules untuk path rooms.':'Gagal membuat room: '+(e?.message||String(e));setNotice(detail,true);console.error('createRoom gagal:',e)}}
 async function createAiRoom(){return createLocalAiRoom(); /* AI mode is intentionally local and independent of Firebase. */ try{const nickname=nameValue();await saveNickname(nickname);let code=randCode();while((await db.ref('rooms/'+code).once('value')).exists())code=randCode();const botId='AI_'+uid.slice(0,8);const roomData={code,hostUid:uid,status:'playing',aiMatch:true,aiUid:botId,handSize:Number($('handSize').value),createdAt:Date.now(),expiresAt:Date.now()+6*60*60*1000,direction:1,turnUid:uid,players:{[uid]:{nickname,seat:0,hand:[],connected:true,lastSeen:Date.now()},[botId]:{nickname:'AI',seat:1,isAI:true,connected:true,hand:[]}},deck:[],discard:[],revision:1,startedAt:Date.now(),unoPending:null};const d=makeDeck(),n=roomData.handSize;for(let i=0;i<n;i++)for(const id of Object.keys(roomData.players))roomData.players[id].hand.push(d.pop());let opener=d.pop();while(opener.color==='hitam'){d.unshift(opener);opener=d.pop()}roomData.deck=d;roomData.discard=[opener];roomData.activeColor=opener.color;await db.ref('rooms/'+code).set(roomData);watchRoom(code)}catch(e){console.warn('Online AI room unavailable, switching to local mode:',e);createLocalAiRoom()}}
 function createLocalAiRoom(){
  try{
@@ -321,7 +321,7 @@ async function runLocalAiTurn(){
   const action=aiChooseAction(room,room.aiUid);localApplyAction(room.aiUid,action);
  }finally{localAiBusy=false;if(localMode&&room?.status==='playing'&&room.turnUid===room.aiUid&&room.revision!==expected)runLocalAiTurn()}
 }
-async function joinRoom(){try{const nickname=nameValue(),code=$('roomCode').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(code))return setNotice('Kode room harus 6 karakter.',true);try{await saveNickname(nickname)}catch(profileError){console.warn('Profil tidak tersimpan; lanjut bergabung:',profileError)}const ref=db.ref('rooms/'+code);let err='';await ref.transaction(r=>{if(!r||r.status!=='waiting'){err='Room tidak ada atau permainan sudah dimulai.';return}r.players=r.players||{};if(r.players[uid])return r;if(Object.keys(r.players).length>=10){err='Room sudah penuh.';return}r.players[uid]={nickname,seat:Object.keys(r.players).length,hand:[],connected:true,lastSeen:Date.now()};return r});if(err)return setNotice(err,true);const s=await ref.once('value');if(!s.val()?.players?.[uid])return setNotice(err||'Gagal bergabung ke room.',true);watchRoom(code)}catch(e){setNotice('Gagal bergabung: '+e.message,true)}}
+async function joinRoom(){if(!db||!uid){setNotice('Firebase belum siap. Muat ulang halaman dan periksa koneksi Firebase.',true);return}try{const nickname=nameValue(),code=$('roomCode').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(code))return setNotice('Kode room harus 6 karakter.',true);try{await saveNickname(nickname)}catch(profileError){console.warn('Profil tidak tersimpan; lanjut bergabung:',profileError)}const ref=db.ref('rooms/'+code);let err='';await ref.transaction(r=>{if(!r||r.status!=='waiting'){err='Room tidak ada atau permainan sudah dimulai.';return}r.players=r.players||{};if(r.players[uid])return r;if(Object.keys(r.players).length>=10){err='Room sudah penuh.';return}r.players[uid]={nickname,seat:Object.keys(r.players).length,hand:[],connected:true,lastSeen:Date.now()};return r});if(err)return setNotice(err,true);const s=await ref.once('value');if(!s.val()?.players?.[uid])return setNotice(err||'Gagal bergabung ke room.',true);watchRoom(code)}catch(e){setNotice('Gagal bergabung: '+e.message,true)}}
 async function saveSettings(){if(!isHost()||room.status!=='waiting')return;const n=Number($('roomHandSize').value);await roomRef.update({handSize:Math.min(10,Math.max(3,n)),expiresAt:Date.now()+6*60*60*1000});}
 async function startGame(){if(!isHost()||room.status!=='waiting')return;if(Object.keys(room.players||{}).length<2)return setNotice('Minimal 2 pemain.',true);try{const d=makeDeck(),players=JSON.parse(JSON.stringify(room.players));for(const p of Object.values(players))p.hand=[];const n=Number(room.handSize||10);for(let i=0;i<n;i++)for(const id of Object.keys(players))players[id].hand.push(d.pop());let opener=d.pop();while(opener.color==='hitam'){d.unshift(opener);opener=d.pop()}await roomRef.update({players,deck:d,discard:[opener],activeColor:opener.color,status:'playing',direction:1,turnUid:Object.keys(players)[0],startedAt:Date.now(),revision:(room.revision||0)+1,unoPending:null,expiresAt:Date.now()+6*60*60*1000});}catch(e){setNotice('Gagal memulai: '+e.message,true)}}
 function refill(r){if((r.deck||[]).length)return; if((r.discard||[]).length<=1)return;const keep=r.discard.pop();r.deck=shuffle(r.discard);r.discard=[keep]}
@@ -344,7 +344,60 @@ async function playSelected(){if(!room||!selected.size)return;const cards=(curre
 async function leaveRoom(){if(!roomCode||!room)return;if(localMode){stopRoomWatch();selected.clear();pendingCards=null;storageRemove('unoSession');show('lobby');hide('roomView');return}const code=roomCode;try{await db.ref(`rooms/${code}`).transaction(r=>{if(!r)return r;if(r.players)delete r.players[uid];if(!r.players||Object.keys(r.players).length===0)return null;if(r.hostUid===uid){const next=Object.keys(r.players)[0];r.hostUid=next}if(r.status==='playing'&&Object.keys(r.players).length===1){r.status='finished';r.winnerUid=Object.keys(r.players)[0];r.finishedAt=Date.now()}if(r.turnUid===uid&&r.status==='playing')r.turnUid=nextFor(r,uid,1);return r});await db.ref('profiles/'+uid+'/activeRoom').remove()}catch(e){console.error(e)}stopRoomWatch();storageRemove('unoSession');show('lobby');hide('roomView')}
 async function deleteRoom(){if(!isHost())return;await roomRef.remove();stopRoomWatch();storageRemove('unoSession');show('lobby');hide('roomView')}
 async function sweepExpiredRooms(){const snap=await db.ref('rooms').once('value');const now=Date.now();snap.forEach(ch=>{const r=ch.val();if(r?.expiresAt&&r.expiresAt<now)db.ref('rooms/'+ch.key).remove().catch(()=>{})})}
-async function init(){$('aiBtn').disabled=false;$('nickname').value=storageGet('unoNickname','');try{await loadFirebaseSdk();app=firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.database();await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);const cred=await auth.signInAnonymously();uid=cred.user.uid;authUid=uid;$('whoami').textContent='UID: '+uid.slice(0,8)+'…';$('connDot').classList.add('ok');$('connText').textContent='Firebase terhubung';$('createBtn').disabled=false;$('joinBtn').disabled=false;$('aiBtn').disabled=false;await loadProfile();$('nickname').value=profile.nickname||storageGet('unoNickname','');await sweepExpiredRooms();db.ref('.info/connected').on('value',s=>{const on=!!s.val();$('connDot').classList.toggle('ok',on);$('connText').textContent=on?'Firebase terhubung':'Koneksi terputus'});const saved=JSON.parse(storageGet('unoSession','null'));if(saved&&saved.uid===uid){const s=await db.ref('rooms/'+saved.code).once('value');if(s.val()?.players?.[uid])watchRoom(saved.code);else storageRemove('unoSession')}}catch(e){$('connText').textContent='Firebase gagal · AI offline tersedia';$('connDot').classList.remove('ok');$('whoami').textContent='Mode offline · tanpa Firebase';$('aiBtn').disabled=false;$('createBtn').disabled=true;$('joinBtn').disabled=true;setNotice('Firebase tidak tersedia. Kamu tetap bisa menekan Lawan AI untuk bermain offline. Fitur room online memerlukan koneksi Firebase.',true);console.error(e)}}
+async function init(){
+ $('aiBtn').disabled=false;
+ $('createBtn').disabled=false;
+ $('joinBtn').disabled=false;
+ $('nickname').value=storageGet('unoNickname','');
+ try{
+  await loadFirebaseSdk();
+  app=firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();
+  db=firebase.database();
+  try{await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(persistenceError){console.warn('Persistence tidak tersedia; lanjutkan sesi:',persistenceError)}
+  const cred=await auth.signInAnonymously();
+  uid=cred.user.uid;authUid=uid;
+  $('whoami').textContent='UID: '+uid.slice(0,8)+'…';
+  $('connDot').classList.add('ok');
+  $('connText').textContent='Firebase terhubung';
+  $('createBtn').disabled=false;
+  $('joinBtn').disabled=false;
+  $('aiBtn').disabled=false;
+
+  // Profil dan pembersihan room bukan prasyarat untuk memakai tombol multiplayer.
+  try{
+   await loadProfile();
+   $('nickname').value=profile.nickname||storageGet('unoNickname','');
+  }catch(profileError){console.warn('Profil tidak dapat dimuat; multiplayer tetap aktif:',profileError)}
+
+  try{await sweepExpiredRooms()}catch(cleanupError){console.warn('Pembersihan room dilewati karena izin database:',cleanupError)}
+
+  db.ref('.info/connected').on('value',s=>{
+   const on=!!s.val();
+   $('connDot').classList.toggle('ok',on);
+   $('connText').textContent=on?'Firebase terhubung':'Koneksi terputus';
+  });
+
+  try{
+   const saved=JSON.parse(storageGet('unoSession','null'));
+   if(saved&&saved.uid===uid){
+    const s=await db.ref('rooms/'+saved.code).once('value');
+    if(s.val()?.players?.[uid])watchRoom(saved.code);
+    else storageRemove('unoSession');
+   }
+  }catch(sessionError){console.warn('Pemulihan sesi dilewati:',sessionError)}
+ }catch(e){
+  $('connText').textContent='Firebase gagal · AI offline tersedia';
+  $('connDot').classList.remove('ok');
+  $('whoami').textContent='Mode offline · tanpa Firebase';
+  // Tombol tidak dikunci: pengguna tetap bisa mengetuknya dan menerima pesan error yang jelas.
+  $('createBtn').disabled=false;
+  $('joinBtn').disabled=false;
+  $('aiBtn').disabled=false;
+  setNotice('Firebase belum siap: '+(e?.message||String(e))+'. Room online membutuhkan Firebase; mode Lawan AI tetap tersedia.',true);
+  console.error('Inisialisasi Firebase gagal:',e);
+ }
+}
 $('createBtn').onclick=createRoom;$('soundToggle').onclick=toggleSound;updateSoundToggle();$('aiBtn').disabled=false;$('aiBtn').onclick=()=>{ensureAudio();try{createLocalAiRoom()}catch(e){console.error(e);setNotice('AI offline gagal dibuka: '+(e?.message||e),true)}};$('joinBtn').onclick=joinRoom;$('roomCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)});$('roomCode').addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('joinBtn').disabled)joinRoom()});$('nickname').addEventListener('change',()=>{const n=nameValue();storageSet('unoNickname',n);if(db&&uid&&uid!=='LOCAL_PLAYER')saveNickname(n).catch(console.error)});$('startBtn').onclick=startGame;$('saveSettingsBtn').onclick=saveSettings;$('leaveBtn').onclick=leaveRoom;$('deleteRoomBtn').onclick=deleteRoom;$('copyCodeBtn').onclick=async()=>{try{if(!navigator.clipboard?.writeText)throw new Error('Clipboard tidak tersedia');await navigator.clipboard.writeText(roomCode);setNotice('Kode room disalin: '+roomCode)}catch(_){setNotice('Kode room: '+roomCode)}};$('playBtn').onclick=()=>{ensureAudio();playSelected()};$('drawBtn').onclick=()=>{ensureAudio();performAction({type:'draw'})};$('unoBtn').onclick=()=>performAction({type:'uno'});$('callUnoBtn').onclick=()=>performAction({type:'callUno'});$('backLobbyBtn').onclick=()=>{if(localMode){stopRoomWatch();selected.clear();pendingCards=null;show('lobby');hide('roomView')}else{stopRoomWatch();show('lobby');hide('roomView')}};$('cancelColor').onclick=()=>{pendingCards=null;hide('colorModal')};document.querySelectorAll('[data-color]').forEach(b=>b.onclick=async()=>{if(!pendingCards)return;const ids=pendingCards;pendingCards=null;hide('colorModal');await performAction({type:'play',ids,color:b.dataset.color})});
 window.addEventListener('beforeunload',()=>{if(roomCode&&uid&&!localMode)db?.ref(`rooms/${roomCode}/players/${uid}/connected`).set(false)});
 // Inisialisasi Firebase untuk fitur room online. Jika Firebase/koneksi gagal,
