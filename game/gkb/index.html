@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✊✋✌️ Gunting Kertas Batu</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    background: radial-gradient(circle at top, #1e2540, #0a0d1a);
+    min-height:100vh;
+    display:flex; justify-content:center; align-items:center;
+    padding:14px; color:#eef3fc; overflow-x:hidden;
+  }
+  .game {
+    width:100%; max-width:520px;
+    background:#141a2c;
+    border-radius:26px;
+    padding:18px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.85), inset 0 1px 3px rgba(255,255,255,0.08);
+    border:1px solid #2a3350;
+    display:flex; flex-direction:column; gap:14px;
+    position:relative;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header { text-align:center; }
+  .header h1 {
+    font-size:1.5rem; letter-spacing:1px;
+    background: linear-gradient(90deg, #6ec6ff, #f3d37c, #ff7ad9);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    font-weight:800;
+  }
+  .header .sub {
+    font-size:.8rem; color:#7a8bb5; margin-top:4px;
+    letter-spacing:1.5px; text-transform:uppercase;
+  }
+  .round-info {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:8px; font-size:.82rem; color:#a9b8dd;
+    background:#1a2338; padding:6px 12px; border-radius:20px;
+    border:1px solid #2a3350;
+  }
+  .round-info strong { color:#f3d37c; }
+
+  /* ---------- ARENA ---------- */
+  .arena {
+    display:flex; justify-content:space-between; align-items:center;
+    gap:8px; padding:14px 10px;
+    background: linear-gradient(180deg, #1a2338, #10172a);
+    border-radius:22px;
+    border:1px solid #2a3350;
+    position:relative; overflow:hidden;
+  }
+  .player {
+    flex:1; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    min-width:0;
+  }
+  .avatar {
+    width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem;
+    background:#232d4a;
+    border:3px solid #3a4670;
+    box-shadow:0 6px 14px rgba(0,0,0,0.5);
+    transition: border-color .3s;
+  }
+  .player.winner .avatar {
+    border-color:#4ade80;
+    box-shadow:0 0 20px #4ade80;
+    animation: pop .5s;
+  }
+  .player.loser .avatar {
+    border-color:#f87171;
+    opacity:.7;
+  }
+  .player-name {
+    font-size:.82rem; color:#a9b8dd; font-weight:600;
+    letter-spacing:.5px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%;
+  }
+  .choice-display {
+    font-size:3rem; line-height:1; min-height:56px;
+    display:flex; align-items:center; justify-content:center;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  .choice-display.shake { animation: shake .4s; }
+  .score-badge {
+    font-size:.85rem; background:#232d4a; padding:4px 12px;
+    border-radius:20px; font-weight:700; color:#f3d37c;
+    border:1px solid #3a4670;
+  }
+
+  .vs {
+    font-size:1.3rem; font-weight:900; color:#f3d37c;
+    text-shadow: 0 0 12px #f3d37c;
+    padding:8px;
+    animation: pulse 1.6s infinite;
+  }
+
+  /* ---------- HASIL ---------- */
+  .result {
+    text-align:center; font-weight:700; font-size:1.05rem;
+    padding:10px; border-radius:14px;
+    background:#1a2338; border:1px solid #2a3350;
+    min-height:44px; display:flex; align-items:center; justify-content:center;
+    transition: all .3s;
+  }
+  .result.win { background: rgba(74,222,128,0.15); color:#4ade80; border-color:#4ade80; }
+  .result.lose { background: rgba(248,113,113,0.15); color:#f87171; border-color:#f87171; }
+  .result.draw { background: rgba(243,211,124,0.15); color:#f3d37c; border-color:#f3d37c; }
+
+  /* ---------- TOMBOL AKSI ---------- */
+  .actions {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  }
+  .action-btn {
+    background:#232d4a; border:1px solid #3a4670;
+    color:#eef3fc; padding:14px 6px; border-radius:18px;
+    font-size:2rem; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition: all .15s;
+    box-shadow:0 5px 0 #0d1220, 0 8px 14px rgba(0,0,0,0.5);
+  }
+  .action-btn .label {
+    font-size:.72rem; font-weight:600; color:#a9b8dd;
+    letter-spacing:.5px;
+  }
+  .action-btn:hover:not(:disabled) {
+    transform:translateY(-2px);
+    background:#2d385a;
+    border-color:#f3d37c;
+  }
+  .action-btn:active:not(:disabled) {
+    transform:translateY(3px);
+    box-shadow:0 2px 0 #0d1220;
+  }
+  .action-btn:disabled {
+    opacity:.4; cursor:not-allowed;
+  }
+  .action-btn.selected {
+    background: linear-gradient(180deg, #f3d37c, #d4ab4d);
+    color:#141a2c; border-color:#ffe7a3;
+    box-shadow:0 0 18px #f3d37c, 0 5px 0 #8a7040;
+  }
+  .action-btn.selected .label { color:#3a2f10; }
+
+  /* ---------- PANEL PENGATURAN ---------- */
+  .settings {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  }
+  .panel {
+    background:#1a2338; padding:10px 12px; border-radius:16px;
+    border:1px solid #2a3350;
+  }
+  .panel h3 {
+    font-size:.68rem; text-transform:uppercase; letter-spacing:1.5px;
+    color:#7a8bb5; margin-bottom:8px; font-weight:700;
+  }
+  .btn-group { display:flex; flex-wrap:wrap; gap:6px; }
+  .btn {
+    background:#232d4a; border:1px solid #3a4670;
+    color:#d3defa; font-weight:600; font-size:.75rem;
+    padding:7px 10px; border-radius:20px; cursor:pointer;
+    flex:1 0 auto; transition: all .15s;
+    box-shadow:0 3px 0 #0d1220;
+  }
+  .btn:hover { background:#2d385a; }
+  .btn.active {
+    background:#f3d37c; color:#141a2c; border-color:#ffe7a3;
+    box-shadow:0 0 10px #f3d37c, 0 3px 0 #8a7040;
+  }
+  .btn:active { transform:translateY(2px); box-shadow:0 1px 0 #0d1220; }
+
+  /* ---------- RIWAYAT ---------- */
+  .history-box {
+    background:#1a2338; padding:10px 12px; border-radius:16px;
+    border:1px solid #2a3350;
+    max-height:88px; overflow-y:auto;
+  }
+  .history-box h3 {
+    font-size:.68rem; text-transform:uppercase; letter-spacing:1.5px;
+    color:#7a8bb5; margin-bottom:6px; font-weight:700;
+  }
+  .history-list { font-size:.78rem; color:#c2cee8; display:flex; flex-direction:column; gap:3px; }
+  .history-item {
+    display:flex; justify-content:space-between; gap:8px;
+    padding:2px 6px; border-radius:8px; background:#232d4a;
+  }
+  .history-item.win { border-left:3px solid #4ade80; }
+  .history-item.lose { border-left:3px solid #f87171; }
+  .history-item.draw { border-left:3px solid #f3d37c; }
+
+  /* ---------- FOOTER ---------- */
+  .footer {
+    display:flex; gap:10px;
+  }
+  .footer .btn {
+    padding:12px; font-size:.85rem;
+    box-shadow:0 4px 0 #0d1220;
+  }
+  .btn-reset { background:#3a2436; border-color:#5e3854; color:#ffb6e0; }
+  .btn-reset:hover { background:#4d2f47; }
+
+  /* ---------- OVERLAY AKHIR ---------- */
+  .overlay {
+    position:fixed; inset:0; background:rgba(5,8,18,0.9);
+    display:none; align-items:center; justify-content:center;
+    z-index:100; padding:20px;
+  }
+  .overlay.show { display:flex; animation: fadeIn .3s; }
+  .overlay-card {
+    background:#141a2c; padding:28px 24px; border-radius:24px;
+    text-align:center; max-width:340px; width:100%;
+    border:1px solid #2a3350;
+    box-shadow:0 25px 50px rgba(0,0,0,0.9);
+  }
+  .overlay-card .emoji { font-size:4rem; margin-bottom:8px; }
+  .overlay-card h2 { font-size:1.4rem; margin-bottom:8px; }
+  .overlay-card p { color:#a9b8dd; font-size:.9rem; margin-bottom:18px; }
+
+  /* ---------- ANIMASI ---------- */
+  @keyframes pop {
+    0% { transform:scale(1); }
+    50% { transform:scale(1.25); }
+    100% { transform:scale(1); }
+  }
+  @keyframes shake {
+    0%,100% { transform:translateX(0); }
+    20% { transform:translateX(-8px) rotate(-8deg); }
+    40% { transform:translateX(8px) rotate(8deg); }
+    60% { transform:translateX(-6px) rotate(-6deg); }
+    80% { transform:translateX(6px) rotate(6deg); }
+  }
+  @keyframes pulse {
+    0%,100% { transform:scale(1); opacity:1; }
+    50% { transform:scale(1.1); opacity:.7; }
+  }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+  .countdown {
+    position:absolute; inset:0;
+    background: rgba(10,13,26,0.85);
+    display:none; align-items:center; justify-content:center;
+    border-radius:22px; z-index:5;
+  }
+  .countdown.show { display:flex; }
+  .countdown span {
+    font-size:5rem; font-weight:900; color:#f3d37c;
+    text-shadow:0 0 30px #f3d37c;
+    animation: pop .6s;
+  }
+
+  /* ---------- ONLINE FIREBASE ---------- */
+  .online-box { display:none; background:#1a2338; padding:12px; border-radius:16px; border:1px solid #2a3350; }
+  .online-box.show { display:block; }
+  .online-action-box { display:none; }
+  .online-action-box.show { display:block; }
+  .room-token-display { text-align:center; padding:13px 8px; margin-top:8px; background:#10172a; border:1px dashed #3a4670; border-radius:12px; font-size:1.25rem; }
+  .credit { text-align:center; margin-top:2px; font-size:.7rem; color:#65769f; letter-spacing:.5px; }
+  .credit strong { color:#a9b8dd; }
+  .online-row { display:flex; gap:8px; margin-top:8px; }
+  .online-row input { min-width:0; flex:1; background:#10172a; color:#eef3fc; border:1px solid #3a4670; border-radius:12px; padding:10px; outline:none; }
+  .online-row input:focus { border-color:#f3d37c; }
+  .online-status { font-size:.76rem; color:#a9b8dd; line-height:1.45; }
+  .room-code { color:#f3d37c; font-weight:800; letter-spacing:2px; }
+  .firebase-note { margin-top:8px; font-size:.68rem; color:#7a8bb5; }
+
+  @media (max-width:380px) {
+    .choice-display { font-size:2.4rem; }
+    .avatar { width:52px; height:52px; font-size:1.6rem; }
+    .action-btn { font-size:1.7rem; padding:10px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>✊ ✋ ✌️</h1>
+    <div class="sub">Gunting • Kertas • Batu</div>
+    <div class="round-info">
+      <span>Ronde <strong id="roundNum">1</strong></span>
+      <span id="modeLabel">👥 Lokal</span>
+      <span>Best of <strong id="bestOfLabel">3</strong></span>
+    </div>
+  </div>
+
+  <!-- ARENA -->
+  <div class="arena">
+    <div class="countdown" id="countdown"><span id="countdownText">3</span></div>
+
+    <div class="player" id="p1">
+      <div class="avatar" id="p1Avatar">😀</div>
+      <div class="player-name" id="p1Name">Pemain 1</div>
+      <div class="choice-display" id="p1Choice">❔</div>
+      <div class="score-badge"><span id="p1Score">0</span></div>
+    </div>
+
+    <div class="vs">VS</div>
+
+    <div class="player" id="p2">
+      <div class="avatar" id="p2Avatar">🤖</div>
+      <div class="player-name" id="p2Name">Komputer</div>
+      <div class="choice-display" id="p2Choice">❔</div>
+      <div class="score-badge"><span id="p2Score">0</span></div>
+    </div>
+  </div>
+
+  <!-- HASIL -->
+  <div class="result" id="result">Pilih senjata untuk mulai!</div>
+
+  <!-- TOMBOL AKSI -->
+  <div class="actions">
+    <button class="action-btn" data-choice="rock" id="btnRock">
+      ✊ <span class="label">Batu</span>
+    </button>
+    <button class="action-btn" data-choice="paper" id="btnPaper">
+      ✋ <span class="label">Kertas</span>
+    </button>
+    <button class="action-btn" data-choice="scissors" id="btnScissors">
+      ✌️ <span class="label">Gunting</span>
+    </button>
+  </div>
+
+  <!-- PENGATURAN -->
+  <div class="settings">
+    <div class="panel">
+      <h3>Mode</h3>
+      <div class="btn-group" id="modeGroup">
+        <button class="btn active" data-mode="bot">🤖 Bot</button>
+        <button class="btn" data-mode="online">🌐 Online</button>
+      </div>
+    </div>
+    <div class="panel" id="difficultyBox">
+      <h3>Kesulitan</h3>
+      <div class="btn-group" id="difficultyGroup">
+        <button class="btn" data-diff="easy">Mudah</button>
+        <button class="btn active" data-diff="medium">Sedang</button>
+        <button class="btn" data-diff="hard">Sulit</button>
+      </div>
+    </div>
+    <div class="panel" id="onlineModeBox" style="display:none;">
+      <h3>Room Online</h3>
+      <div class="btn-group" id="onlineActionGroup">
+        <button class="btn active" data-online-action="create">Buat Room</button>
+        <button class="btn" data-online-action="join">Join Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONLINE FIREBASE -->
+  <div class="online-box" id="onlineBox">
+    <div class="online-row">
+      <input id="playerNameInput" maxlength="18" placeholder="Nama pemain">
+    </div>
+    <div class="online-action-box show" id="createRoomBox">
+      <div class="room-token-display">Kode room: <span class="room-code" id="roomCodeDisplay">------</span></div>
+      <div class="online-row"><button class="btn" id="btnCreateRoom" style="width:100%;">Buat Room</button></div>
+      <div class="online-row" id="deleteRoomRow" style="display:flex; margin-top:6px;"><button class="btn btn-reset" id="btnDeleteRoom" style="width:100%;" disabled>🚪 Keluar Room</button></div>
+    </div>
+    <div class="online-action-box" id="joinRoomBox">
+      <div class="online-row">
+        <input id="roomCodeInput" inputmode="numeric" maxlength="6" placeholder="Masukkan kode room 6 digit" autocomplete="off">
+        <button class="btn" id="btnJoinRoom">Gabung</button>
+      </div>
+    </div>
+    <div class="online-status" id="onlineStatus" style="margin-top:8px;">Pilih Buat Room atau Join Room.</div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="history-box">
+    <h3>Riwayat Ronde</h3>
+    <div class="history-list" id="historyList">
+      <span style="color:#555; font-size:.75rem;">Belum ada ronde</span>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <button class="btn" id="btnSound" style="flex:1;">🔊 Suara</button>
+    <button class="btn btn-reset" id="btnReset" style="flex:1;">🔄 Reset</button>
+  </div>
+  <div class="credit">Mas-IP</strong> • Gunting Kertas Batu • Bisa mabar atau lawan ai</div>
+</div>
+
+<!-- OVERLAY AKHIR -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="emoji" id="overlayEmoji">🏆</div>
+    <h2 id="overlayTitle">Selesai!</h2>
+    <p id="overlayDesc">Skor akhir: 0 - 0</p>
+    <button class="btn" id="btnPlayAgain" style="width:100%; padding:12px; font-size:.95rem;">Main Lagi</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/13.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/13.0.0/firebase-database-compat.js"></script>
+<script>
+/* ================= FIREBASE CONFIG =================
+   Ganti isi object ini dengan config Web App dari Firebase Console. */
+const firebaseConfig = {
+  apiKey: "AIzaSyCmXATGHRuMwBwtycIm53yeMfenSpHTJHQ",
+  authDomain: "gukeba-f61b0.firebaseapp.com",
+  databaseURL: "https://gukeba-f61b0-default-rtdb.firebaseio.com",
+  projectId: "gukeba-f61b0",
+  storageBucket: "gukeba-f61b0.firebasestorage.app",
+  messagingSenderId: "4567751815",
+  appId: "1:4567751815:web:28f935ba869332b8832c22",
+  measurementId: "G-L1F08KVLMV"
+};
+</script>
+<script>
+(function(){
+  "use strict";
+
+  // ================= STATE =================
+  const state = {
+    mode: 'bot',            // 'bot' | 'online'
+    difficulty: 'medium',   // 'easy' | 'medium' | 'hard'
+    score1: 0,
+    score2: 0,
+    round: 1,
+    bestOf: 3,
+    history: [],            // {r1, r2, winner}
+    soundOn: true,
+    waitingForP2: false,    // tidak dipakai pada mode online
+    choice1: null,
+    roundFinished: false,
+    gameFinished: false
+  };
+
+  const CHOICES = {
+    rock:     { emoji:'✊', name:'Batu',    beats:'scissors' },
+    paper:    { emoji:'✋', name:'Kertas',  beats:'rock' },
+    scissors: { emoji:'✌️', name:'Gunting', beats:'paper' }
+  };
+
+  // ================= FIREBASE ONLINE =================
+  const online = { uid:null, roomCode:null, slot:null, myName:'', opponentName:'', roomRef:null, unsub:null, resolving:false };
+  let fbDb = null, fbAuth = null;
+  const EMPTY_ROOM_TTL_MS = 5 * 60 * 1000; // 5 menit
+
+  function firebaseReady(){ return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('PASTE_'); }
+  async function ensureFirebase(){
+    if (!firebaseReady()) throw new Error('Firebase config belum diisi.');
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth(); fbDb = firebase.database();
+    if (!fbAuth.currentUser) await fbAuth.signInAnonymously();
+    online.uid = fbAuth.currentUser.uid;
+    cleanupStaleRooms().catch(()=>{});
+  }
+
+  async function cleanupStaleRooms(){
+    if(!fbDb) return;
+    const snap = await fbDb.ref('rpsRooms').once('value');
+    const now = Date.now();
+    const jobs = [];
+    snap.forEach(child => {
+      const r = child.val() || {};
+      const hasP1 = !!r.players?.p1, hasP2 = !!r.players?.p2;
+      const emptySince = r.emptySince || r.lastActivity || r.createdAt || now;
+      if(!hasP1 && !hasP2 && now - emptySince >= EMPTY_ROOM_TTL_MS) jobs.push(child.ref.remove());
+    });
+    await Promise.allSettled(jobs);
+  }
+  function cleanName(v){ return (v || '').trim().slice(0,18) || 'Pemain'; }
+  function makeRoomCode(){ return String(Math.floor(100000 + Math.random() * 900000)); }
+  function setOnlineStatus(html){ const el=$('onlineStatus'); if(el) el.innerHTML=html; }
+  function setOnlineButtons(enabled){ actionBtns.forEach(b=>b.disabled=!enabled); }
+
+  async function createOnlineRoom(){
+    try {
+      await ensureFirebase(); leaveOnlineRoom(false);
+      online.myName=cleanName($('playerNameInput').value);
+      let code, snap; do { code=makeRoomCode(); snap=await fbDb.ref('rpsRooms/'+code).once('value'); } while(snap.exists());
+      online.roomCode=code; online.slot='p1'; online.roomRef=fbDb.ref('rpsRooms/'+code);
+      await online.roomRef.set({createdAt:firebase.database.ServerValue.TIMESTAMP,lastActivity:firebase.database.ServerValue.TIMESTAMP,ownerUid:online.uid,status:'waiting',round:1,bestOf:state.bestOf,score1:0,score2:0,players:{p1:{uid:online.uid,name:online.myName},p2:null},choices:{}});
+      online.roomRef.child('players/p1').onDisconnect().remove();
+      online.roomRef.child('lastActivity').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+      listenRoom();
+      $('roomCodeDisplay').textContent=code;
+      setOnlineStatus(`Room dibuat. Kirim kode <span class="room-code">${code}</span> ke lawan.`);
+      setOnlineButtons(false); $('deleteRoomRow').style.display='flex'; $('btnDeleteRoom').disabled=false; render();
+    } catch(e){ setOnlineStatus('Gagal membuat room: '+e.message); }
+  }
+
+  async function joinOnlineRoom(){
+    try {
+      await ensureFirebase(); leaveOnlineRoom(false);
+      online.myName=cleanName($('playerNameInput').value);
+      const code=($('roomCodeInput').value||'').trim().toUpperCase();
+      if(!/^\d{6}$/.test(code)) throw new Error('Token harus tepat 6 digit angka.');
+      const ref=fbDb.ref('rpsRooms/'+code); const snap=await ref.once('value');
+      if(!snap.exists()) throw new Error('Room tidak ditemukan.');
+      const data=snap.val();
+      if(data.players && data.players.p2) throw new Error('Room sudah penuh.');
+      online.roomCode=code; online.slot='p2'; online.roomRef=ref;
+      await ref.child('players/p2').set({uid:online.uid,name:online.myName});
+      await ref.update({status:'playing',lastActivity:firebase.database.ServerValue.TIMESTAMP,emptySince:null});
+      ref.child('players/p2').onDisconnect().remove();
+      ref.child('lastActivity').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+      listenRoom(); setOnlineStatus(`Terhubung ke room <span class="room-code">${code}</span>.`);
+    } catch(e){ setOnlineStatus('Gagal gabung: '+e.message); }
+  }
+
+  function listenRoom(){
+    if(!online.roomRef) return;
+    const handler=online.roomRef.on('value', snap=>{
+      const room=snap.val();
+      if(!room){ setOnlineStatus('Room ditutup/dihapus.'); setOnlineButtons(false); $('deleteRoomRow').style.display='none'; return; }
+      $('deleteRoomRow').style.display = 'flex'; $('btnDeleteRoom').disabled=false;
+      const me=online.slot, other=me==='p1'?'p2':'p1';
+      online.opponentName=room.players?.[other]?.name || 'Menunggu lawan';
+      state.score1 = me==='p1' ? (room.score1||0) : (room.score2||0);
+      state.score2 = me==='p1' ? (room.score2||0) : (room.score1||0);
+      state.round=room.round||1; render();
+      const both=room.players?.p1 && room.players?.p2;
+      setOnlineButtons(!!both && room.status!=='finished' && !(room.choices&&room.choices[me]));
+      if(!both){ setOnlineStatus(`Room <span class="room-code">${online.roomCode}</span> — menunggu lawan...`); return; }
+      if(room.choices?.p1 && room.choices?.p2 && !online.resolving) resolveOnlineRound(room);
+    });
+    online.unsub=()=>online.roomRef && online.roomRef.off('value',handler);
+  }
+
+  async function submitOnlineChoice(choice){
+    if(!online.roomRef || !online.slot){ setOnlineStatus('Buat atau gabung room dulu.'); return; }
+    try {
+      const snap=await online.roomRef.child('players').once('value'); const players=snap.val();
+      if(!players?.p1 || !players?.p2){ setOnlineStatus('Masih menunggu lawan.'); return; }
+      await online.roomRef.child('choices/'+online.slot).transaction(v=>v || choice);
+      await online.roomRef.child('lastActivity').set(firebase.database.ServerValue.TIMESTAMP);
+      setOnlineButtons(false); p1Choice.textContent='🔒'; p2Choice.textContent='❔'; resultEl.textContent='Pilihan terkunci. Menunggu lawan...'; resultEl.className='result';
+    } catch(e){ setOnlineStatus('Gagal mengirim pilihan: '+e.message); }
+  }
+
+  async function resolveOnlineRound(room){
+    // Hanya host/P1 yang menulis hasil agar skor tidak dihitung dua kali.
+    if(online.slot!=='p1') return;
+    online.resolving=true;
+    try {
+      const c1=room.choices.p1,c2=room.choices.p2,out=compare(c1,c2);
+      let s1=room.score1||0,s2=room.score2||0; if(out==='win')s1++; else if(out==='lose')s2++;
+      const needed=Math.ceil((room.bestOf||3)/2), finished=s1>=needed||s2>=needed;
+      await online.roomRef.update({score1:s1,score2:s2,status:finished?'finished':'playing',lastResult:{round:room.round||1,p1:c1,p2:c2,outcome:out,at:firebase.database.ServerValue.TIMESTAMP}});
+      setTimeout(async()=>{ if(!online.roomRef)return; if(finished){ await online.roomRef.child('choices').remove(); } else { await online.roomRef.update({round:(room.round||1)+1,choices:null}); } online.resolving=false; },1400);
+    } catch(e){ online.resolving=false; }
+  }
+
+  async function exitOnlineRoom(){
+    if(!online.roomRef || !online.roomCode || !online.slot){ setOnlineStatus('Tidak ada room aktif.'); return; }
+    const code = online.roomCode;
+    if(!confirm(`Keluar dari room ${code}?`)) return;
+    try {
+      await leaveOnlineRoom(true);
+      $('roomCodeDisplay').textContent='------';
+      $('roomCodeInput').value='';
+      setOnlineButtons(false);
+      setOnlineStatus('Kamu sudah keluar dari room.');
+      resetGame();
+    } catch(e){ setOnlineStatus('Gagal keluar room: '+e.message); }
+  }
+
+  async function leaveOnlineRoom(removePlayer=true){
+    if(online.unsub){ online.unsub(); online.unsub=null; }
+    const ref=online.roomRef, slot=online.slot, uid=online.uid;
+    if(removePlayer && ref && slot){
+      try {
+        await ref.child('players/'+slot).remove();
+        const snap = await ref.once('value');
+        const room = snap.val();
+        if(room){
+          const p1=room.players?.p1 || null, p2=room.players?.p2 || null;
+          if(!p1 && !p2){
+            await ref.update({emptySince:firebase.database.ServerValue.TIMESTAMP,lastActivity:firebase.database.ServerValue.TIMESTAMP,status:'empty',ownerUid:null,choices:null});
+          } else {
+            const remaining = p1 || p2;
+            const updates={lastActivity:firebase.database.ServerValue.TIMESTAMP,status:'waiting',emptySince:null,choices:null};
+            if(room.ownerUid===uid || !room.ownerUid) updates.ownerUid=remaining.uid;
+            await ref.update(updates);
+          }
+        }
+      } catch(e){}
+    }
+    online.roomRef=null; online.roomCode=null; online.slot=null; online.opponentName=''; online.resolving=false;
+    const dr=$('deleteRoomRow'); if(dr) dr.style.display='flex'; const leaveBtn=$('btnDeleteRoom'); if(leaveBtn) leaveBtn.disabled=true;
+  }
+
+
+  // ================= ELEMEN =================
+  const $ = id => document.getElementById(id);
+  const p1Choice = $('p1Choice'), p2Choice = $('p2Choice');
+  const p1Score  = $('p1Score'),  p2Score  = $('p2Score');
+  const p1Name   = $('p1Name'),   p2Name   = $('p2Name');
+  const p1Avatar = $('p1Avatar'), p2Avatar = $('p2Avatar');
+  const p1El = $('p1'), p2El = $('p2');
+  const resultEl = $('result');
+  const roundNumEl = $('roundNum');
+  const modeLabel = $('modeLabel');
+  const historyList = $('historyList');
+  const countdown = $('countdown');
+  const countdownText = $('countdownText');
+  const overlay = $('overlay');
+  const actionBtns = document.querySelectorAll('.action-btn');
+
+  // ================= BACKSOUND =================
+  // Backsound ringan pakai Web Audio API (tidak butuh file eksternal)
+  let audioCtx = null;
+  let ambientNode = null;
+  let ambientGain = null;
+
+  function initAudio(){
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e){ audioCtx = null; }
+  }
+
+  // Backsound ambient lembut dengan dua osilator
+  function startAmbient(){
+    if (!audioCtx || !state.soundOn) return;
+    if (ambientNode) return;
+    ambientGain = audioCtx.createGain();
+    ambientGain.gain.value = 0.04;
+    ambientGain.connect(audioCtx.destination);
+
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 220;
+
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = 330;
+
+    // LFO untuk variasi lembut
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.15;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 0.02;
+    lfo.connect(lfoGain);
+    lfoGain.connect(ambientGain.gain);
+
+    osc1.connect(ambientGain);
+    osc2.connect(ambientGain);
+    osc1.start();
+    osc2.start();
+    lfo.start();
+
+    ambientNode = { osc1, osc2, lfo };
+  }
+
+  function stopAmbient(){
+    if (ambientNode){
+      try {
+        ambientNode.osc1.stop();
+        ambientNode.osc2.stop();
+        ambientNode.lfo.stop();
+      } catch(e){}
+      ambientNode = null;
+    }
+  }
+
+  // SFX klik
+  function playClick(){
+    if (!audioCtx || !state.soundOn) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.value = 660;
+    g.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.09);
+  }
+
+  // SFX menang / kalah / seri
+  function playResult(type){
+    if (!audioCtx || !state.soundOn) return;
+    const notes = type === 'win' ? [523, 659, 784] :
+                  type === 'lose' ? [392, 330, 262] :
+                  [440, 440];
+    notes.forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      const t = audioCtx.currentTime + i * 0.1;
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + 0.16);
+    });
+  }
+
+  // Resume audio ctx saat interaksi user
+  function ensureAudio(){
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended'){
+      audioCtx.resume();
+    }
+    if (state.soundOn) startAmbient();
+  }
+  document.addEventListener('click', ensureAudio, { once:false });
+  document.addEventListener('touchstart', ensureAudio, { once:false });
+
+  // ================= RENDER =================
+  function render(){
+    p1Score.textContent = state.score1;
+    p2Score.textContent = state.score2;
+    roundNumEl.textContent = state.round;
+    modeLabel.textContent = state.mode === 'bot' ? '🤖 Bot' : '🌐 Online';
+
+    // Label nama
+    if (state.mode === 'bot'){
+      p1Name.textContent = 'Kamu';
+      p2Name.textContent = 'Komputer';
+      p1Avatar.textContent = '😀';
+      p2Avatar.textContent = '🤖';
+    } else {
+      p1Name.textContent = online.myName || 'Kamu';
+      p2Name.textContent = online.opponentName || 'Menunggu lawan';
+      p1Avatar.textContent = '😀';
+      p2Avatar.textContent = '😎';
+    }
+
+    // Riwayat
+    if (state.history.length === 0){
+      historyList.innerHTML = '<span style="color:#555; font-size:.75rem;">Belum ada ronde</span>';
+    } else {
+      historyList.innerHTML = state.history.map((h, i) => `
+        <div class="history-item ${h.winner}">
+          <span>R${i+1}: ${CHOICES[h.r1].emoji} vs ${CHOICES[h.r2].emoji}</span>
+          <span>${h.winner === 'win' ? '✅ Menang' : h.winner === 'lose' ? '❌ Kalah' : '🤝 Seri'}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // ================= LOGIKA =================
+  function botPick(){
+    if (state.difficulty === 'easy'){
+      // murni acak
+      const keys = Object.keys(CHOICES);
+      return keys[Math.floor(Math.random() * 3)];
+    }
+    if (state.difficulty === 'medium'){
+      // 60% counter ke pilihan terakhir user, 40% acak
+      const keys = Object.keys(CHOICES);
+      if (state.history.length === 0 || Math.random() < 0.4){
+        return keys[Math.floor(Math.random() * 3)];
+      }
+      const last = state.history[state.history.length - 1].r1;
+      // pilih yang mengalahkan last
+      return keys.find(k => CHOICES[k].beats === last);
+    }
+    // hard: analisis frekuensi pilihan user
+    if (state.history.length < 2){
+      const keys = Object.keys(CHOICES);
+      return keys[Math.floor(Math.random() * 3)];
+    }
+    const freq = { rock:0, paper:0, scissors:0 };
+    state.history.forEach(h => freq[h.r1]++);
+    // prediksi pilihan terbanyak user
+    const predicted = Object.keys(freq).reduce((a,b) => freq[a] > freq[b] ? a : b);
+    // counter prediksi
+    return Object.keys(CHOICES).find(k => CHOICES[k].beats === predicted);
+  }
+
+  function compare(c1, c2){
+    if (c1 === c2) return 'draw';
+    if (CHOICES[c1].beats === c2) return 'win';  // p1 menang
+    return 'lose';
+  }
+
+  function onChoice(choice){
+    if (state.roundFinished || state.gameFinished) return;
+    ensureAudio();
+    playClick();
+
+    // Mode online: pilihan dikirim ke Firebase dan disembunyikan sampai lawan memilih
+    if (state.mode === 'online'){
+      submitOnlineChoice(choice);
+      return;
+    }
+
+    // Legacy lokal (dinonaktifkan)
+    if (state.mode === 'local' && state.waitingForP2){
+      handleRound(state.choice1, choice);
+      state.waitingForP2 = false;
+      actionBtns.forEach(b => b.classList.remove('selected'));
+      return;
+    }
+
+    // Highlight tombol
+    actionBtns.forEach(b => b.classList.remove('selected'));
+    document.querySelector(`.action-btn[data-choice="${choice}"]`).classList.add('selected');
+
+    // Mode lokal - pemain 1 memilih, tunggu pemain 2
+    if (state.mode === 'local'){
+      state.choice1 = choice;
+      state.waitingForP2 = true;
+      p1Choice.textContent = CHOICES[choice].emoji;
+      p1Choice.classList.add('shake');
+      setTimeout(()=>p1Choice.classList.remove('shake'), 400);
+      p2Choice.textContent = '❔';
+      resultEl.textContent = 'Pemain 2, giliranmu memilih!';
+      resultEl.className = 'result';
+      // Nama pemain 2 disorot
+      p2El.classList.add('winner');
+      setTimeout(()=>p2El.classList.remove('winner'), 800);
+      return;
+    }
+
+    // Mode bot: pemain 1 memilih, bot langsung menjawab
+    p1Choice.textContent = CHOICES[choice].emoji;
+    p1Choice.classList.add('shake');
+    setTimeout(()=>p1Choice.classList.remove('shake'), 400);
+    p2Choice.textContent = '❔';
+    resultEl.textContent = 'Komputer berpikir...';
+    resultEl.className = 'result';
+
+    // Countdown 3-2-1
+    startCountdown(3, () => {
+      const botChoice = botPick();
+      handleRound(choice, botChoice);
+    });
+  }
+
+  function startCountdown(from, callback){
+    countdown.classList.add('show');
+    let n = from;
+    countdownText.textContent = n;
+    const intv = setInterval(() => {
+      n--;
+      if (n <= 0){
+        clearInterval(intv);
+        countdown.classList.remove('show');
+        callback();
+      } else {
+        countdownText.textContent = n;
+        countdownText.style.animation = 'none';
+        void countdownText.offsetWidth;
+        countdownText.style.animation = 'pop .6s';
+      }
+    }, 600);
+  }
+
+  function handleRound(c1, c2){
+    // Tampilkan pilihan lawan dengan animasi
+    if (state.mode === 'bot'){
+      p2Choice.textContent = CHOICES[c2].emoji;
+    } else {
+      p2Choice.textContent = CHOICES[c2].emoji;
+    }
+    p2Choice.classList.add('shake');
+    setTimeout(()=>p2Choice.classList.remove('shake'), 400);
+
+    const outcome = compare(c1, c2);
+    state.roundFinished = true;
+
+    // Update skor & efek
+    p1El.classList.remove('winner','loser');
+    p2El.classList.remove('winner','loser');
+
+    if (outcome === 'win'){
+      state.score1++;
+      p1El.classList.add('winner');
+      p2El.classList.add('loser');
+      resultEl.textContent = `🎉 ${p1Name.textContent} Menang Ronde Ini!`;
+      resultEl.className = 'result win';
+      playResult('win');
+    } else if (outcome === 'lose'){
+      state.score2++;
+      p2El.classList.add('winner');
+      p1El.classList.add('loser');
+      resultEl.textContent = `😢 ${p2Name.textContent} Menang Ronde Ini!`;
+      resultEl.className = 'result lose';
+      playResult('lose');
+    } else {
+      resultEl.textContent = '🤝 Seri!';
+      resultEl.className = 'result draw';
+      playResult('draw');
+    }
+
+    state.history.push({ r1: c1, r2: c2, winner: outcome });
+    render();
+
+    // Cek akhir game
+    const needed = Math.ceil(state.bestOf / 2);
+    if (state.score1 >= needed || state.score2 >= needed){
+      setTimeout(endGame, 900);
+      return;
+    }
+
+    // Next round
+    setTimeout(() => {
+      state.round++;
+      state.roundFinished = false;
+      state.choice1 = null;
+      actionBtns.forEach(b => b.classList.remove('selected'));
+      p1Choice.textContent = '❔';
+      p2Choice.textContent = '❔';
+      resultEl.textContent = 'Pilih senjata!';
+      resultEl.className = 'result';
+      p1El.classList.remove('winner','loser');
+      p2El.classList.remove('winner','loser');
+      render();
+    }, 1400);
+  }
+
+  function endGame(){
+    state.gameFinished = true;
+    const p1Win = state.score1 > state.score2;
+    const draw = state.score1 === state.score2;
+
+    $('overlayEmoji').textContent = draw ? '🤝' : p1Win ? '🏆' : '😢';
+    $('overlayTitle').textContent = draw ? 'Seri!' : p1Win ? `${p1Name.textContent} Menang!` : `${p2Name.textContent} Menang!`;
+    $('overlayDesc').textContent = `Skor akhir: ${state.score1} - ${state.score2}`;
+    overlay.classList.add('show');
+  }
+
+  // ================= RESET =================
+  function resetGame(){
+    state.score1 = 0;
+    state.score2 = 0;
+    state.round = 1;
+    state.history = [];
+    state.waitingForP2 = false;
+    state.choice1 = null;
+    state.roundFinished = false;
+    state.gameFinished = false;
+
+    p1Choice.textContent = '❔';
+    p2Choice.textContent = '❔';
+    p1El.classList.remove('winner','loser');
+    p2El.classList.remove('winner','loser');
+    actionBtns.forEach(b => b.classList.remove('selected'));
+    resultEl.textContent = 'Pilih senjata untuk mulai!';
+    resultEl.className = 'result';
+    overlay.classList.remove('show');
+
+    render();
+  }
+
+  // ================= EVENT LISTENER =================
+  actionBtns.forEach(btn => {
+    btn.addEventListener('click', () => onChoice(btn.dataset.choice));
+  });
+
+  // Mode
+  document.querySelectorAll('#modeGroup .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modeGroup .btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.mode = btn.dataset.mode;
+      $('difficultyBox').style.display = state.mode === 'bot' ? 'block' : 'none';
+      $('onlineModeBox').style.display = state.mode === 'online' ? 'block' : 'none';
+      $('onlineBox').classList.toggle('show', state.mode === 'online');
+      if(state.mode === 'online') setOnlineAction('create');
+      resetGame();
+      playClick();
+    });
+  });
+
+  // Difficulty
+  document.querySelectorAll('#difficultyGroup .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#difficultyGroup .btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.difficulty = btn.dataset.diff;
+      playClick();
+    });
+  });
+
+  // Sound toggle
+  $('btnSound').addEventListener('click', () => {
+    state.soundOn = !state.soundOn;
+    $('btnSound').textContent = state.soundOn ? '🔊 Suara' : '🔇 Senyap';
+    if (state.soundOn){
+      ensureAudio();
+      startAmbient();
+    } else {
+      stopAmbient();
+    }
+  });
+
+  // Reset
+  $('btnReset').addEventListener('click', () => {
+    resetGame();
+    playClick();
+  });
+
+  // Play again
+  $('btnPlayAgain').addEventListener('click', () => {
+    resetGame();
+    playClick();
+  });
+
+
+  function setOnlineAction(action){
+    document.querySelectorAll('#onlineActionGroup .btn').forEach(b => b.classList.toggle('active', b.dataset.onlineAction === action));
+    $('createRoomBox').classList.toggle('show', action === 'create');
+    $('joinRoomBox').classList.toggle('show', action === 'join');
+    if(action === 'create'){
+      setOnlineStatus(online.roomCode ? `Room aktif: <span class="room-code">${online.roomCode}</span>` : 'Tekan Buat Room untuk mendapatkan kode 6 digit.');
+    } else {
+      setOnlineStatus('Masukkan kode room 6 digit dari pembuat room.');
+    }
+  }
+
+  document.querySelectorAll('#onlineActionGroup .btn').forEach(btn => {
+    btn.addEventListener('click', () => { setOnlineAction(btn.dataset.onlineAction); playClick(); });
+  });
+
+  // Firebase online controls
+  $('btnCreateRoom').addEventListener('click', createOnlineRoom);
+  $('btnJoinRoom').addEventListener('click', joinOnlineRoom);
+  $('btnDeleteRoom').addEventListener('click', exitOnlineRoom);
+  $('roomCodeInput').addEventListener('input', e => e.target.value=e.target.value.replace(/\D/g,'').slice(0,6));
+  window.addEventListener('beforeunload', () => { if(online.roomRef && online.slot){ online.roomRef.child('players/'+online.slot).remove(); online.roomRef.child('lastActivity').set(firebase.database.ServerValue.TIMESTAMP); } });
+
+  // Keyboard shortcut: R / P / S
+  document.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (k === 'r') onChoice('rock');
+    else if (k === 'p') onChoice('paper');
+    else if (k === 's') onChoice('scissors');
+  });
+
+  // ================= START =================
+  setInterval(()=>{ if(fbDb) cleanupStaleRooms().catch(()=>{}); }, 60 * 1000);
+  render();
+  // Coba mulai ambient saat interaksi pertama
+  document.addEventListener('click', () => {
+    if (state.soundOn) startAmbient();
+  }, { once:true });
+})();
+</script>
+</body>
+</html>
