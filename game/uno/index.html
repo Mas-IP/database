@@ -163,7 +163,23 @@ function clearExpiredUno(r){const u=r.unoPending;if(!u)return;if(u.expiresRevisi
 function finishPlayer(r,pid){const p=r.players?.[pid];if(!p||p.finished)return;const done=Object.values(r.players||{}).filter(x=>x.finished).length;p.finished=true;p.finishRank=done+1;p.finishedAt=Date.now();r.finishOrder=r.finishOrder||[];if(!r.finishOrder.includes(pid))r.finishOrder.push(pid);const active=activePlayerIds(r);if(active.length<=1){if(active.length===1){const last=active[0],lp=r.players[last];lp.finished=true;lp.finishRank=Object.values(r.players||{}).filter(x=>x.finished).length+1;lp.finishedAt=Date.now();r.finishOrder.push(last)}r.status='finished';r.winnerUid=r.finishOrder[0]||pid;r.turnUid=null;r.finishedAt=Date.now();r.expiresAt=Date.now()+6*60*60*1000}}
 function advanceTurn(r,from,steps=1){const n=nextActiveFor(r,from,steps);r.turnUid=n;return n}
 function resolvePendingDrawIfForced(r){const pd=r.pendingDraw;if(!pd||r.status!=='playing')return false;const target=r.players?.[pd.targetUid];if(!target||target.finished){r.pendingDraw=null;return false}const counters=(target.hand||[]).filter(c=>c.value===pd.type);if(counters.length)return false;takeCards(r,pd.targetUid,pd.amount);const from=pd.targetUid;r.pendingDraw=null;r.drawState=null;advanceTurn(r,from,1);return true}
-function updateDecisionTimer(){if(decisionInterval){clearInterval(decisionInterval);decisionInterval=null}const el=$('decisionTimer');if(!room||room.status!=='playing'||!room.drawState?.deadline){el.classList.add('hidden');return}const tick=()=>{if(!room?.drawState?.deadline){el.classList.add('hidden');return}const left=Math.max(0,Math.ceil((room.drawState.deadline-Date.now())/1000));el.textContent=`Setelah ambil kartu: ${left} detik untuk main, lalu giliran lewat.`;el.classList.remove('hidden');if(left<=0)expireDrawDecision()};tick();decisionInterval=setInterval(tick,500)}
+function updateUnoButtons(){
+ const uno=$('unoBtn'),call=$('callUnoBtn');
+ if(!uno||!call)return;
+ const u=room?.unoPending,playing=room?.status==='playing';
+ uno.disabled=!(playing&&u?.uid===uid&&currentPlayer()?.hand?.length===1);
+ call.disabled=!(playing&&u&&u.uid!==uid&&Date.now()>=(u.callableAt||0));
+ if(playing&&u&&u.uid!==uid&&Date.now()<(u.callableAt||0)){
+  const left=Math.max(0,Math.ceil(((u.callableAt||0)-Date.now())/1000));
+  call.textContent=`Tuduh UNO (${left})`;
+ }else call.textContent='Tuduh UNO';
+}
+function startUnoButtonTimer(){
+ if(unoButtonInterval){clearInterval(unoButtonInterval);unoButtonInterval=null}
+ updateUnoButtons();
+ if(room?.status==='playing'&&room?.unoPending)unoButtonInterval=setInterval(updateUnoButtons,100);
+}
+function updateDecisionTimer(){if(decisionInterval){clearInterval(decisionInterval);decisionInterval=null}if(unoButtonInterval){clearInterval(unoButtonInterval);unoButtonInterval=null}const el=$('decisionTimer');if(!room||room.status!=='playing'||!room.drawState?.deadline){el.classList.add('hidden');return}const tick=()=>{if(!room?.drawState?.deadline){el.classList.add('hidden');return}const left=Math.max(0,Math.ceil((room.drawState.deadline-Date.now())/1000));el.textContent=`Setelah ambil kartu: ${left} detik untuk main, lalu giliran lewat.`;el.classList.remove('hidden');if(left<=0)expireDrawDecision()};tick();decisionInterval=setInterval(tick,500)}
 async function expireDrawDecision(){if(!room?.drawState||Date.now()<room.drawState.deadline)return;if(localMode){if(room.status==='playing'&&room.turnUid===room.drawState.uid){const from=room.turnUid;room.drawState=null;advanceTurn(room,from,1);room.revision++;render();if(room.turnUid===room.aiUid)runLocalAiTurn()}return}if(!roomRef)return;await roomRef.transaction(r=>{if(!r||r.status!=='playing'||!r.drawState||Date.now()<r.drawState.deadline||r.turnUid!==r.drawState.uid)return;r.drawState=null;advanceTurn(r,r.turnUid,1);r.revision=(r.revision||0)+1;resolvePendingDrawIfForced(r);return r})}
 function render(){
  if(!room)return;
@@ -186,8 +202,8 @@ function render(){
   $('myHand').replaceChildren();selected=selected.filter(i=>(currentPlayer()?.hand||[]).some(c=>c.id===i));
   (currentPlayer()?.hand||[]).forEach(c=>{const el=cardNode(c);const pos=selected.indexOf(c.id);if(pos>=0){el.classList.add('selected');el.dataset.order=String(pos+1);el.title+=' • Urutan combo '+(pos+1)}el.onclick=()=>{if(!isMyTurn()||currentPlayer()?.finished)return;const i=selected.indexOf(c.id);if(i>=0)selected.splice(i,1);else selected.push(c.id);renderHandOnly()};$('myHand').append(el)});
   $('playBtn').disabled=!isMyTurn()||currentPlayer()?.finished||selected.length===0;
-  $('drawBtn').disabled=!isMyTurn()||currentPlayer()?.finished||!!room.drawState;$('drawBtn').textContent=room.pendingDraw?.targetUid===uid?`Ambil ${room.pendingDraw.amount} kartu`:'Ambil 1 kartu';$('unoBtn').disabled=!(room.unoPending?.uid===uid); 
-  $('callUnoBtn').disabled=!room.unoPending||room.unoPending.uid===uid||Date.now()<(room.unoPending.callableAt||0);updateDecisionTimer();
+  $('drawBtn').disabled=!isMyTurn()||currentPlayer()?.finished||!!room.drawState;$('drawBtn').textContent=room.pendingDraw?.targetUid===uid?`Ambil ${room.pendingDraw.amount} kartu`:'Ambil 1 kartu';
+  startUnoButtonTimer();updateDecisionTimer();
  } else if(room.status==='finished'){
   $('resultTitle').textContent=room.winnerUid===uid?'Kamu menang!':`Pemenang: ${room.players?.[room.winnerUid]?.nickname||'pemain'}`;
   $('resultText').textContent=(room.finishOrder||[]).map((id,i)=>`${i+1}. ${room.players?.[id]?.nickname||'Pemain'}`).join(' • ')||(room.aiMatch?'Pertandingan melawan AI selesai.':'Permainan selesai.');$('rematchBtn').classList.toggle('hidden',!isHost()||room.aiMatch);
