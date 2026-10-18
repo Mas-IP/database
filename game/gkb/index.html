@@ -612,59 +612,12 @@ const firebaseConfig = {
   // ================= BACKSOUND =================
   // Backsound ringan pakai Web Audio API (tidak butuh file eksternal)
   let audioCtx = null;
-  let ambientNode = null;
-  let ambientGain = null;
 
   function initAudio(){
     if (audioCtx) return;
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     } catch(e){ audioCtx = null; }
-  }
-
-  // Backsound ambient lembut dengan dua osilator
-  function startAmbient(){
-    if (!audioCtx || !state.soundOn) return;
-    if (ambientNode) return;
-    ambientGain = audioCtx.createGain();
-    ambientGain.gain.value = 0.04;
-    ambientGain.connect(audioCtx.destination);
-
-    const osc1 = audioCtx.createOscillator();
-    osc1.type = 'sine';
-    osc1.frequency.value = 220;
-
-    const osc2 = audioCtx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.value = 330;
-
-    // LFO untuk variasi lembut
-    const lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.15;
-    const lfoGain = audioCtx.createGain();
-    lfoGain.gain.value = 0.02;
-    lfo.connect(lfoGain);
-    lfoGain.connect(ambientGain.gain);
-
-    osc1.connect(ambientGain);
-    osc2.connect(ambientGain);
-    osc1.start();
-    osc2.start();
-    lfo.start();
-
-    ambientNode = { osc1, osc2, lfo };
-  }
-
-  function stopAmbient(){
-    if (ambientNode){
-      try {
-        ambientNode.osc1.stop();
-        ambientNode.osc2.stop();
-        ambientNode.lfo.stop();
-      } catch(e){}
-      ambientNode = null;
-    }
   }
 
   // SFX klik
@@ -705,7 +658,6 @@ const firebaseConfig = {
     if (audioCtx && audioCtx.state === 'suspended'){
       audioCtx.resume();
     }
-    if (state.soundOn) startAmbient();
   }
   document.addEventListener('click', ensureAudio, { once:false });
   document.addEventListener('touchstart', ensureAudio, { once:false });
@@ -985,9 +937,6 @@ const firebaseConfig = {
     $('btnSound').textContent = state.soundOn ? '🔊 Suara' : '🔇 Senyap';
     if (state.soundOn){
       ensureAudio();
-      startAmbient();
-    } else {
-      stopAmbient();
     }
   });
 
@@ -1039,7 +988,6 @@ const firebaseConfig = {
   render();
   // Coba mulai ambient saat interaksi pertama
   document.addEventListener('click', () => {
-    if (state.soundOn) startAmbient();
   }, { once:true });
 })();
 </script>
