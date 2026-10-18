@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <div><div class="brand">UNO<span>Game</span></div><div class="tiny">Main UNO klasik bersama teman atau tantang AI.</div></div>
+    <div><div class="brand">UNO<span>Game</span></div><div class="tiny">Main UNO klasik bersama teman.</div></div>
     <div class="status"><button type="button" id="soundToggle" class="secondary" aria-pressed="true" style="margin-bottom:8px">🔊 Suara & getar: ON</button><div class="pill"><i class="dot" id="connDot"></i><span id="connText">Menghubungkan Firebase…</span></div><div id="whoami" class="tiny" style="margin-top:6px">Menyiapkan sesi anonim</div></div>
   </header>
 
@@ -42,7 +42,7 @@
     </div>
     <div class="panel">
       <h3>Aturan ringkas</h3>
-      <p class="tiny">Deck klasik 108 kartu. Combo boleh beda warna selama nilai/simbol sama. Lupa menekan UNO dan tertangkap sebelum giliran berikutnya: ambil 2 kartu. Ambil kartu mengakhiri giliran.</p>
+      <p class="tiny">Deck klasik 108 kartu. Combo boleh beda warna selama nilai/simbol sama. Ambil kartu mengakhiri giliran.</p>
     </div>
   </section>
 
@@ -68,7 +68,7 @@
       </div>
       <div class="subtitle">KARTU DI TANGAN — pilih satu atau beberapa kartu bernilai sama</div>
       <div class="hand" id="myHand"></div>
-      <div class="actions"><button id="playBtn" disabled>Mainkan pilihan</button><button class="secondary" id="drawBtn">Ambil 1 kartu</button><button class="secondary" id="unoBtn">UNO!</button><button class="secondary" id="callUnoBtn">Tuduh UNO</button></div><div id="decisionTimer" class="tiny hidden" style="margin-top:8px"></div>
+      <div class="actions"><button id="playBtn" disabled>Mainkan pilihan</button><button class="secondary" id="drawBtn">Ambil 1 kartu</button></div><div id="decisionTimer" class="tiny hidden" style="margin-top:8px"></div>
       <div id="gameNotice" class="notice hidden"></div>
     </div>
     <div id="resultArea" class="panel hidden" style="margin-top:14px"><h2 id="resultTitle">Permainan selesai</h2><p id="resultText"></p><div class="actions"><button id="rematchBtn" class="hidden">Main Lagi</button><button id="backLobbyBtn" class="secondary">Kembali ke lobi</button></div></div>
@@ -163,23 +163,7 @@ function clearExpiredUno(r){const u=r.unoPending;if(!u)return;if(u.expiresRevisi
 function finishPlayer(r,pid){const p=r.players?.[pid];if(!p||p.finished)return;const done=Object.values(r.players||{}).filter(x=>x.finished).length;p.finished=true;p.finishRank=done+1;p.finishedAt=Date.now();r.finishOrder=r.finishOrder||[];if(!r.finishOrder.includes(pid))r.finishOrder.push(pid);const active=activePlayerIds(r);if(active.length<=1){if(active.length===1){const last=active[0],lp=r.players[last];lp.finished=true;lp.finishRank=Object.values(r.players||{}).filter(x=>x.finished).length+1;lp.finishedAt=Date.now();r.finishOrder.push(last)}r.status='finished';r.winnerUid=r.finishOrder[0]||pid;r.turnUid=null;r.finishedAt=Date.now();r.expiresAt=Date.now()+6*60*60*1000}}
 function advanceTurn(r,from,steps=1){const n=nextActiveFor(r,from,steps);r.turnUid=n;return n}
 function resolvePendingDrawIfForced(r){const pd=r.pendingDraw;if(!pd||r.status!=='playing')return false;const target=r.players?.[pd.targetUid];if(!target||target.finished){r.pendingDraw=null;return false}const counters=(target.hand||[]).filter(c=>c.value===pd.type);if(counters.length)return false;takeCards(r,pd.targetUid,pd.amount);const from=pd.targetUid;r.pendingDraw=null;r.drawState=null;advanceTurn(r,from,1);return true}
-function updateUnoButtons(){
- const uno=$('unoBtn'),call=$('callUnoBtn');
- if(!uno||!call)return;
- const u=room?.unoPending,playing=room?.status==='playing';
- uno.disabled=!(playing&&u?.uid===uid&&currentPlayer()?.hand?.length===1);
- call.disabled=!(playing&&u&&u.uid!==uid&&Date.now()>=(u.callableAt||0));
- if(playing&&u&&u.uid!==uid&&Date.now()<(u.callableAt||0)){
-  const left=Math.max(0,Math.ceil(((u.callableAt||0)-Date.now())/1000));
-  call.textContent=`Tuduh UNO (${left})`;
- }else call.textContent='Tuduh UNO';
-}
-function startUnoButtonTimer(){
- if(unoButtonInterval){clearInterval(unoButtonInterval);unoButtonInterval=null}
- updateUnoButtons();
- if(room?.status==='playing'&&room?.unoPending)unoButtonInterval=setInterval(updateUnoButtons,100);
-}
-function updateDecisionTimer(){if(decisionInterval){clearInterval(decisionInterval);decisionInterval=null}if(unoButtonInterval){clearInterval(unoButtonInterval);unoButtonInterval=null}const el=$('decisionTimer');if(!room||room.status!=='playing'||!room.drawState?.deadline){el.classList.add('hidden');return}const tick=()=>{if(!room?.drawState?.deadline){el.classList.add('hidden');return}const left=Math.max(0,Math.ceil((room.drawState.deadline-Date.now())/1000));el.textContent=`Setelah ambil kartu: ${left} detik untuk main, lalu giliran lewat.`;el.classList.remove('hidden');if(left<=0)expireDrawDecision()};tick();decisionInterval=setInterval(tick,500)}
+function updateDecisionTimer(){if(decisionInterval){clearInterval(decisionInterval);decisionInterval=null}const el=$('decisionTimer');if(!room||room.status!=='playing'||!room.drawState?.deadline){el.classList.add('hidden');return}const tick=()=>{if(!room?.drawState?.deadline){el.classList.add('hidden');return}const left=Math.max(0,Math.ceil((room.drawState.deadline-Date.now())/1000));el.textContent=`Setelah ambil kartu: ${left} detik untuk main, lalu giliran lewat.`;el.classList.remove('hidden');if(left<=0)expireDrawDecision()};tick();decisionInterval=setInterval(tick,500)}
 async function expireDrawDecision(){if(!room?.drawState||Date.now()<room.drawState.deadline)return;if(localMode){if(room.status==='playing'&&room.turnUid===room.drawState.uid){const from=room.turnUid;room.drawState=null;advanceTurn(room,from,1);room.revision++;render();if(room.turnUid===room.aiUid)runLocalAiTurn()}return}if(!roomRef)return;await roomRef.transaction(r=>{if(!r||r.status!=='playing'||!r.drawState||Date.now()<r.drawState.deadline||r.turnUid!==r.drawState.uid)return;r.drawState=null;advanceTurn(r,r.turnUid,1);r.revision=(r.revision||0)+1;resolvePendingDrawIfForced(r);return r})}
 function render(){
  if(!room)return;
@@ -202,8 +186,7 @@ function render(){
   $('myHand').replaceChildren();selected=selected.filter(i=>(currentPlayer()?.hand||[]).some(c=>c.id===i));
   (currentPlayer()?.hand||[]).forEach(c=>{const el=cardNode(c);const pos=selected.indexOf(c.id);if(pos>=0){el.classList.add('selected');el.dataset.order=String(pos+1);el.title+=' • Urutan combo '+(pos+1)}el.onclick=()=>{if(!isMyTurn()||currentPlayer()?.finished)return;const i=selected.indexOf(c.id);if(i>=0)selected.splice(i,1);else selected.push(c.id);renderHandOnly()};$('myHand').append(el)});
   $('playBtn').disabled=!isMyTurn()||currentPlayer()?.finished||selected.length===0;
-  $('drawBtn').disabled=!isMyTurn()||currentPlayer()?.finished||!!room.drawState;$('drawBtn').textContent=room.pendingDraw?.targetUid===uid?`Ambil ${room.pendingDraw.amount} kartu`:'Ambil 1 kartu';
-  startUnoButtonTimer();updateDecisionTimer();
+  $('drawBtn').disabled=!isMyTurn()||currentPlayer()?.finished||!!room.drawState;$('drawBtn').textContent=room.pendingDraw?.targetUid===uid?`Ambil ${room.pendingDraw.amount} kartu`:'Ambil 1 kartu';updateDecisionTimer();
  } else if(room.status==='finished'){
   $('resultTitle').textContent=room.winnerUid===uid?'Kamu menang!':`Pemenang: ${room.players?.[room.winnerUid]?.nickname||'pemain'}`;
   $('resultText').textContent=(room.finishOrder||[]).map((id,i)=>`${i+1}. ${room.players?.[id]?.nickname||'Pemain'}`).join(' • ')||(room.aiMatch?'Pertandingan melawan AI selesai.':'Permainan selesai.');$('rematchBtn').classList.toggle('hidden',!isHost()||room.aiMatch);
@@ -626,7 +609,6 @@ async function init(){
   console.error('Inisialisasi Firebase gagal:',e);
  }
 }
-$('createBtn').addEventListener('click',()=>{console.log('[UNO] Tombol buat room ditekan');createRoom()});$('soundToggle').onclick=toggleSound;updateSoundToggle();$('aiBtn').disabled=false;$('aiBtn').onclick=()=>{ensureAudio();try{createLocalAiRoom()}catch(e){console.error(e);setNotice('AI offline gagal dibuka: '+(e?.message||e),true)}};$('joinBtn').addEventListener('click',()=>{console.log('[UNO] Tombol gabung room ditekan');joinRoom()});$('roomCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/[01IO]/g,'').slice(0,10)});$('roomCode').addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('joinBtn').disabled)joinRoom()});$('nickname').addEventListener('change',()=>{const n=nameValue();storageSet('unoNickname',n);if(db&&uid&&uid!=='LOCAL_PLAYER')saveNickname(n).catch(console.error)});$('startBtn').onclick=startGame;$('saveSettingsBtn').onclick=saveSettings;$('leaveBtn').onclick=leaveRoom;$('deleteRoomBtn').onclick=deleteRoom;$('copyCodeBtn').onclick=async()=>{try{if(!navigator.clipboard?.writeText)throw new Error('Clipboard tidak tersedia');await navigator.clipboard.writeText(roomCode);setNotice('Kode room disalin: '+roomCode)}catch(_){setNotice('Kode room: '+roomCode)}};$('playBtn').onclick=()=>{ensureAudio();playSelected()};$('drawBtn').onclick=()=>{ensureAudio();performAction({type:'draw'})};$('unoBtn').onclick=()=>performAction({type:'uno'});$('callUnoBtn').onclick=()=>performAction({type:'callUno'});$('rematchBtn').onclick=rematch;$('backLobbyBtn').onclick=()=>{if(localMode){stopRoomWatch();selected=[];pendingCards=null;show('lobby');hide('roomView')}else{stopRoomWatch();show('lobby');hide('roomView')}};$('cancelColor').onclick=()=>{pendingCards=null;hide('colorModal')};document.querySelectorAll('[data-color]').forEach(b=>b.onclick=async()=>{if(!pendingCards)return;const ids=pendingCards;pendingCards=null;hide('colorModal');await performAction({type:'play',ids,color:b.dataset.color})});
 window.addEventListener('beforeunload',()=>{if(roomCode&&uid&&!localMode)db?.ref(`${roomCode}/players/${uid}/connected`).set(false)});
 // Inisialisasi Firebase untuk fitur room online. Jika Firebase/koneksi gagal,
 // Tombol room tetap dapat ditekan; validasi koneksi dilakukan saat aksi dijalankan.
