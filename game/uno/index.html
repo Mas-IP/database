@@ -187,7 +187,7 @@ function render(){
   (currentPlayer()?.hand||[]).forEach(c=>{const el=cardNode(c);const pos=selected.indexOf(c.id);if(pos>=0){el.classList.add('selected');el.dataset.order=String(pos+1);el.title+=' • Urutan combo '+(pos+1)}el.onclick=()=>{if(!isMyTurn()||currentPlayer()?.finished)return;const i=selected.indexOf(c.id);if(i>=0)selected.splice(i,1);else selected.push(c.id);renderHandOnly()};$('myHand').append(el)});
   $('playBtn').disabled=!isMyTurn()||currentPlayer()?.finished||selected.length===0;
   $('drawBtn').disabled=!isMyTurn()||currentPlayer()?.finished||!!room.drawState;$('drawBtn').textContent=room.pendingDraw?.targetUid===uid?`Ambil ${room.pendingDraw.amount} kartu`:'Ambil 1 kartu';$('unoBtn').disabled=!(room.unoPending?.uid===uid); 
-  $('callUnoBtn').disabled=!room.unoPending||room.unoPending.uid===uid;updateDecisionTimer();
+  $('callUnoBtn').disabled=!room.unoPending||room.unoPending.uid===uid||Date.now()<(room.unoPending.callableAt||0);updateDecisionTimer();
  } else if(room.status==='finished'){
   $('resultTitle').textContent=room.winnerUid===uid?'Kamu menang!':`Pemenang: ${room.players?.[room.winnerUid]?.nickname||'pemain'}`;
   $('resultText').textContent=(room.finishOrder||[]).map((id,i)=>`${i+1}. ${room.players?.[id]?.nickname||'Pemain'}`).join(' • ')||(room.aiMatch?'Pertandingan melawan AI selesai.':'Permainan selesai.');$('rematchBtn').classList.toggle('hidden',!isHost()||room.aiMatch);
@@ -324,9 +324,11 @@ function createLocalAiRoom(){
  }catch(e){setNotice('Gagal memulai AI offline: '+e.message,true);console.error(e)}
 }
 function applyGameAction(r,actorUid,action){
- if(!r||r.status!=='playing'||r.turnUid!==actorUid)return 'Belum giliran kamu.';clearExpiredUno(r);const me=r.players?.[actorUid];if(!me||me.finished)return 'Pemain sudah selesai.';
+ if(!r||r.status!=='playing')return 'Permainan tidak sedang berlangsung.';clearExpiredUno(r);const me=r.players?.[actorUid];if(!me||me.finished)return 'Pemain sudah selesai.';
+ // UNO dan Tuduh UNO adalah aksi sela: tidak mensyaratkan actorUid sedang mendapat giliran.
  if(action.type==='uno'){if(me.hand.length!==1||r.unoPending?.uid!==actorUid)return 'UNO hanya bisa dipanggil saat tersisa 1 kartu dan status UNO masih terbuka.';r.unoCalledUid=actorUid;r.unoPending=null;r.revision=(r.revision||0)+1;return ''}
- if(action.type==='callUno'){const u=r.unoPending;if(!u||u.uid===actorUid)return 'Tidak ada pemain yang bisa dituduh UNO.';takeCards(r,u.uid,unoPenalty(r));r.unoPending=null;r.revision=(r.revision||0)+1;return ''}
+ if(action.type==='callUno'){const u=r.unoPending;if(!u||u.uid===actorUid)return 'Tidak ada pemain yang bisa dituduh UNO.';if(Date.now()<(u.callableAt||0))return 'Pemain masih punya kesempatan menekan UNO.';takeCards(r,u.uid,unoPenalty(r));r.unoPending=null;r.revision=(r.revision||0)+1;return ''}
+ if(r.turnUid!==actorUid)return 'Belum giliran kamu.';
  if(r.pendingDraw?.targetUid===actorUid){if(action.type==='draw'){takeCards(r,actorUid,r.pendingDraw.amount);r.pendingDraw=null;r.drawState=null;advanceTurn(r,actorUid,1);r.revision=(r.revision||0)+1;resolvePendingDrawIfForced(r);return ''}if(action.type!=='play')return 'Kamu harus membalas bom atau mengambil penalti.'}
  if(action.type==='draw'){
    if(r.drawState?.uid===actorUid)return 'Kamu sudah mengambil 1 kartu pada giliran ini.';
@@ -341,7 +343,7 @@ function applyGameAction(r,actorUid,action){
  me.hand=me.hand.filter(c=>!wanted.includes(c.id));for(const c of cards){const played={...c};if(played.color==='hitam')played.chosenColor=action.color;r.discard.push(played)}
  const last=cards[cards.length-1];r.activeColor=last.color==='hitam'?action.color:last.color;r.drawState=null;
  // Window UNO berlaku sampai satu aksi sukses berikutnya mengubah revision sekali lagi.
- if(me.hand.length===1)r.unoPending={uid:actorUid,expiresRevision:(r.revision||0)+1};else if(r.unoPending?.uid===actorUid)r.unoPending=null;
+ if(me.hand.length===1)r.unoPending={uid:actorUid,callableAt:Date.now()+2000,expiresRevision:(r.revision||0)+1};else if(r.unoPending?.uid===actorUid)r.unoPending=null;
  if(me.hand.length===0){r.unoPending=null;finishPlayer(r,actorUid);r.revision=(r.revision||0)+1;if(r.status==='playing'){advanceTurn(r,actorUid,1);resolvePendingDrawIfForced(r)}return ''}
  let steps=1;
  if(last.value==='Skip')steps=1+cards.length;
@@ -398,7 +400,7 @@ async function joinRoom(){
    let seat=0;while(usedSeats.has(seat))seat++;
    await ref.child('players/'+uid).set({nickname,seat,hand:[],connected:true,lastSeen:Date.now()});
   }else{
-   await ref.child('players/'+uid).update({nickname,connected:true,lastSeen:Date.now()});
+   await ref.child('players/'+uid).update({nickname,connected:true,leftRoom:false,lastSeen:Date.now()});
   }
   const confirm=await ref.once('value'),saved=confirm.val();
   if(!saved){
@@ -423,7 +425,7 @@ async function joinRoom(){
 function refill(r){if((r.deck||[]).length)return; if((r.discard||[]).length<=1)return;const keep=r.discard.pop();r.deck=shuffle(r.discard);r.discard=[keep]}
 function takeCards(r,playerId,n){for(let i=0;i<n;i++){refill(r);if(!r.deck.length)break;r.players[playerId].hand.push(r.deck.pop())}}
 function canPlay(card,r){const t=r.discard[r.discard.length-1];const active=r.activeColor||t.color;return card.color==='hitam'||card.color===active||card.value===t.value}
-async function performAction(action){if(!room||!isMyTurn())return setNotice('Belum giliran kamu.',true);if(localMode)return localApplyAction(uid,action);let error='';await roomRef.transaction(r=>{error=applyGameAction(r,uid,action);if(error)return;return r});if(error)setNotice(error,true);else selected=[]}
+async function performAction(action){const interrupt=action?.type==='uno'||action?.type==='callUno';if(!room||(!interrupt&&!isMyTurn()))return setNotice('Belum giliran kamu.',true);if(localMode)return localApplyAction(uid,action);let error='';await roomRef.transaction(r=>{error=applyGameAction(r,uid,action);if(error)return;return r});if(error)setNotice(error,true);else selected=[]}
 
 function orderFor(r){return Object.entries(r.players||{}).sort((a,b)=>(a[1].seat||0)-(b[1].seat||0)).map(x=>x[0])}
 function nextFor(r,from,steps=1){return nextActiveFor(r,from,steps)}
@@ -434,30 +436,32 @@ async function leaveRoom(){
  const code=roomCode,leavingUid=uid,ref=db.ref(code);
  try{
   const result=await ref.transaction(r=>{
-   if(!r||!r.players||!r.players[leavingUid])return r;
-   const oldOrder=Object.entries(r.players).sort((a,b)=>(Number(a[1].seat)||0)-(Number(b[1].seat)||0)).map(([id])=>id);
-   const oldTurn=r.turnUid,oldHost=r.hostUid,dir=r.direction===-1?-1:1;
-   delete r.players[leavingUid];
-   let remaining=Object.entries(r.players).sort((a,b)=>(Number(a[1].seat)||0)-(Number(b[1].seat)||0)).map(([id])=>id);
-   if(!remaining.length)return null;
-   remaining.forEach((id,index)=>{r.players[id].seat=index});
-   if(oldHost===leavingUid)r.hostUid=remaining[0];
-   if(r.status==='playing'){
-    if(remaining.length===1){r.status='finished';r.winnerUid=remaining[0];r.finishedAt=Date.now();r.expiresAt=Date.now()+30*60*1000;}
-    else if(oldTurn===leavingUid){
-     const oldIndex=oldOrder.indexOf(leavingUid);let next=null;
-     for(let step=1;step<=oldOrder.length;step++){
-      const candidate=oldOrder[(oldIndex+dir*step+oldOrder.length*2)%oldOrder.length];
-      if(r.players[candidate]){next=candidate;break;}
-     }
-     r.turnUid=next||remaining[0];
-    }else if(!r.players[r.turnUid])r.turnUid=remaining[0];
+   // PENTING: undefined membatalkan transaction. Jangan return null saat cache transaction belum memuat room,
+   // karena null akan menulis/menghapus seluruh node token.
+   if(!r||!r.players||!r.players[leavingUid])return;
+   const ordered=Object.entries(r.players).sort((a,b)=>(Number(a[1].seat)||0)-(Number(b[1].seat)||0)).map(([id])=>id);
+   const others=ordered.filter(id=>id!==leavingUid);
+   if(!others.length)return null; // benar-benar hapus room hanya bila pemain terakhir keluar.
+   const oldTurn=r.turnUid;
+   if(r.hostUid===leavingUid)r.hostUid=others[0];
+   if(r.status==='waiting'){
+    delete r.players[leavingUid];
+    const remaining=Object.entries(r.players).sort((a,b)=>(Number(a[1].seat)||0)-(Number(b[1].seat)||0));
+    remaining.forEach(([,p],index)=>{p.seat=index});
+   }else{
+    // Saat ronde aktif/selesai, data pemain dipertahankan agar UID yang sama dapat masuk kembali
+    // tanpa kehilangan hand/ranking. Pemain hanya ditandai sedang di luar room.
+    r.players[leavingUid].connected=false;r.players[leavingUid].leftRoom=true;r.players[leavingUid].lastSeen=Date.now();
+    if(r.status==='playing'&&oldTurn===leavingUid){
+     const next=nextActiveFor(r,leavingUid,1);if(next&&next!==leavingUid)r.turnUid=next;
+     r.drawState=null;
+     if(r.pendingDraw?.targetUid===leavingUid){takeCards(r,leavingUid,r.pendingDraw.amount);r.pendingDraw=null}
+    }
    }
-   r.revision=(r.revision||0)+1;
-   return r;
+   r.revision=(r.revision||0)+1;return r;
   });
   if(!result.committed)throw new Error('Keluar room tidak tersimpan. Coba lagi.');
-  stopRoomWatch();selected=[];pendingCards=null;storageRemove('unoSession');show('lobby');hide('roomView');setNotice('Kamu telah keluar dari room.');
+  stopRoomWatch();selected=[];pendingCards=null;storageRemove('unoSession');show('lobby');hide('roomView');setNotice('Kamu telah keluar dari room. Token tetap aktif selama masih ada pemain.');
  }catch(e){console.error('Gagal keluar room:',e);setNotice('Gagal keluar room: '+(e?.message||String(e)),true)}
 }
 async function deleteRoom(){
@@ -465,7 +469,7 @@ async function deleteRoom(){
  if(!confirm('Hapus room ini untuk semua pemain? Tindakan ini tidak dapat dibatalkan.'))return;
  const code=roomCode,ownerUid=uid,players=Object.keys(room?.players||{}),ref=db.ref(code);
  try{
-  const result=await ref.transaction(r=>{if(!r)return r;if(r.hostUid!==ownerUid)return;return null});
+  const result=await ref.transaction(r=>{if(!r)return;if(r.hostUid!==ownerUid)return;return null});
   if(!result.committed)throw new Error('Room tidak dihapus. Hak host mungkin sudah berpindah.');
   stopRoomWatch();selected=[];pendingCards=null;storageRemove('unoSession');show('lobby');hide('roomView');setNotice('Room berhasil dihapus untuk semua pemain.');
  }catch(e){console.error('Gagal menghapus room:',e);setNotice('Gagal menghapus room: '+(e?.message||String(e)),true)}
