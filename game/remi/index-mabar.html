@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Poker Credit Mas-IP — Mabar</title>
+<style>
+:root{color-scheme:dark;--panel2:#1b2a40;--line:#2b3d56;--text:#eef4ff;--muted:#9eb0c8;--green:#21c58e;--gold:#f5c76a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#182b40 0,#0b1220 55%);color:var(--text);font:15px/1.5 system-ui,sans-serif;min-height:100vh}
+main{max-width:980px;margin:auto;padding:22px 14px 50px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:20px}.brand span{color:var(--green)}
+.back{background:#1b2a40;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 14px;text-decoration:none;font-weight:700;font-size:13px}
+.back:hover{border-color:var(--green)}
+.panel{background:linear-gradient(145deg,#16243a,#101a2a);border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 12px 32px #0002}
+.hero h1{font-size:clamp(22px,4vw,32px);margin:6px 0}
+.muted{color:var(--muted)}.small{font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+label{display:block;color:var(--muted);font-size:13px;margin:9px 0 5px}
+input{width:100%;background:#0b1423;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;outline:none}
+input:focus{border-color:var(--green)}
+button{border:0;border-radius:11px;padding:11px 15px;background:var(--green);color:#062116;font:700 14px system-ui;cursor:pointer}
+button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button.danger{background:#48232d;color:#ffdce0;border:1px solid #773441}
+button:disabled{opacity:.45;cursor:not-allowed}
+.status{padding:10px 12px;border-radius:10px;background:#102b2a;border:1px solid #1e6252;color:#aaf5dc;margin:10px 0}
+.error{background:#321d28;border-color:#773441;color:#ffd0d5}
+.hidden{display:none!important}
+.balance{font-size:26px;font-weight:850;color:var(--gold)}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}
+.player{background:#0d1828;border:1px solid var(--line);border-radius:12px;padding:12px}
+.player strong{display:block;overflow-wrap:anywhere}
+.you{border-color:var(--green)}
+.cards{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.card{width:clamp(44px,10vw,62px);height:82px;background:#f9fafc;color:#172033;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;font-weight:850;box-shadow:0 4px 8px #0004}
+.card.red{color:#d52f4b}
+.winner{border-color:var(--gold);box-shadow:0 0 0 1px #f5c76a44}
+.section-title{font-size:18px;font-weight:800;margin:0 0 10px}
+.notice{border-left:3px solid var(--gold);padding:10px 12px;background:#2c281c;border-radius:0 8px 8px 0;color:#f5e3b5;font-size:13px}
+.footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.token-box{font-size:30px;font-weight:900;letter-spacing:6px;color:var(--gold);text-align:center;padding:14px;background:#0b1423;border:2px dashed var(--gold);border-radius:12px;margin:10px 0}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="brand">Poker Credit <span>Mas-IP · MABAR</span></div>
+    <a class="back" href="index.html">← Menu</a>
+  </div>
+
+  <section class="panel hero">
+    <h1>Meja poker, <span style="color:var(--green)">satu token.</span></h1>
+    <p class="muted">Buat room → dapat token → bagikan ke teman → mereka gabung pakai token itu.</p>
+    <div class="row">
+      <div><div class="small muted">SALDO CHIP</div><div class="balance" id="balance">—</div></div>
+      <div style="flex:1"></div>
+      <span id="connection" style="border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);font-size:12px">Belum terhubung</span>
+    </div>
+  </section>
+
+  <section class="panel" id="setup">
+    <h2 class="section-title">Lobby</h2>
+    <div class="grid">
+      <div class="panel" style="margin:0">
+        <h3 style="margin-top:0">Buat room</h3>
+        <p class="muted small">Buat meja baru, dapat token, bagikan ke teman.</p>
+        <button id="createBtn" style="width:100%">Buat room baru</button>
+      </div>
+      <div class="panel" style="margin:0">
+        <h3 style="margin-top:0">Gabung room</h3>
+        <label for="tokenInput">Token room</label>
+        <input id="tokenInput" maxlength="6" placeholder="ABC123" autocapitalize="characters">
+        <button id="joinBtn" style="width:100%;margin-top:10px">Gabung pakai token</button>
+      </div>
+    </div>
+    <div id="setupMsg" class="status hidden"></div>
+  </section>
+
+  <section class="panel hidden" id="table">
+    <div class="row">
+      <div style="flex:1">
+        <div class="small muted">TOKEN ROOM</div>
+        <div class="token-box" id="tokenLabel">------</div>
+        <div class="row">
+          <button class="secondary" id="copyBtn">Salin token</button>
+          <button class="danger" id="leaveBtn">Keluar room</button>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div style="flex:1">
+        <h2 class="section-title" style="margin:0">Meja permainan</h2>
+        <div class="muted small" id="roundInfo">Menunggu pemain…</div>
+      </div>
+      <span style="border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);font-size:12px" id="hostLabel">Host: —</span>
+    </div>
+    <div id="players" class="players" style="margin-top:12px"></div>
+    <div class="notice" style="margin-top:14px">Taruhan tiap ronde: <b>100 chip</b> per pemain. Min 2, max 10 pemain. Pemenang mengambil pot; seri dibagi rata.</div>
+    <div id="handArea" class="panel hidden" style="margin-top:14px">
+      <h3 class="section-title">Kartu kamu</h3>
+      <div class="cards" id="myCards"></div>
+      <div id="myRank" class="muted"></div>
+      <h3 class="section-title" style="margin-top:18px">Hasil ronde</h3>
+      <div id="results"></div>
+    </div>
+    <div id="tableMsg" class="status hidden"></div>
+    <div class="row" style="margin-top:14px">
+      <button id="startBtn">Mulai ronde (100 chip)</button>
+    </div>
+  </section>
+
+  <div class="footer">Poker Credit Mas-IP · Chip virtual saja · Tidak mendukung uang sungguhan</div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getDatabase, ref, get, set, update, onValue, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBEkpdApRwuDDOInjjVS2p2FWWVD2kpxoM",
+  authDomain: "pokerbj-100d1.firebaseapp.com",
+  databaseURL: "https://pokerbj-100d1-default-rtdb.firebaseio.com",
+  projectId: "pokerbj-100d1",
+  storageBucket: "pokerbj-100d1.firebasestorage.app",
+  messagingSenderId: "801486572738",
+  appId: "1:801486572738:web:c6d7545470996adee2bf5b"
+};
+
+const STARTING_CHIPS=1000, BET=100, MIN_PLAYERS=2, MAX_PLAYERS=10;
+const $=id=>document.getElementById(id);
+let app,auth,db,uid=null,displayName="Pemain",currentRoom=null,roomData=null,unsubRoom=null,busy=false;
+const suits=[{s:"♠",red:false},{s:"♥",red:true},{s:"♦",red:true},{s:"♣",red:false}];
+const ranks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+const cardText=c=>`${c.r}${c.s}`;
+const fmt=n=>Number(n||0).toLocaleString("id-ID");
+
+function message(id,text,error=false){const el=$(id);el.textContent=text;el.classList.remove("hidden","error");if(error)el.classList.add("error");}
+function clearMessage(id){$(id).classList.add("hidden");}
+function isHost(){return !!roomData && roomData.hostUid===uid;}
+
+// ============ BOOT ============
+async function boot(){
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+
+  onAuthStateChanged(auth, async user => {
+    if(!user){
+      location.href = "index.html";
+      return;
+    }
+    uid = user.uid;
+    displayName = localStorage.getItem("displayName") || "Pemain";
+    $("connection").textContent = "Terhubung";
+    try{
+      await runTransaction(ref(db,`wallets/${uid}/chips`), cur => cur===null ? STARTING_CHIPS : cur);
+      const snap = await get(ref(db,`wallets/${uid}/chips`));
+      $("balance").textContent = fmt(snap.val());
+    }catch(e){
+      $("balance").textContent = "—";
+      message("setupMsg","Tidak bisa baca saldo: "+e.message,true);
+    }
+  });
+}
+
+async function loadBalance(){
+  if(!uid) return;
+  try{
+    const snap = await get(ref(db,`wallets/${uid}/chips`));
+    $("balance").textContent = fmt(snap.val());
+  }catch(e){ console.warn(e); }
+}
+
+// ============ TOKEN ============
+function genToken(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s=""; for(let i=0;i<6;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+// ============ CREATE / JOIN ============
+async function createRoom(){
+  if(!uid||busy) return; busy=true; clearMessage("setupMsg");
+  try{
+    let token, exists=true;
+    for(let i=0;i<5&&exists;i++){
+      token = genToken();
+      exists = (await get(ref(db,`rooms/${token}`))).exists();
+    }
+    if(exists) throw new Error("Gagal buat token unik. Coba lagi.");
+    const p = {uid, name:displayName, joinedAt:Date.now()};
+    await set(ref(db,`rooms/${token}`),{
+      token, hostUid:uid, status:"waiting", round:0,
+      createdAt:serverTimestamp(), players:{[uid]:p}
+    });
+    enterRoom(token);
+  }catch(e){ message("setupMsg", e.message, true); }
+  finally{ busy=false; }
+}
+
+async function joinRoom(){
+  if(!uid||busy) return; busy=true; clearMessage("setupMsg");
+  const token = $("tokenInput").value.trim().toUpperCase();
+  if(!/^[A-Z2-9]{6}$/.test(token)){
+    message("setupMsg","Token harus 6 karakter (huruf/angka).",true);
+    busy=false; return;
+  }
+  try{
+    const snap = await get(ref(db,`rooms/${token}`));
+    if(!snap.exists()) throw new Error("Token tidak valid atau room sudah tidak ada.");
+    const data = snap.val(), players = Object.values(data.players||{});
+    if(data.status === "playing") throw new Error("Ronde sedang berlangsung. Coba lagi nanti.");
+    if(!data.players?.[uid] && players.length >= MAX_PLAYERS)
+      throw new Error("Room penuh (maks "+MAX_PLAYERS+" pemain).");
+    await update(ref(db,`rooms/${token}/players/${uid}`),{
+      uid, name:displayName, joinedAt:Date.now()
+    });
+    enterRoom(token);
+  }catch(e){ message("setupMsg", e.message, true); }
+  finally{ busy=false; }
+}
+
+function enterRoom(token){
+  if(unsubRoom) unsubRoom();
+  currentRoom = token;
+  $("setup").classList.add("hidden");
+  $("table").classList.remove("hidden");
+  $("tokenLabel").textContent = token;
+  unsubRoom = onValue(ref(db,`rooms/${token}`), snap => {
+    if(!snap.exists()){
+      leaveRoom(false);
+      message("setupMsg","Room sudah tidak tersedia.",true);
+      $("setup").classList.remove("hidden");
+      return;
+    }
+    roomData = snap.val();
+    renderRoom();
+    loadBalance();
+  }, err => message("tableMsg","Sinkronisasi gagal: "+err.message,true));
+}
+
+function renderRoom(){
+  const players = Object.values(roomData.players||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+  $("hostLabel").textContent = "Host: "+(roomData.players?.[roomData.hostUid]?.name||"—");
+  $("roundInfo").textContent = roomData.status==="playing"
+    ? `Ronde ${roomData.round} · Sedang dimainkan`
+    : `${players.length}/${MAX_PLAYERS} pemain · Menunggu host memulai`;
+
+  const wrap = $("players"); wrap.innerHTML="";
+  for(const p of players){
+    const el = document.createElement("div");
+    el.className = "player"+(p.uid===uid?" you":"");
+    const status = p.uid===roomData.hostUid ? " · Host" : "";
+    el.innerHTML = `<strong></strong><div class="small muted"></div>`;
+    el.querySelector("strong").textContent = p.name+(p.uid===uid?" (Kamu)":"")+status;
+    el.querySelector(".muted").textContent =
+      p.uid===uid ? "Kamu" : (roomData.status==="playing"?"Ikut ronde":"Siap");
+    wrap.appendChild(el);
+  }
+
+  const enoughPlayers = players.length >= MIN_PLAYERS && players.length <= MAX_PLAYERS;
+  $("startBtn").disabled = !isHost() || !enoughPlayers || roomData.status==="playing";
+  $("startBtn").textContent = roomData.status==="playing"
+    ? "Ronde sedang berjalan"
+    : isHost()
+      ? `Mulai ronde (${BET} chip) · ${players.length} pemain`
+      : "Menunggu host";
+
+  if(roomData.lastResult) renderResults(roomData.lastResult);
+  else $("handArea").classList.add("hidden");
+}
+
+// ============ SCORING ============
+function deck(){
+  const d=[];
+  for(const s of suits) for(let v=2;v<=14;v++) d.push({v,r:ranks[v-2],s:s.s,red:s.red});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function score(hand){
+  const vals=hand.map(c=>c.v).sort((a,b)=>b-a),counts={};
+  vals.forEach(v=>counts[v]=(counts[v]||0)+1);
+  const groups=Object.entries(counts).map(([v,n])=>({v:+v,n})).sort((a,b)=>b.n-a.n||b.v-a.v);
+  const flush=hand.every(c=>c.s===hand[0].s);
+  const unique=[...new Set(vals)];
+  let straight=unique.length===5&&unique[0]-unique[4]===4,high=unique[0];
+  if(unique.join(",")==="14,5,4,3,2"){straight=true;high=5;}
+  let cat=0,tie=[];
+  if(flush&&straight){cat=8;tie=[high];}
+  else if(groups[0].n===4){cat=7;tie=[groups[0].v,groups[1].v];}
+  else if(groups[0].n===3&&groups[1].n===2){cat=6;tie=[groups[0].v,groups[1].v];}
+  else if(flush){cat=5;tie=vals;}
+  else if(straight){cat=4;tie=[high];}
+  else if(groups[0].n===3){cat=3;tie=[groups[0].v,...groups.slice(1).map(g=>g.v).sort((a,b)=>b-a)];}
+  else if(groups[0].n===2&&groups[1].n===2){cat=2;tie=[Math.max(groups[0].v,groups[1].v),Math.min(groups[0].v,groups[1].v),groups[2].v];}
+  else if(groups[0].n===2){cat=1;tie=[groups[0].v,...groups.slice(1).map(g=>g.v).sort((a,b)=>b-a)];}
+  else{cat=0;tie=vals;}
+  return {cat,tie,label:["Kartu tertinggi","One pair","Two pair","Three of a kind","Straight","Flush","Full house","Four of a kind","Straight flush"][cat]};
+}
+
+function compare(a,b){if(a.cat!==b.cat)return a.cat-b.cat;for(let i=0;i<Math.max(a.tie.length,b.tie.length);i++){const x=a.tie[i]||0,y=b.tie[i]||0;if(x!==y)return x-y;}return 0;}
+
+// ============ START ROUND ============
+async function startRound(){
+  if(!isHost()||busy||!roomData) return;
+  busy=true; clearMessage("tableMsg");
+  try{
+    const snap = await get(ref(db,`rooms/${currentRoom}`));
+    const data = snap.val();
+    if(!data || data.status==="playing") throw new Error("Ronde sudah berjalan / room tidak tersedia.");
+    const players = Object.values(data.players||{});
+    if(players.length < MIN_PLAYERS || players.length > MAX_PLAYERS)
+      throw new Error(`Butuh ${MIN_PLAYERS}–${MAX_PLAYERS} pemain.`);
+
+    const wallets = {};
+    for(const p of players){
+      const ws = await get(ref(db,`wallets/${p.uid}/chips`));
+      const chips = Number(ws.val()||0);
+      if(chips < BET) throw new Error(`${p.name} tidak punya cukup chip (butuh ${BET}).`);
+      wallets[p.uid] = chips;
+    }
+
+    const d = deck(), hands = {};
+    let cursor = 0;
+    for(const p of players){ hands[p.uid] = d.slice(cursor, cursor+5); cursor += 5; }
+
+    const scored = players.map(p => ({
+      uid:p.uid, name:p.name, hand:hands[p.uid], score:score(hands[p.uid])
+    }));
+    let best = scored[0].score;
+    for(const s of scored) if(compare(s.score,best)>0) best = s.score;
+    const winners = scored.filter(s => compare(s.score,best)===0);
+    const pot = players.length * BET;
+    const share = Math.floor(pot / winners.length);
+    const remainder = pot % winners.length;
+
+    for(const p of players){
+      await set(ref(db,`wallets/${p.uid}/chips`), wallets[p.uid] - BET);
+    }
+    for(let i=0;i<winners.length;i++){
+      const p = winners[i];
+      const cur = await get(ref(db,`wallets/${p.uid}/chips`));
+      await set(ref(db,`wallets/${p.uid}/chips`), Number(cur.val()||0) + share + (i===0?remainder:0));
+    }
+
+    const result = {
+      round:(data.round||0)+1,
+      players: scored.map(s=>({
+        uid:s.uid, name:s.name, hand:s.hand,
+        category:s.score.cat, label:s.score.label, tie:s.score.tie
+      })),
+      winnerUids: winners.map(w=>w.uid),
+      pot, finishedAt: Date.now()
+    };
+
+    await update(ref(db,`rooms/${currentRoom}`), {
+      status:"waiting", round:result.round, lastResult:result, updatedAt:serverTimestamp()
+    });
+
+    await loadBalance();
+    message("tableMsg", `Ronde selesai. Pot ${fmt(pot)} chip → ${winners.map(w=>w.name).join(", ")}.`);
+  }catch(e){ message("tableMsg", e.message, true); }
+  finally{ busy=false; }
+}
+
+function renderResults(result){
+  if(!result?.players) return;
+  $("handArea").classList.remove("hidden");
+  $("myCards").innerHTML=""; $("results").innerHTML="";
+
+  const me = result.players.find(p=>p.uid===uid);
+  if(me){
+    me.hand.forEach(c=>{
+      const el=document.createElement("div");
+      el.className="card"+(c.red?" red":"");
+      el.textContent=cardText(c);
+      $("myCards").appendChild(el);
+    });
+    $("myRank").textContent = "Kombinasi kamu: "+me.label;
+  } else {
+    $("myRank").textContent = "Kamu tidak ikut ronde terakhir.";
+  }
+
+  const title = document.createElement("p");
+  title.className="muted small";
+  title.textContent = `Ronde ${result.round} · Pot ${fmt(result.pot)} chip`;
+  $("results").appendChild(title);
+
+  const sorted = [...result.players].sort((a,b)=>compare(
+    {cat:b.category,tie:b.tie||[]},
+    {cat:a.category,tie:a.tie||[]}
+  ));
+  sorted.forEach(p=>{
+    const row = document.createElement("div");
+    row.className = "player"+(result.winnerUids?.includes(p.uid)?" winner":"");
+    const strong = document.createElement("strong");
+    strong.textContent = p.name+(result.winnerUids?.includes(p.uid)?" · PEMENANG":"");
+    const desc = document.createElement("div");
+    desc.className = "small muted";
+    desc.textContent = p.label;
+    const cards = document.createElement("div");
+    cards.className = "cards";
+    p.hand.forEach(c=>{
+      const el=document.createElement("div");
+      el.className="card"+(c.red?" red":"");
+      el.style.width="35px"; el.style.height="48px"; el.style.fontSize="14px";
+      el.textContent=cardText(c);
+      cards.appendChild(el);
+    });
+    row.append(strong,desc,cards);
+    $("results").appendChild(row);
+  });
+}
+
+// ============ LEAVE ROOM ============
+async function leaveRoom(remove=true){
+  if(unsubRoom){ unsubRoom(); unsubRoom=null; }
+  const token = currentRoom;
+  currentRoom=null; roomData=null;
+  if(remove && uid && token){
+    try{
+      const snap = await get(ref(db,`rooms/${token}`));
+      if(snap.exists()){
+        const data = snap.val();
+        const remaining = {...(data.players||{})};
+        delete remaining[uid];
+        const ids = Object.keys(remaining);
+        if(!ids.length){
+          await set(ref(db,`rooms/${token}`),null);
+        } else {
+          const updates = {};
+          updates[`rooms/${token}/players/${uid}`] = null;
+          if(data.hostUid===uid) updates[`rooms/${token}/hostUid`] = ids[0];
+          await update(ref(db), updates);
+        }
+      }
+    }catch(e){ console.warn(e); }
+  }
+  $("table").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  $("handArea").classList.add("hidden");
+  clearMessage("tableMsg");
+  await loadBalance();
+}
+
+// ============ EVENTS ============
+$("createBtn").addEventListener("click", createRoom);
+$("joinBtn").addEventListener("click", joinRoom);
+$("startBtn").addEventListener("click", startRound);
+$("leaveBtn").addEventListener("click", ()=>{
+  if(confirm("Keluar dari room? Token akan hangus kalau kamu host terakhir.")){
+    leaveRoom(true);
+  }
+});
+$("copyBtn").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(currentRoom);
+    message("tableMsg","Token berhasil disalin: "+currentRoom);
+  }catch{
+    message("tableMsg","Token: "+currentRoom);
+  }
+});
+$("tokenInput").addEventListener("input", e=>{
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g,"").slice(0,6);
+});
+window.addEventListener("beforeunload", ()=>{
+  if(unsubRoom) unsubRoom();
+});
+
+boot();
+</script>
+</body>
+</html>
