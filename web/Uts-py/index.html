@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Evaluasi Mahasiswa</title>
+<style>
+  /* === RESET & BASE === */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* === KARTU UTAMA === */
+  .card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    animation: slideUp 0.5s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === HEADER === */
+  .card-header {
+    background: #2c3e50;
+    color: #ffffff;
+    padding: 25px 20px;
+    text-align: center;
+  }
+
+  .card-header h1 {
+    font-size: 22px;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .card-header p {
+    font-size: 13px;
+    color: #bdc3c7;
+  }
+
+  /* === BODY / FORM === */
+  .card-body {
+    padding: 25px 30px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #34495e;
+    margin: 20px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ecf0f1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .section-title:first-child {
+    margin-top: 0;
+  }
+
+  .input-group {
+    margin-bottom: 15px;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .input-group input,
+  .input-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #dcdde1;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background-color: #f9fbfd;
+  }
+
+  .input-group input:focus,
+  .input-group select:focus {
+    border-color: #3498db;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+  }
+
+  /* === TOMBOL === */
+  .btn-proses {
+    width: 100%;
+    padding: 15px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease, transform 0.1s ease;
+    font-family: inherit;
+  }
+
+  .btn-proses:hover {
+    background: #2980b9;
+  }
+
+  .btn-proses:active {
+    transform: scale(0.98);
+  }
+
+  /* === AREA HASIL (OUTPUT) === */
+  .result-container {
+    display: none; /* Sembunyikan default */
+    padding: 0 30px 30px;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+
+  .result-container.show {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-box {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .result-box h3 {
+    font-size: 15px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #ced4da;
+    font-size: 14px;
+  }
+
+  .result-item:last-child {
+    border-bottom: none;
+  }
+
+  .res-label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .res-value {
+    font-weight: bold;
+  }
+
+  /* Warna Status */
+  .status-success { color: #27ae60; }
+  .status-danger { color: #e74c3c; }
+  .status-info { color: #2980b9; font-size: 16px; }
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  
+  <!-- HEADER -->
+  <div class="card-header">
+    <h1>🎓 Sistem Evaluasi Mahasiswa</h1>
+    <p>Silakan isi data di bawah ini untuk melihat hasil evaluasi</p>
+  </div>
+
+  <!-- FORM INPUT -->
+  <div class="card-body">
+    
+    <div class="section-title">👤 Data Mahasiswa</div>
+    <div class="input-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="inNama" placeholder="Masukkan nama Anda">
+    </div>
+    <div class="input-group">
+      <label>Umur</label>
+      <input type="number" id="inUmur" placeholder="Contoh: 20">
+    </div>
+    <div class="input-group">
+      <label>Program Studi</label>
+      <input type="text" id="inProdi" placeholder="Contoh: Teknik Informatika">
+    </div>
+    <div class="input-group">
+      <label>Status Mahasiswa</label>
+      <input type="text" id="inStatus" placeholder="Contoh: Aktif">
+    </div>
+
+    <div class="section-title">📝 Nilai Ulangan</div>
+    <div class="input-group">
+      <label>Nilai Ulangan (0-100)</label>
+      <input type="number" id="inNilaiUl" placeholder="Contoh: 75">
+    </div>
+
+    <div class="section-title">📅 Syarat Ikut Ujian</div>
+    <div class="input-group">
+      <label>Persentase Kehadiran (%)</label>
+      <input type="number" id="inKehadiran" placeholder="Contoh: 80">
+    </div>
+    <div class="input-group">
+      <label>Sudah mengumpulkan tugas?</label>
+      <select id="inTugas">
+        <option value="">-- Pilih --</option>
+        <option value="ya">Ya</option>
+        <option value="tidak">Tidak</option>
+      </select>
+    </div>
+
+    <div class="section-title">💰 Rekomendasi Beasiswa</div>
+    <div class="input-group">
+      <label>IPK (0.00 - 4.00)</label>
+      <input type="number" step="0.01" id="inIpk" placeholder="Contoh: 3.60">
+    </div>
+    <div class="input-group">
+      <label>Apakah Penerima KIP?</label>
+      <select id="inKip">
+        <option value="">-- Pilih --</option>
+        <option value="ya">Ya</option>
+        <option value="tidak">Tidak</option>
+      </select>
+    </div>
+
+    <div class="section-title">🏆 Kategori Nilai</div>
+    <div class="input-group">
+      <label>Masukkan Nilai Akhir (0-100)</label>
+      <input type="number" id="inNilaiKat" placeholder="Contoh: 88">
+    </div>
+
+    <button class="btn-proses" onclick="prosesData()">Proses Data ➜</button>
+  </div>
+
+  <!-- AREA HASIL -->
+  <div class="result-container" id="resultContainer">
+    <div class="result-box">
+      <h3>📋 Hasil Evaluasi</h3>
+      
+      <div class="result-item">
+        <span class="res-label">Status Nilai Ulangan</span>
+        <span class="res-value" id="outNilaiUl">-</span>
+      </div>
+      
+      <div class="result-item">
+        <span class="res-label">Izin Ikut Ujian</span>
+        <span class="res-value" id="outSyaratUjian">-</span>
+      </div>
+      
+      <div class="result-item">
+        <span class="res-label">Rekomendasi Beasiswa</span>
+        <span class="res-value" id="outBeasiswa">-</span>
+      </div>
+      
+      <div class="result-item">
+        <span class="res-label">Kategori Nilai Akhir</span>
+        <span class="res-value status-info" id="outKategori">-</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function prosesData() {
+  // 1. Ambil semua input
+  const nama = document.getElementById('inNama').value;
+  const umur = document.getElementById('inUmur').value;
+  const prodi = document.getElementById('inProdi').value;
+  const status = document.getElementById('inStatus').value;
+  
+  const first = parseFloat(document.getElementById('inNilaiUl').value);
+  const kehadiran = parseFloat(document.getElementById('inKehadiran').value);
+  const tugas = document.getElementById('inTugas').value.toLowerCase();
+  const ipk = parseFloat(document.getElementById('inIpk').value);
+  const kip = document.getElementById('inKip').value.toLowerCase();
+  const nilai = parseFloat(document.getElementById('inNilaiKat').value);
+
+  // Validasi: Pastikan input angka tidak kosong
+  if (isNaN(first) || isNaN(kehadiran) || isNaN(ipk) || isNaN(nilai) || tugas === "" || kip === "") {
+    alert("⚠️ Mohon lengkapi semua kolom input terlebih dahulu sebelum memproses data!");
+    return;
+  }
+
+  // 2. LOGIKA PEMROGRAMAN (Sesuai Python)
+  
+  // Logika 1: Nilai Ulangan
+  const elNilaiUl = document.getElementById('outNilaiUl');
+  if (first >= 70) {
+    elNilaiUl.innerHTML = `<span class="status-success">Lulus ✅</span>`;
+  } else {
+    elNilaiUl.innerHTML = `<span class="status-danger">Tidak Lulus ❌</span>`;
+  }
+
+  // Logika 2: Syarat Ujian
+  const elSyarat = document.getElementById('outSyaratUjian');
+  if (kehadiran >= 75 && tugas === 'ya') {
+    elSyarat.innerHTML = `<span class="status-success">BOLEH Ikut ✅</span>`;
+  } else {
+    elSyarat.innerHTML = `<span class="status-danger">TIDAK BOLEH ❌</span>`;
+  }
+
+  // Logika 3: Beasiswa
+  const elBeasiswa = document.getElementById('outBeasiswa');
+  if (ipk >= 3.50 || kip === 'ya') {
+    elBeasiswa.innerHTML = `<span class="status-success">Mendapatkan ✅</span>`;
+  } else {
+    elBeasiswa.innerHTML = `<span class="status-danger">Tidak Dapat ❌</span>`;
+  }
+
+  // Logika 4: Kategori
+  let kategori = '';
+  if (nilai >= 85) {
+    kategori = "A (Sangat Baik)";
+  } else if (nilai >= 70) {
+    kategori = "B (Baik)";
+  } else if (nilai >= 60) {
+    kategori = "C (Cukup)";
+  } else {
+    kategori = "D (Kurang)";
+  }
+  document.getElementById('outKategori').innerText = kategori;
+
+  // 3. Tampilkan Kotak Hasil & Scroll otomatis
+  const resContainer = document.getElementById('resultContainer');
+  resContainer.classList.add('show');
+  
+  // Scroll halus ke bawah agar user melihat hasil
+  resContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+</script>
+
+</body>
+</html>
